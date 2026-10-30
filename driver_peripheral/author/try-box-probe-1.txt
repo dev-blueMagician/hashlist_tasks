@@ -1,0 +1,13 @@
+ls -la /app /app/data
+for f in /app/data/*; do echo "===== $f"; cat "$f"; echo; done
+cat /etc/debian_version; arm-none-eabi-gcc --version | head -n1; qemu-system-arm --version | head -n1; dpkg-query -W gcc-arm-none-eabi libnewlib-arm-none-eabi qemu-system-arm
+command -v python3 git pdftotext make timeout gdb-multiarch; python3 --version; true
+qemu-system-arm -machine help | grep -iE 'lm3s|netduino|stm32|mps2|microbit'; true
+qemu-system-arm -d help 2>&1 | head -n 40
+qemu-system-arm -trace help 2>&1 | grep -E '^(sdcard_|ssi_sd|pl022|stm32f2xx|stellaris|memory_region_ops)' | head -n 40
+printf '.syntax unified\n.cpu cortex-m3\n.thumb\n.text\n.word 0x20001000\n.word reset\n.thumb_func\nreset:\nldr r0,=0x400FE104\nmovs r1,#0x10\nstr r1,[r0]\nldr r0,=0x40008010\nmovs r1,#2\nstr r1,[r0]\nldr r0,=0x400FC000\nmovs r1,#1\nstr r1,[r0]\nmovs r2,#100\nloop:\nsubs r2,r2,#1\nbne loop\nldr r0,=0x40008004\nmovs r1,#2\nstr r1,[r0]\nhalt:\nwfi\nb halt\n' > /tmp/lm.s && arm-none-eabi-as -o /tmp/lm.o /tmp/lm.s && arm-none-eabi-ld -Ttext=0 -o /tmp/lm.elf /tmp/lm.o && echo lm-built
+timeout 5 qemu-system-arm -M lm3s6965evb -nographic -monitor none -serial null -kernel /tmp/lm.elf -d unimp,guest_errors -trace memory_region_ops_write -D /tmp/lm.log; echo rc=$?; wc -l < /tmp/lm.log; grep -v '^$' /tmp/lm.log | head -n 20
+timeout 5 qemu-system-arm -M lm3s6965evb -nographic -monitor none -serial null -kernel /tmp/lm.elf -icount shift=0 -singlestep -d nochain,exec -trace memory_region_ops_write -D /tmp/lm2.log; echo rc=$?; wc -l < /tmp/lm2.log; grep -n 'memory_region_ops_write' /tmp/lm2.log | head -n 10
+truncate -s 64M /tmp/sdsc.img && truncate -s 4G /tmp/sdhc.img && for i in sdsc sdhc; do timeout 3 qemu-system-arm -M lm3s6965evb -nographic -monitor none -serial null -kernel /tmp/lm.elf -drive if=sd,format=raw,file=/tmp/$i.img; echo $i rc=$?; done
+timeout 3 qemu-system-arm -M lm3s6965evb -nographic -monitor none -serial null -kernel /tmp/lm.elf -drive if=sd,format=raw,file=/tmp/sdsc.img -global sd-card.spec_version=1; echo spec1 rc=$?
+printf '.syntax unified\n.cpu cortex-m4\n.thumb\n.text\n.word 0x20001000\n.word reset\n.thumb_func\nreset:\nldr r0,=0x40023844\nldr r1,=0x100\nstr r1,[r0]\nldr r0,=0x40012304\nldr r1,=0x10000\nstr r1,[r0]\nldr r0,=0x40012008\nmovs r1,#1\nstr r1,[r0]\nldr r1,=0x40000001\nstr r1,[r0]\nldr r0,=0x40012000\nldr r2,[r0]\nldr r0,=0x4001204C\nldr r2,[r0]\nhalt:\nwfi\nb halt\n' > /tmp/st.s && arm-none-eabi-as -o /tmp/st.o /tmp/st.s && arm-none-eabi-ld -Ttext=0x08000000 -o /tmp/st.elf /tmp/st.o && timeout 5 qemu-system-arm -M netduinoplus2 -nographic -monitor none -serial null -kernel /tmp/st.elf -d unimp,guest_errors -trace 'memory_region_ops_*' -D /tmp/st.log; echo rc=$?; grep -v '^$' /tmp/st.log | head -n 20

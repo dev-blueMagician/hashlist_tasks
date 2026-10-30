@@ -1,0 +1,11 @@
+[
+  {"id":"build","statement":"The submitted implementation builds for qemu_cortex_m3.","points":2,"checks":["build"],"caught_by":[]},
+  {"id":"boot","statement":"The trusted application reaches its start marker on QEMU.","points":1,"checks":["boot"],"caught_by":[]},
+  {"id":"completion","statement":"The application completes all cases with exactly one well-formed report per case.","points":1,"checks":["completion"],"caught_by":[]},
+  {"id":"counts","statement":"The drain reports the correct item count for every case.","points":3,"checks":["counts"],"caught_by":["naive_a"]},
+  {"id":"sums","statement":"The drain reports the correct 32-bit sum for every case.","points":3,"checks":["sums"],"caught_by":["naive_a"]},
+  {"id":"fifo_order","statement":"The drain reports the correct 32-bit order checksum for every case.","points":3,"checks":["fifo_order"],"caught_by":["naive_a"]},
+  {"id":"drained","statement":"No queued messages remain after any drain call.","points":3,"checks":["drained"],"caught_by":["naive_a"]},
+  {"id":"return_codes","statement":"Every normal drain, including empty queues, returns zero.","points":1,"checks":["return_codes"],"caught_by":[]}
+]
+

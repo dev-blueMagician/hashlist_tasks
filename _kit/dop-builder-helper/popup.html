@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DOP Builder Helper</title>
+<style>
+  body { font: 13px/1.4 system-ui, sans-serif; width: 440px; margin: 12px; color: #1d1d1f; background: #fff; }
+  h1 { font-size: 14px; margin: 0 0 8px; }
+  h2 { font-size: 13px; margin: 16px 0 4px; }
+  button { font: inherit; padding: 4px 10px; margin-right: 6px; }
+  textarea { width: 100%; box-sizing: border-box; height: 110px; font: 12px/1.3 Consolas, monospace; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f5; padding: 6px; max-height: 260px; overflow: auto; margin: 8px 0 0; }
+  pre:empty { display: none; }
+  .hint { color: #555; margin: 4px 0 6px; }
+</style>
+</head>
+<body>
+<h1>DOP Builder Helper</h1>
+<button id="save">Save this page as text</button>
+<p class="hint">A save dialog opens. Choose the task's <code>author</code> folder.</p>
+
+<h2>Fill 5.4 Scored steps</h2>
+<p class="hint">Paste the steps file, press Preview, then Fill. Keep this box open until it finishes.</p>
+<textarea id="spec" spellcheck="false" placeholder='{"steps": [{"text": "...", "field": "card_io_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]}]}'></textarea>
+<div><button id="preview">Preview</button><button id="fill">Fill</button></div>
+<pre id="out"></pre>
+<script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+[
+  {
+    "id": "build",
+    "statement": "The submitted implementation compiles and links with the supplied Cortex-M3 startup and linker script.",
+    "points": 2,
+    "checks": [
+      "test_outputs.py::test_build"
+    ],
+    "caught_by": [],
+    "measure": {
+      "kind": "range",
+      "label": "build",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "boot",
+    "statement": "The firmware reaches app_main and emits its UART ready banner on the locked launcher.",
+    "points": 1,
+    "checks": [
+      "test_outputs.py::test_boot"
+    ],
+    "caught_by": [],
+    "measure": {
+      "kind": "range",
+      "label": "boot",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "completion",
+    "statement": "The firmware returns exactly one correctly framed UART response for each input request.",
+    "points": 1,
+    "checks": [
+      "test_outputs.py::test_completion"
+    ],
+    "caught_by": [],
+    "measure": {
+      "kind": "range",
+      "label": "completion",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "counts",
+    "statement": "Every queue drain reports the correct item count.",
+    "points": 3,
+    "checks": [
+      "test_outputs.py::test_counts"
+    ],
+    "caught_by": [
+      "naive_a"
+    ],
+    "measure": {
+      "kind": "range",
+      "label": "counts",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "sums",
+    "statement": "Every queue drain reports the correct 32-bit sum.",
+    "points": 3,
+    "checks": [
+      "test_outputs.py::test_sums"
+    ],
+    "caught_by": [
+      "naive_a"
+    ],
+    "measure": {
+      "kind": "range",
+      "label": "sums",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "fifo_order",
+    "statement": "Every queue drain reports the correct 32-bit FIFO order checksum.",
+    "points": 3,
+    "checks": [
+      "test_outputs.py::test_fifo_order"
+    ],
+    "caught_by": [
+      "naive_a"
+    ],
+    "measure": {
+      "kind": "range",
+      "label": "fifo_order",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "drained",
+    "statement": "Every queue is empty after the drain.",
+    "points": 3,
+    "checks": [
+      "test_outputs.py::test_drained"
+    ],
+    "caught_by": [
+      "naive_a"
+    ],
+    "measure": {
+      "kind": "range",
+      "label": "drained",
+      "lo": 1,
+      "hi": 1
+    }
+  },
+  {
+    "id": "return_codes",
+    "statement": "Every normal drain returns success, including initially empty queues.",
+    "points": 1,
+    "checks": [
+      "test_outputs.py::test_return_codes"
+    ],
+    "caught_by": [],
+    "measure": {
+      "kind": "range",
+      "label": "return_codes",
+      "lo": 1,
+      "hi": 1
+    }
+  }
+]

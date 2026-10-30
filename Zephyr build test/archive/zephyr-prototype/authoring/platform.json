@@ -1,0 +1,19 @@
+{
+  "task_id": "task-mvr8934a",
+  "environment_name": "Zephyr GHCR test (QEMU, nRF, STM32, ESP32)",
+  "pre_created": true,
+  "settings_locked": true,
+  "displayed_base": "debian:12-slim",
+  "cpu": 2,
+  "memory_gib": 2,
+  "disk_gib": 8,
+  "model_steps": 40,
+  "network": "off",
+  "text_task_root": "/app/data/task/",
+  "non_text_files_root": "/app/files/",
+  "locked_files": ["/app/data/run.sh", "/app/data/start.c", "/app/data/link.ld", "/app/data/uart.h"],
+  "provided_code": ["uart.h"],
+  "missing_code": ["run.sh", "start.c", "link.ld"],
+  "integration_status": "Layout adapted; actual build/startup integration awaits locked-file contents and environment validation.",
+  "run_button_effect": "Starts a model run and also submits the task for review."
+}

@@ -1,0 +1,56 @@
+{
+  "task_id": "task-mvr8934a",
+  "environment_name": "Zephyr GHCR test (QEMU, nRF, STM32, ESP32)",
+  "pre_created": true,
+  "settings_locked": true,
+  "displayed_base": "debian:12-slim",
+  "cpu": 2,
+  "memory_gib": 2,
+  "disk_gib": 8,
+  "model_steps": 40,
+  "network": "off",
+  "task_root": "/app/data/task/",
+  "non_text_files_root": "/app/files/",
+  "locked_files": [
+    "/app/data/run.sh",
+    "/app/data/start.c",
+    "/app/data/link.ld",
+    "/app/data/uart.h"
+  ],
+  "entry_point": "app_main",
+  "qemu_machine": "lm3s6965evb",
+  "implementation": "Complete single-file Cortex-M3 firmware; platform board.build compiles the answer and locked start.c.",
+  "original_brief_discrepancy": "The original brief asks for west/Zephyr; the supplied startup and launcher provide a bare-metal interface. This revision follows the user's supplied codebase; original west compliance has not been demonstrated.",
+  "run_button_effect": "Starts a model run and submits the task for review.",
+  "primary_artifact": "/app/data/task/firmware/pipeline.c",
+  "scoring_interface": "verifier/drive.py receives ELF, calls board(elf, data, expected), and prints numeric metric=value lines.",
+  "compile_inputs": "Answer source plus grader-owned start.c, link.ld and uart.h; no model task headers are mounted in the verifier.",
+  "runtime_python_available": false,
+  "runtime_build_command": "sh /app/data/task/build.sh",
+  "verification_evidence": {
+    "source": "User-supplied Verify page",
+    "gold_reward": 1.0,
+    "gold_strict_pass": true,
+    "near_miss_reward_displayed": 0.29,
+    "status": "GRADER SOUND"
+  },
+  "model_run_review": {
+    "source": "User-supplied expanded run page c825e200-8474-4007-ace6-69aebd69ed7b",
+    "attempts": [
+      1,
+      2,
+      7,
+      8
+    ],
+    "reported_scores": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "observed": "All four edited the drain correctly and built/tested the multi-file firmware. The runtime still held the old function-only starter and Python build helper.",
+    "answer_path_mismatch": "Ruled out by the system prompt in each transcript.",
+    "grading_stderr_available": false,
+    "diagnosis": "The model-visible multi-file starter is incompatible with single-file answer compilation; missing runtime Python is a second setup defect."
+  }
+}

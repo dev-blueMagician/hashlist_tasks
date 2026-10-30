@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "DOP Builder Helper",
+  "version": "1.0",
+  "description": "Save a Hashlist builder page as plain text, and fill the 5.4 scored-steps table from a steps file.",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "DOP Builder Helper"
+  },
+  "permissions": ["activeTab", "scripting", "downloads", "storage"]
+}

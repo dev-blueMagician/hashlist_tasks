@@ -1,0 +1,2 @@
+This changes the drain to a counted loop, but uses queue->count as the limit.
+Each pop reduces that count, so the loop stops before the queue is empty.

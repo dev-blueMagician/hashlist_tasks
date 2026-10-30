@@ -1,0 +1,10 @@
+cd /tmp/t && for f in starter gold naive_a; do for o in O0 O2 Os; do arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -$o -g -Wall -Wextra -ffreestanding -nostdlib -T /app/data/link.ld /app/data/start.c $f.c -o $f-$o.elf || echo BUILD-FAIL $f $o; done; done; arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -O2 -nostartfiles -T /app/data/link.ld /app/data/start.c gold.c -o gold-libc.elf || echo BUILD-FAIL libc; ls *.elf | wc -l
+cd /tmp/t && truncate -s 64M s.img && printf 'I\nR 9\n' | timeout 10 sh run-sd.sh gold-O2.elf s.img 2>&1 | cut -c1-40; sha256sum /tmp/lm3s6965-rcc-shim.bin; od -A x -t x1 /tmp/lm3s6965-rcc-shim.bin | head -3
+cd /tmp/t && for f in gold naive_a; do printf 'I\n' | timeout 10 qemu-system-arm -M lm3s6965evb -nographic -monitor none -chardev stdio,id=uart,mux=off,signal=off -serial chardev:uart -device loader,file=/tmp/lm3s6965-rcc-shim.bin,addr=0x2000FF00,force-raw=on -device loader,addr=0x2000FF01,cpu-num=0 -kernel $f-O2.elf -drive if=sd,format=raw,file=s.img -trace memory_region_ops_write -D $f-rcc.log >/dev/null 2>&1; echo "== $f"; grep -m 10 -E 'addr 0x400fe0(34|60|70) ' $f-rcc.log | sed 's/ mr 0x[0-9a-f]*//'; done
+cd /tmp/t && time timeout 300 python3 drive.py gold-O2.elf
+cd /tmp/t && timeout 300 python3 drive.py gold-Os.elf
+cd /tmp/t && timeout 300 python3 drive.py gold-O0.elf
+cd /tmp/t && timeout 300 python3 drive.py gold-libc.elf
+cd /tmp/t && timeout 300 python3 drive.py naive_a-O2.elf 2>&1 | grep -v -E '^oled_cs_ok: \[' | cut -c1-150 | head -40
+cd /tmp/t && timeout 300 python3 drive.py naive_a-Os.elf 2>/dev/null; timeout 300 python3 drive.py naive_a-O0.elf 2>/dev/null | tr '\n' ' '; echo
+cd /tmp/t && timeout 300 python3 drive.py starter-O2.elf 2>&1 | grep -v -E '^(oled_cs|clock|card_io)_ok: \[' | cut -c1-150

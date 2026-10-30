@@ -1,0 +1,10 @@
+{"steps": [
+  {"text": "While SSI0 sends data to the card, PA3 (the OLED chip select) is never the SSI0 frame signal and is never low.", "field": "oled_cs_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "The LDO voltage is raised to 2.75V before enabling the PLL to address the Rev A2 silicon errata", "field": "ldo_errata_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "The system clock is 50 MHz from the 8 MHz crystal through the PLL whenever the UART or SSI is in use, and the chip never runs from a disabled or misconfigured clock on the way there.", "field": "clock_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "At least 3 system clock cycles must pass after a peripheral's clock is enabled before the peripheral is accessed.", "field": "rcgc_delay_ok", "low": 1, "high": 1, "worth": 1, "wrong": []},
+  {"text": "Card identification runs at a frequency between 100 kHz and 400 kHz using an even prescaler value", "field": "id_clock_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "SSI0's clock settings (SSICR0 and SSICPSR) are written only while the port is disabled.", "field": "ssi_reconfig_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "Reading and writing work on version 1, standard and high-capacity cards. Every card is addressed correctly, and the UART and SPI speeds are within their limits.", "field": "card_io_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "When a different card is inserted and initialised again, identification runs at 100-400 kHz again and the new card reads correctly with its own addressing.", "field": "reinit_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]}
+]}

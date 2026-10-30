@@ -25,7 +25,7 @@
   function marks(el) {
     const m = [];
     if (el.getAttribute("data-on") === "true") m.push("(on)");
-    for (const a of ["aria-pressed", "aria-checked", "aria-selected"]) {
+    for (const a of ["aria-pressed", "aria-checked", "aria-selected", "aria-expanded"]) {
       const v = el.getAttribute(a);
       if (v !== null) m.push(`[${a.slice(5)}=${v}]`);
     }
@@ -91,11 +91,23 @@
     return found.length ? `${found[0][1]} ${found[0][2]}` : "";
   }
 
+  // Open tabs and expanded panels, so each copy of a page says which one it shows.
+  function openParts() {
+    const seen = new Set();
+    // File-tree folders also carry aria-expanded; they are not tabs.
+    const sel = '[aria-expanded="true"]:not([role="treeitem"]), [role="tab"][aria-selected="true"], details[open] > summary';
+    for (const el of document.querySelectorAll(sel)) {
+      const t = words(el).slice(0, 60);
+      if (t) seen.add(t);
+    }
+    return [...seen].slice(0, 12);
+  }
+
   function fileName(sec, now) {
     const slug = (sec || document.title || "page").toLowerCase()
       .replace(/[^a-z0-9.]+/g, "-").replace(/^[-.]+|[-.]+$/g, "").slice(0, 50) || "page";
     const p = (n) => String(n).padStart(2, "0");
-    const stamp = `${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}`;
+    const stamp = `${now.getFullYear()}${p(now.getMonth() + 1)}${p(now.getDate())}-${p(now.getHours())}${p(now.getMinutes())}${p(now.getSeconds())}`;
     return `${slug}-${stamp}.txt`;
   }
 
@@ -107,6 +119,7 @@
       `url: ${location.href}`,
       `title: ${document.title}`,
       `section: ${sec || "(not found)"}`,
+      `open: ${openParts().join(" | ") || "(no tab or panel marked open)"}`,
       `captured: ${now.toString()}`,
       "",
     ];

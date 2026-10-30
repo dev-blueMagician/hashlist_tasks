@@ -1,6 +1,11 @@
 const out = document.getElementById("out");
 const spec = document.getElementById("spec");
+const dest = document.getElementById("dest");
+const reset = document.getElementById("reset");
+const toggle = document.getElementById("toggle");
+const steps = document.getElementById("steps");
 const show = (text) => { out.textContent = text; };
+const helper = (mode) => chrome.windows.create({ url: `folder.html?mode=${mode}`, type: "popup", width: 460, height: 200 });
 
 // Runs func in the active tab after loading page.js there (activeTab grants access on click).
 async function inTab(func, args = []) {
@@ -10,20 +15,72 @@ async function inTab(func, args = []) {
   return res.result;
 }
 
-chrome.storage.local.get("spec").then((v) => { if (v.spec) spec.value = v.spec; });
-spec.addEventListener("input", () => chrome.storage.local.set({ spec: spec.value }));
+// ------------------------------------------------------------------ saving
 
-// The popup closes when the save dialog takes focus, so save.html does the saving.
+async function showDest() {
+  const dir = await folderStore.get();
+  dest.textContent = dir ? dir.name : "Downloads";
+  reset.hidden = !dir;
+}
+
+// No dialog: the file goes straight to Chrome's download folder.
+async function saveToDownloads(page) {
+  const url = URL.createObjectURL(new Blob([page.text], { type: "text/plain;charset=utf-8" }));
+  try {
+    const id = await chrome.downloads.download({ url, filename: page.name, saveAs: false, conflictAction: "uniquify" });
+    for (let i = 0; i < 100; i++) {
+      const [d] = await chrome.downloads.search({ id });
+      if (d && d.state === "complete") return `Saved ${d.filename.split(/[\\/]/).pop()} in Downloads.`;
+      if (d && d.state === "interrupted") return `Not saved: ${d.error}.`;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    return "Still saving. Check Chrome's downloads list.";
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
 document.getElementById("save").onclick = async () => {
   try {
     show("Reading the page...");
     const page = await inTab(() => globalThis.dopHelper.capture());
-    await chrome.storage.session.set({ page });
-    await chrome.windows.create({ url: "save.html", type: "popup", width: 480, height: 200 });
+    const dir = await folderStore.get();
+    if (!dir) {
+      show(await saveToDownloads(page));
+    } else if (await folderStore.allowed(dir, false)) {
+      await writeText(dir, page.name, page.text);
+      show(`Saved ${page.name} in ${dir.name}.`);
+    } else {
+      await chrome.storage.session.set({ page });
+      await helper("allow");
+    }
   } catch (e) {
-    show(`Could not read this page: ${e.message}`);
+    show(`Not saved: ${e.message}`);
   }
 };
+
+document.getElementById("choose").onclick = () => helper("choose");
+
+reset.onclick = async () => {
+  await folderStore.clear();
+  await showDest();
+  show("Pages will be saved in Downloads.");
+};
+
+showDest();
+
+// ---------------------------------------------------------- 5.4 steps area
+
+toggle.onclick = () => {
+  const open = steps.hidden;
+  steps.hidden = !open;
+  document.body.classList.toggle("wide", open);
+  toggle.setAttribute("aria-expanded", String(open));
+  toggle.textContent = open ? "Fill 5.4 steps ▾" : "Fill 5.4 steps ▸";
+};
+
+chrome.storage.local.get("spec").then((v) => { if (v.spec) spec.value = v.spec; });
+spec.addEventListener("input", () => chrome.storage.local.set({ spec: spec.value }));
 
 function render(r) {
   if (r.error && !r.before) return r.error;

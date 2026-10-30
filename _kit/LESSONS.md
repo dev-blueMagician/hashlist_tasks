@@ -6,6 +6,7 @@ Keep only lessons that change what is done next time. One or two lines each, wit
 
 - Before designing anything, run a first Try-the-box probe. Get tool versions, the generated board files, and whether the setup hook ran. Pull the grader's build command from the front-end bundle (see DOP-PLATFORM.md). (driver_peripheral)
 - Choose the board by what the emulator really models. QEMU stm32f405 leaves RCC, GPIO and DMA as unimplemented stubs, which read 0 and so hang polling loops. lm3s6965evb models sysctl, GPIO, UART, SSI with an SD card, and an OLED. (driver_peripheral)
+- Before Run, use Try the box to check that the model's box holds the current starter and every tool the prompt relies on. In `Zephyr build test`, four runs scored 0 for two reasons: the box still had an old multi-file starter, while the grader compiles one file, and it had no Python. (Zephyr build test)
 - Use Verify for every grader or prompt change. It is cheap, and it is the only real end-to-end route when the author has no hardware or local toolchain. Run only when the package is final, because Run submits. (driver_peripheral)
 
 ## Grader (drive.py)
@@ -35,7 +36,9 @@ Keep only lessons that change what is done next time. One or two lines each, wit
 
 ## Past tasks
 
-| Folder | Builder id | Brief | Shell / board | Status | Outcome |
-| --- | --- | --- | --- | --- | --- |
-| `driver_peripheral` | task-mvttqdbt | Driver and Peripheral Bring-up ($300) | Firmware on QEMU / lm3s6965evb | Submitted 2026-10-30, in review | Verify: gold 1.00, naive 0.13. Runs: mean 0.43. Reviewer verdict: pending. Grader fix prepared in `corrections/` |
-| `Zephyr build test` | not recorded | not recorded | locked firmware environment (see its README) | not recorded | not recorded |
+| Folder | Builder id | Title | Brief | Shell / board | Status | Outcome |
+| --- | --- | --- | --- | --- | --- | --- |
+| `driver_peripheral` | task-mvttqdbt | microSD bring-up on the EK-LM3S6965 | Driver and Peripheral Bring-up ($300) | Firmware on QEMU / lm3s6965evb | Submitted 2026-10-30, in review | Verify: gold 1.00, naive 0.13. Runs: mean 0.43. Reviewer verdict: pending. Grader and step-text fixes prepared in `corrections/` |
+| `Zephyr build test` | task-mvr8934a | Repair UART batch processing | "your own" (no listed brief) | Pre-created "Zephyr GHCR test" environment, settings locked; bare-metal firmware on QEMU lm3s6965evb | In review (dashboard 2026-10-30) | Verify: gold 1.00, near miss 0.29, GRADER SOUND. Runs 1, 2, 7 and 8 scored 0 because of a setup defect (see `authoring/platform.json`). Current package `dist/locked-firmware-v7/`; whether it was uploaded and run is not recorded. Reviewer verdict: pending |
+| `plc_debugger` | task-mvr6hgkn | not set | Control Logic and PLC Debugger | not chosen | Draft, taken 2026-10-27 | — |
+| `realtime_budget` | task-mvr6ixva | not set | Real-Time Budget Planner | not chosen | Draft, taken 2026-10-27 | — |

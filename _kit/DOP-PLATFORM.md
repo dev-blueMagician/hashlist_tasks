@@ -5,7 +5,8 @@ What the task builder at dop.hashlist.com did while authoring `task-mvttqdbt` (f
 ## Getting builder screens to Claude
 
 - Pasting a page's HTML truncates at about 50 000 characters (the editor CSS alone fills it). Instead, save the page from the browser as HTML into the task's `author/` folder and read it with `_kit/tools/html2txt.py`. It prints visible text plus input, textarea and select values and toggle states.
-- Since 2026-10-30 the user also has DOP Builder Helper (`_kit/dop-builder-helper/`), a Chrome extension. It saves the live page as text, with the same markers as html2txt, plus a scored-steps table on 5.4. Its live-page path is untested; see its README.
+- Since 2026-10-30 the user also has DOP Builder Helper (`_kit/dop-builder-helper/`), a Chrome extension. It saves the live page as text, with no dialog, to a chosen folder or to Downloads. The text has the same markers as html2txt, plus an `open:` line and, on 5.4, a scored-steps table. Its live-page path is untested; see its README.
+- Saved builder pages do not record the page address, so it is unknown whether builder URLs contain the task id.
 - A saved HTML page keeps a code box's text (drive.py) in the textarea's `value` attribute, not as its content.
 - An "Unsaved" label or a field that looks filled is not proof of saving. Compare saved pages or Try-the-box checksums with local files.
 
@@ -14,6 +15,14 @@ What the task builder at dop.hashlist.com did while authoring `task-mvttqdbt` (f
 1 Brief (1.1 What good looks like, 1.2 A worked example, 1.3 How a run works) · 2 Build settings (2.1 Shell, 2.2 Limits, 2.3 Internet, 2.4 Toolchain) · 3 Environment · 4 Prompt · 5 Golden set (5.1 Your steps, 5.2 Correct answer, 5.3 Common mistakes, 5.4 Scored steps) · 6 Verify · 7 Run.
 
 The dashboard lists briefs with a price per accepted task and their requirements. Example: "Driver and Peripheral Bring-up", $300, with gold scoring 1.0, the naive answer under 0.3, and 3 models × 6 trials.
+
+Dashboard as seen 2026-10-30 (user's screenshots):
+
+- **Briefs.** Driver and Peripheral Bring-up, Hardware and Electrical Design, Control Logic and PLC Debugger, Real-Time Budget Planner and Sensor Configuration Faults. Each pays "$300 / successful submission, est. $67–94 / hour", with "6 trials · 3 models · Several submissions allowed". There is also "Custom rate: Hardware / PCB / Electrical".
+- **"Your tasks."**
+  - The bold line is the task title from section 4. It matched the saved prompt title, and an untitled draft shows its builder id (`task-…`).
+  - The light line is the brief the task came from, or "your own".
+  - Status is Draft or In review.
 
 ## 2 Build settings
 

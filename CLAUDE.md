@@ -98,6 +98,8 @@ This folder holds one subfolder per task. Open the task's own folder in VS Code;
   - `make_probe.py`: Try-the-box command lists of at most 20 commands, with private files embedded.
   - `pdf2txt.py`: needs `pypdf` in a venv; `pdftotext` may exist only in the task box.
 
+Name a new task folder after its brief: two or three key words, lowercase, joined with underscores, as in `driver_peripheral`. Add `_2`, `_3` and so on when the same brief is taken again. Keep the builder id and the section 4 title in `TASK-NOTES.md` and in the past-tasks table. Never rename a folder once work has started: Claude Code files its sessions and memory under the folder path.
+
 A task folder without `TASK-NOTES.md` is a new task. At the start of a task:
 
 1. Read `DOP-PLATFORM.md` and `LESSONS.md`.
@@ -111,8 +113,10 @@ Earlier task folders are reference material only. Re-check anything taken from t
 Working with this user:
 
 - They save each builder page into `author/`, because pasting truncates long pages. A page comes either as a `.txt` file from the extension or as `.html`, which `html2txt.py` converts. They say when a page is saved.
+  - If the newest page is not in `author/`, look in their Downloads folder, the extension's default.
+  - Check that the page's title lines belong to this task, since every task's folder is called `author`.
 - A saved page that shows the reviewer's decision is the verdict, even if they don't say so. Record it as described below.
-- Go through the builder section by section as pages arrive. Give exact values to type or select, field by field. For 5.4, write `author/scored-steps.json` once the step texts are agreed. Check the page they save after Fill.
+- Go through the builder section by section as pages arrive. Give exact values to type or select, field by field. For 5.4, write `author/scored-steps.json` once the step texts are agreed. Show the same steps as a table in the reply, so they can be read before pasting. Check the page they save after Fill.
 - A 5.4 step text labels its check in task.json, the test file and Verify's table, and is probably what a reviewer reads. Compare every text, generated or written, with what its check measures. State each difference plainly. Never keep a text because it is "only a label". List the facts each text must keep, so the user can reword it safely; wording does not change a "value between" score.
 - They have no MCU hardware, so evidence comes from Try the box and Verify. They stated that AI assistance is allowed; re-check each brief's own rules.
 - They write step texts in their own words and want natural, plain sentences. Explain unfamiliar terms briefly.

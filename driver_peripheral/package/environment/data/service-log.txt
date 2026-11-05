@@ -1,0 +1,27 @@
+Pilot programme, service desk extract. Units on the current firmware.
+Copied from the ticket system as received: customer wording, nothing verified or reproduced.
+
+T-2291  P-07  Hamburg
+Moved from the 1 GB card in the kit to their own 16 GB cards. The host software now shows
+garbage where the log should be, and the file system on one card was found damaged. Their
+stock of older cards is a mix and "some are simply refused". All of them read fine in a laptop.
+
+T-2304  P-19  Lyon
+Terminal output unreadable since the unit arrived. New USB cable and a second PC, no change.
+Unit returned, see the capture below.
+
+T-2310  P-11  Lyon
+Same delivery as P-19. The terminal is fine, but about one card in three will not start.
+The cards that fail here work in P-12.
+
+T-2318  P-23  Graz
+Stopped logging over the weekend with nothing on the host. Carried on after a power cycle.
+The site had a power cut on Saturday; the customer thinks that is unrelated.
+
+Capture from returned unit P-19, service tool on JTAG, halted at reset before the firmware runs:
+
+    DID0     10010002    DID1     1073402E
+    DC0      00FF007F    DC1      001133FF    DC2      030F5317
+    RCC      078E3AD1    RCC2     07802810    LDOPCTL  00000000
+
+The other two returned units (P-04, P-26) read the same.

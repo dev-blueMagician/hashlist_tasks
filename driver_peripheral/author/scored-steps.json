@@ -1,0 +1,12 @@
+{"steps": [
+  {"text": "Whenever SSI0 sends a frame, PA3 (the OLED chip select) is not the SSI0 frame signal and is not driven low.", "field": "oled_cs_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "The LDO voltage is raised to 2.75V before enabling the PLL to address the Rev A2 silicon errata", "field": "ldo_errata_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "The system clock is 50 MHz from the 8 MHz crystal through the PLL whenever the UART or SSI is in use, and the chip never runs from a disabled or misconfigured clock on the way there.", "field": "clock_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "At least 3 system clock cycles must pass after a peripheral's clock is enabled before the peripheral is accessed.", "field": "rcgc_delay_ok", "low": 1, "high": 1, "worth": 1, "wrong": []},
+  {"text": "Card identification, including the power-up clocks before CMD0, runs between 100 kHz and 400 kHz, with the prescaler's lowest bit ignored as the hardware does.", "field": "id_clock_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "SSI0's clock settings (SSICR0 and SSICPSR) are written only while the port is disabled.", "field": "ssi_reconfig_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "Reading and writing work on version 1, standard and high-capacity cards, with the right card type reported and no stray writes. Card start-up follows the SD SPI rules, UART and SSI pins and clocks are set up before use, the UART runs at 115200 baud 8N1 within 2 %, and SPI data runs at 10-25 MHz.", "field": "card_io_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "When a different card is inserted and initialised again, identification runs at 100-400 kHz again and the new card reads correctly with its own addressing.", "field": "reinit_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "A block number past the end of the card gets an error on every card type, including numbers that would overflow a 32-bit byte address, and the low block such a number would wrap to is left unchanged.", "field": "range_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]},
+  {"text": "On a 16 GB high-capacity card, reads and writes work at block numbers with eight digits.", "field": "large_card_ok", "low": 1, "high": 1, "worth": 1, "wrong": ["naive_a"]}
+]}

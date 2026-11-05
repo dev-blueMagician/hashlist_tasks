@@ -1,0 +1,80 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/toolchain
+title: Hashlist Data Operations Platform
+section: 2.4 Toolchain
+open: (no tab or panel marked open)
+captured: Fri Oct 30 2026 15:44:38 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+task-mvr6ixva
+
+2.4
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+2.2 Limits
+
+2.3 Internet
+
+(on) (current) 2.4 Toolchain
+
+The shell the model works in, and how it is set up.
+
+2.4
+
+Toolchain
+
+(on) Describe it
+
+My own Dockerfile (optional)
+
+Language [select  = "Python"]
+
+Base image [input  = "gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263"]
+
+Packages apt names, or pip: prefixed, comma separated [input build-essential, pip:numpy = ""]
+
+environment/Dockerfile written from the form
+
+[textarea The Dockerfile]
+FROM gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263
+WORKDIR /app
+
+[/textarea]
+
+Try the box Template box, already checked
+Try the box
+
+Builds the box and runs these commands, one per line.
+
+[textarea Commands to run in the box]
+ls -la /app
+gcc --version | head -1
+[/textarea]
+
+Section done
+press Enter ↵
+

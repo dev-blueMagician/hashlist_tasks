@@ -1,0 +1,64 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/limits
+title: Hashlist Data Operations Platform
+section: 2.2 Limits
+open: (no tab or panel marked open)
+captured: Thu Nov 05 2026 00:55:35 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+2.2
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+(on) (current) 2.2 Limits
+
+2.3 Internet
+
+2.4 Toolchain [title: The box was tried and works]
+
+The shell the model works in, and how it is set up.
+
+2.2
+
+Limits
+
+CPU [select  = "1 core"]
+
+Memory [select  = "2 GiB"]
+
+Disk [select  = "4 GiB"]
+
+Grader timeout [select  = "15 minutes"]
+
+Step limit model turns [select  = "100 steps"]
+
+Working time [select Working time = "30 minutes"]Set by the template.
+
+Continue
+press Enter ↵
+

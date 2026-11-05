@@ -3,8 +3,9 @@
 Runs the built firmware with three microSD cards (SDHC, SDSC, SD v1) and once
 more with instruction tracing, talks to it over UART0, and evaluates the
 register writes QEMU logs against the datasheet, errata, board manual and the
-task requirements. Prints one metric=value line per check (1 pass, 0 fail);
-reasons go to stderr.
+task requirements. Short extra runs probe block numbers past the end of each
+card and block numbers with eight digits on a 16 GiB card. Prints one
+metric=value line per check (1 pass, 0 fail); reasons go to stderr.
 
 usage: python3 drive.py firmware.elf
 """
@@ -24,6 +25,15 @@ import time
 QEMU = os.environ.get("QEMU", "qemu-system-arm")
 BLOCK = 512
 
+# test_outputs.py kills this driver after 300 s, so every run is bounded:
+# worst case about 3 x (30 s + ~15 s parsing) + 4 x 12 s + 60 s. A correct firmware
+# needs a few seconds in total and writes about 2 MB of trace per functional run.
+RUN_BUDGET = 30                 # seconds per functional run
+PROBE_BUDGET = 12               # seconds per short extra run (range and large card)
+TIMING_BUDGET = 60              # seconds for the instruction-traced run
+TRACE_LIMIT = 64 << 20          # bytes of QEMU trace per functional run
+FEED_LIMIT = 1_000_000          # trace lines evaluated per functional run
+
 METRICS = [
     "card_io_ok",       # data, card type, SD SPI rules, pins, clock gating, UART, data-phase bit rate
     "clock_ok",         # 50 MHz from the 8 MHz crystal through the PLL; never an invalid clock
@@ -33,6 +43,8 @@ METRICS = [
     "oled_cs_ok",       # OLED chip select (PA3) never asserted while the SSI clocks frames
     "reinit_ok",        # a second card initialisation works and is again at 100-400 kHz
     "rcgc_delay_ok",    # >= 3 system clocks between a module clock enable and its first access
+    "range_ok",         # a block past the end of the card is refused on every card, nothing written
+    "large_card_ok",    # reads and writes at eight-digit block numbers on a 16 GiB card
 ]
 
 # ---------------------------------------------------------------- trace parsing
@@ -340,9 +352,12 @@ class Board:
         self.events.append((kind, cmd, arg, state, len(self.frames) - 1))
 
 
-def feed_file(board, path):
+def feed_file(board, path, max_lines=None):
+    """Replay a functional-run trace; False if it was cut at max_lines."""
     with open(path, errors="replace") as f:
-        for line in f:
+        for n, line in enumerate(f):
+            if max_lines is not None and n >= max_lines:
+                return False
             ev = parse_line(line)
             if ev is None:
                 continue
@@ -352,6 +367,7 @@ def feed_file(board, path):
                 board.sd_event(*ev)
             elif ev[0] == "wblk":
                 board.write_blocks.append(ev[1])
+    return True
 
 
 # ---------------------------------------------------------------- SD session analysis
@@ -469,8 +485,13 @@ RCC_SHIM = bytes.fromhex("034804490160042000680047" "00bf00bf" "60e00f40" "d13a8
 SHIM_ADDR = 0x2000FF00
 
 
+class TraceLimit(Exception):
+    pass
+
+
 class Qemu:
-    def __init__(self, elf, img, v1, log, errlog, timing=False, shim=None, qmp=None):
+    def __init__(self, elf, img, v1, log, errlog, timing=False, shim=None, qmp=None,
+                 budget=None, trace_limit=None):
         args = [QEMU, "-M", "lm3s6965evb", "-nographic", "-monitor", "none",
                 "-chardev", "stdio,id=uart,mux=off,signal=off", "-serial", "chardev:uart",
                 "-device", "loader,file=%s,addr=0x%08X,force-raw=on" % (shim, SHIM_ADDR),
@@ -485,6 +506,9 @@ class Qemu:
         if qmp:
             args += ["-qmp", "unix:%s,server=on,wait=off" % qmp]
         self.qmp_path = qmp
+        self.log = log
+        self.trace_limit = trace_limit
+        self.deadline = time.monotonic() + budget if budget else None
         self.err = open(errlog, "wb")
         self.p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
                                   stderr=self.err, bufsize=0)
@@ -521,13 +545,29 @@ class Qemu:
         self.p.stdin.write(text.encode() + b"\n")
         self.p.stdin.flush()
 
+    def check_trace(self):
+        if self.trace_limit is None:
+            return
+        try:
+            size = os.path.getsize(self.log)
+        except OSError:
+            return
+        if size > self.trace_limit:
+            raise TraceLimit("run stopped: more than %d MiB of bus trace (runaway loop?)"
+                             % (self.trace_limit >> 20))
+
     def line(self, timeout):
         end = time.monotonic() + timeout
+        if self.deadline is not None and self.deadline < end:
+            end, why = self.deadline, "run stopped: time budget used up"
+        else:
+            why = "no reply from the firmware"
         while b"\n" not in self.buf:
             left = end - time.monotonic()
             if left <= 0:
-                raise TimeoutError("no reply from the firmware")
-            r, _, _ = select.select([self.p.stdout], [], [], left)
+                raise TimeoutError(why)
+            self.check_trace()
+            r, _, _ = select.select([self.p.stdout], [], [], min(left, 0.5))
             if r:
                 chunk = os.read(self.p.stdout.fileno(), 65536)
                 if not chunk:
@@ -627,7 +667,8 @@ def functional_run(elf, work, name, rng, shim):
     io_errors = []
     reinit = ["second initialisation not reached"] if swap else []
     q = Qemu(elf, img, v1, log, os.path.join(work, name + ".err"), shim=shim,
-             qmp=os.path.join(work, name + ".qmp") if swap else None)
+             qmp=os.path.join(work, name + ".qmp") if swap else None,
+             budget=RUN_BUDGET, trace_limit=TRACE_LIMIT)
     try:
         q.expect_ready()
         q.send("I")
@@ -665,13 +706,14 @@ def functional_run(elf, work, name, rng, shim):
                 r = q.line(20)
                 if r != "DATA " + swap_content[lba].hex():
                     reinit.append("R %d on the swapped card -> wrong data (%s)" % (lba, r[:40]))
-    except (TimeoutError, EOFError, OSError, ValueError) as e:
+    except (TimeoutError, EOFError, OSError, ValueError, TraceLimit) as e:
         io_errors.append("%s" % e)
         if swap:
             reinit.append(str(e))
     finally:
         q.stop()
-    feed_file(board, log)
+    if not feed_file(board, log, FEED_LIMIT):
+        io_errors.append("trace evaluated up to line %d only" % FEED_LIMIT)
     for lba in writes:
         if read_card(img, lba) != content[lba]:
             io_errors.append("block %d not on the card after W" % lba)
@@ -702,13 +744,124 @@ def functional_run(elf, work, name, rng, shim):
     elif board.ldo_at_pll != 0x1B:
         board.note("ldo_errata_ok", "LDOPCTL=0x%02x when the PLL was powered up (need 0x1B, 2.75 V)"
                    % (board.ldo_at_pll or 0))
-    for path in (img, swap[0] if swap else None):
+    for path in (img, log, swap[0] if swap else None):
         try:
             if path:
                 os.remove(path)
         except OSError:
             pass
+    board.frames, board.events, board.write_blocks = [], [], []    # only the verdicts are kept
     return board
+
+
+# ---------------------------------------------------------------- short extra runs
+
+LARGE_CARD = 16 << 30           # the card size in the service log; a power of two, as QEMU requires
+
+
+def start_probe(elf, work, name, size, v1, content_lbas, rng, shim):
+    """A card with random content in the given blocks and firmware started on it."""
+    img = os.path.join(work, name + ".img")
+    content = make_card(img, size, rng, content_lbas)
+    q = Qemu(elf, img, v1, os.path.join(work, name + ".log"), os.path.join(work, name + ".err"),
+             shim=shim, budget=PROBE_BUDGET, trace_limit=TRACE_LIMIT)
+    return q, img, content
+
+
+def remove_probe(work, name):
+    for ext in (".img", ".log"):
+        try:
+            os.remove(os.path.join(work, name + ext))
+        except OSError:
+            pass
+
+
+def range_run(elf, work, name, rng, shim):
+    """Block numbers past the end of the card get ERR, on every card type; returns the reasons.
+
+    Block 2^23 + k has a byte address that wraps to block k in 32 bits, so a
+    byte-addressed card would answer with block k or overwrite it.
+    """
+    size, v1 = CARDS[name]
+    blocks = size // BLOCK
+    k = rng.randrange(1, 2048)
+    wrapping = (1 << 23) + k
+    bad = []
+    probe = "range-" + name
+    q, img, content = start_probe(elf, work, probe, size, v1, [k], rng, shim)
+    try:
+        q.expect_ready()
+        q.send("I")
+        reply = q.line(10)
+        if not reply.startswith("OK"):
+            bad.append("no card initialised (%r); rule not exercised" % reply[:40])
+        else:
+            for lba in (blocks, wrapping, 4294967295):
+                q.send("R %d" % lba)
+                r = q.line(10)
+                if not r.startswith("ERR"):
+                    bad.append("R %d on a card of %d blocks -> %r, expected ERR" % (lba, blocks, r[:40]))
+            data = bytes(rng.getrandbits(8) for _ in range(BLOCK))
+            for lba in (blocks, wrapping):
+                q.send("W %d %s" % (lba, data.hex()))
+                r = q.line(10)
+                if not r.startswith("ERR"):
+                    bad.append("W %d on a card of %d blocks -> %r, expected ERR" % (lba, blocks, r[:40]))
+            q.send("R %d" % k)                      # the card still works after the refusals
+            r = q.line(10)
+            if r != "DATA " + content[k].hex():
+                bad.append("R %d after the refused blocks -> wrong data (%s)" % (k, r[:40]))
+    except (TimeoutError, EOFError, OSError, ValueError, TraceLimit) as e:
+        bad.append(str(e))
+    finally:
+        q.stop()
+    if read_card(img, k) != content[k]:
+        bad.append("block %d overwritten by a write to block %d" % (k, wrapping))
+    remove_probe(work, probe)
+    return ["[%s] %s" % (name, b) for b in bad]
+
+
+def large_card_run(elf, work, rng, shim):
+    """Reads and writes at eight-digit block numbers on a 16 GiB card; returns the reasons."""
+    blocks = LARGE_CARD // BLOCK
+    r_lbas = [rng.randrange(10_000_000, 1 << 24), rng.randrange(1 << 24, blocks - 1)]
+    w_lbas = [lba + 1 for lba in r_lbas] + [blocks - 1]
+    bad = []
+    probe = "large"
+    q, img, content = start_probe(elf, work, probe, LARGE_CARD, False, r_lbas, rng, shim)
+    try:
+        q.expect_ready()
+        q.send("I")
+        reply = q.line(10)
+        if reply != "OK SDHC":
+            bad.append("I -> %r, expected 'OK SDHC'" % reply[:40])
+        else:
+            for lba in r_lbas:
+                q.send("R %d" % lba)
+                r = q.line(10)
+                if r != "DATA " + content[lba].hex():
+                    bad.append("R %d -> wrong data (%s)" % (lba, r[:40]))
+            for lba in w_lbas:
+                data = bytes(rng.getrandbits(8) for _ in range(BLOCK))
+                content[lba] = data
+                q.send("W %d %s" % (lba, data.hex()))
+                r = q.line(10)
+                if r != "OK":
+                    bad.append("W %d -> %r" % (lba, r[:40]))
+                q.send("R %d" % lba)
+                r = q.line(10)
+                if r != "DATA " + data.hex():
+                    bad.append("read-back of block %d after W wrong (%s)" % (lba, r[:40]))
+    except (TimeoutError, EOFError, OSError, ValueError, TraceLimit) as e:
+        bad.append(str(e))
+    finally:
+        q.stop()
+    if not bad:
+        for lba in w_lbas:
+            if read_card(img, lba) != content[lba]:
+                bad.append("block %d not on the card after W" % lba)
+    remove_probe(work, probe)
+    return bad
 
 
 # ---------------------------------------------------------------- timing run
@@ -763,7 +916,7 @@ class TimingModel:
                                  % (mod, between))
 
 
-def timing_run(elf, work, rng, shim, max_lines=60_000_000, max_time=240):
+def timing_run(elf, work, rng, shim, max_lines=60_000_000, max_time=TIMING_BUDGET):
     size, v1 = CARDS["SDSC"]
     img = os.path.join(work, "timing.img")
     make_card(img, size, rng, [])
@@ -786,7 +939,8 @@ def timing_run(elf, work, rng, shim, max_lines=60_000_000, max_time=240):
 
     t = threading.Thread(target=reader, daemon=True)
     t.start()
-    q = Qemu(elf, img, v1, fifo, os.path.join(work, "timing.err"), timing=True, shim=shim)
+    q = Qemu(elf, img, v1, fifo, os.path.join(work, "timing.err"), timing=True, shim=shim,
+             budget=max_time)
     note = None
     try:
         q.expect_ready(timeout=max_time / 2)
@@ -843,8 +997,11 @@ def main():
                 reasons[m].append("no card was ever initialised; rule not exercised")
         reasons["rcgc_delay_ok"] += model.viol
         reasons["card_io_ok"] += ["[timing] " + g for g in model.gating]
-        if tnote:
-            reasons["rcgc_delay_ok"].append(tnote)
+        for name in ("SDHC", "SDSC", "SDV1"):
+            reasons["range_ok"] += range_run(elf, work, name, rng, shim)
+        reasons["large_card_ok"] += large_card_run(elf, work, rng, shim)
+        if tnote:   # judged on what was traced; UART0 and SSI0 must still have been reached
+            print("info: %s" % tnote, file=sys.stderr)
         for m in METRICS:
             results[m] = 0 if reasons[m] else 1
     except Exception as e:                                  # no stale passes on any failure

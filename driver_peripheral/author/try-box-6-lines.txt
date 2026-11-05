@@ -1,0 +1,7 @@
+cd /tmp/t && for f in gold docs_only naive_a starter did_probe; do arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os -ffreestanding -fno-tree-loop-distribute-patterns -nostdlib -I/app/data -T /app/data/link.ld /app/data/start.c $f.c -lgcc -o $f.elf && echo built $f; done
+cd /tmp/t && s=$(date +%s); timeout 290 python3 drive.py gold.elf 2>gold.err; echo "gold exit $? in $(( $(date +%s)-s )) s"; cut -c1-220 gold.err | head -20
+cd /tmp/t && s=$(date +%s); timeout 290 python3 drive.py docs_only.elf 2>docs_only.err; echo "docs_only exit $? in $(( $(date +%s)-s )) s"; cut -c1-220 docs_only.err | head -20
+cd /tmp/t && s=$(date +%s); timeout 290 python3 drive.py naive_a.elf 2>naive_a.err; echo "naive_a exit $? in $(( $(date +%s)-s )) s"; cut -c1-220 naive_a.err | head -30
+cd /tmp/t && s=$(date +%s); timeout 290 python3 drive.py starter.elf 2>starter.err; echo "starter exit $? in $(( $(date +%s)-s )) s"; cut -c1-220 starter.err | head -30
+cd /tmp/t && truncate -s 64M c.img && timeout 3 sh /app/data/run-sd.sh did_probe.elf c.img </dev/null 2>/dev/null; echo "did_probe exit $?"
+cd /tmp/t && truncate -s 16G big.img && ls -ls big.img && df -h /tmp | tail -1 && rm -f big.img c.img

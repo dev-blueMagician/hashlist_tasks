@@ -1,8 +1,10 @@
-Read the board manual first: the card select is PD0, and PA3 is the OLED's chip select on the same SPI bus, so PA3 has to be a plain GPIO held high whenever the card is in use (checked by oled_cs_ok).
-Check the errata for revision A2 silicon and raise the LDO to 2.75 V before switching the PLL on (checked by ldo_errata_ok).
-Set up the 50 MHz clock the way the datasheet describes for this chip, remembering that the main oscillator is off after reset and has to be turned on before the PLL can use it (checked by clock_ok).
-After enabling a peripheral's clock, wait a few cycles before touching that peripheral, as the datasheet asks (checked by rcgc_delay_ok).
-Run the card identification at 100-400 kHz, choosing an even prescaler because the hardware ignores its lowest bit (checked by id_clock_ok).
-Turn the SPI port off before changing its clock settings and back on afterwards (checked by ssi_reconfig_ok).
-Tell old version 1 cards, standard cards and high-capacity cards apart, address each correctly, and keep the UART and SPI speeds within their limits, so reads and writes work on every card (checked by card_io_ok).
-Start every initialisation from the slow identification clock and detect the card again, so a newly inserted card works straight away (checked by reinit_ok).
+1. Read the board manual first and you will see that the card select is PD0, and PA3 is the OLED's chip select on the same SPI bus, which means that PA3 must be set as GPIO high when the card is active (check oled_cs_ok).
+2. Then calculate the silicon revision from the DID0 value in the service log (A2), look into the errata for that and increase the LDO to 2.75 V before turning on the PLL (check ldo_errata_ok).
+3. Set up the 50 MHz clock according to the description in the datasheet noting that the main oscillator is disabled after reset and thus has to be enabled in order for the PLL to use it (check clock_ok).
+4. Wait several cycles after clock enable of any peripheral according to the request in the datasheet (check rcgc_delay_ok).
+5. Run the card identification at frequencies from 100 to 400 kHz using even prescaler value since the hardware does not care about the lowest bit (check id_clock_ok).
+6. Turn the SPI port off before changing its clock settings and then enable it (check ssi_reconfig_ok).
+7. Distinguish between old version 1 cards, standard cards and high capacity cards, address all of them accordingly and make sure that UART and SPI rates stay within their allowed limits to ensure proper reading and writing on all cards (check card_io_ok).
+8. Begin each initialization from slow identification clock and detect the card again, so that the new card will work straight away (check reinit_ok).
+9. Answer a block number beyond the end of the card with an error for all types of cards. On a byte-addressed card, block 2^23 or higher would overflow the 32-bit address and reach a low block, so test for that before the command goes out (check range_ok).
+10. Test on a card of the same size as the ones in the service log, not only a small one. A write line with an eight-digit block number is longer than the prototype's line buffer, so those writes fail until the buffer is made big enough for a ten-digit block number (check large_card_ok).

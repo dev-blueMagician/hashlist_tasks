@@ -1,0 +1,7 @@
+Read the reset log: every task has TMON overruns, there are IWDG resets too, all resets happen with heavy CAN reception, and the IWDG resets come from units whose LSI runs fast.
+Take each task's WCET from the three reference traces as its largest net execution time: SpeedCtrl 150, CanComm 380, Monitor 780, Supervisor 240 and NvM 3900 us; and the interrupt WCETs: ADC 9.0, CAN1_RX0 52.0 and SysTick 3.0 us.
+See that TMON measures more than the net time when CAN frames arrive: the new CAN1_RX0_IRQHandler in can_if_glue.c has no TMON brackets, so its time is charged to the running job, and TAG-01 appendix A is out of date.
+Find the worst-case CAN interrupt rate: the bank 1 filter (0x7DF with mask 0x700) accepts every ID from 0x700 to 0x7FF, VN-07 allows those frames back to back, and the shortest 8-byte frame is 111 bit times at 500 kbit/s, 222 us, not the 1 ms spacing seen in the workshop trace.
+Compute each task's largest monitored time with TAG-01 section 3 (257, 539, 1150, 347 and 5533 us) and set each budget between that value and 25 % above it.
+Check with TAG-01 section 4 that every task still meets its deadline with the new budgets.
+Compute the longest gap between watchdog refreshes, 20 ms plus the Supervisor's response time, and choose the IWDG prescaler and reload so that the timeout is longer than that gap at the 47 kHz LSI maximum and no longer than 80 ms at the 17 kHz LSI minimum from the datasheet, for example prescaler 0 and reload 319.

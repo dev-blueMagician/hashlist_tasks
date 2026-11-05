@@ -1,0 +1,1551 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/fd343339-2a6c-4a57-bf7e-caf86870d0f2/checks
+title: Hashlist Data Operations Platform
+section: 5.4 Scored steps
+open: Scored steps
+captured: Tue Nov 03 2026 15:15:54 GMT-0500 (Eastern Standard Time)
+
+## Scored steps as the page shows them
+
+| Row | Step text | Checked by | Field | Lowest | Highest | Worth | Gets it wrong | Not marked |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | "Whenever SSI0 sends a frame, PA3 (the OLED chip select) is not the SSI0 frame signal and is not driven low." | a value between | "oled_cs_ok" | 1 | 1 | 1 | naive_a | none |
+| 2 | "The LDO voltage is raised to 2.75V before enabling the PLL to address the Rev A2 silicon errata" | a value between | "ldo_errata_ok" | 1 | 1 | 1 | naive_a | none |
+| 3 | "The system clock is 50 MHz from the 8 MHz crystal through the PLL whenever the UART or SSI is in use, and the chip never runs from a disabled or misconfigured clock on the way there." | a value between | "clock_ok" | 1 | 1 | 1 | naive_a | none |
+| 4 | "At least 3 system clock cycles must pass after a peripheral's clock is enabled before the peripheral is accessed." | a value between | "rcgc_delay_ok" | 1 | 1 | 1 | none | naive_a |
+| 5 | "Card identification, including the power-up clocks before CMD0, runs between 100 kHz and 400 kHz, with the prescaler's lowest bit ignored as the hardware does." | a value between | "id_clock_ok" | 1 | 1 | 1 | naive_a | none |
+| 6 | "SSI0's clock settings (SSICR0 and SSICPSR) are written only while the port is disabled." | a value between | "ssi_reconfig_ok" | 1 | 1 | 1 | naive_a | none |
+| 7 | "Reading and writing work on version 1, standard and high-capacity cards, with the right card type reported and no stray writes. Card start-up follows the SD SPI rules, UART and SSI pins and clocks are set up before use, the UART runs at 115200 baud 8N1 within 2 %, and SPI data runs at 10-25 MHz." | a value between | "card_io_ok" | 1 | 1 | 1 | naive_a | none |
+| 8 | "When a different card is inserted and initialised again, identification runs at 100-400 kHz again and the new card reads correctly with its own addressing." | a value between | "reinit_ok" | 1 | 1 | 1 | naive_a | none |
+| 9 | "A block number past the end of the card gets an error on every card type, including numbers that would overflow a 32-bit byte address, and the low block such a number would wrap to is left unchanged." | a value between | "range_ok" | 1 | 1 | 1 | naive_a | none |
+| 10 | "On a 16 GB high-capacity card, reads and writes work at block numbers with eight digits." | a value between | "large_card_ok" | 1 | 1 | 1 | naive_a | none |
+
+Save and exit
+microSD bring-up on the EK-LM3S6965
+
+5.4
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+(on) (current) 5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] starter
+
+firmware.c
+
+link.ld
+
+run-sd.sh
+
+run.sh
+
+service-log.txt
+
+start.c
+
+uart.h
+
+[expanded=true] files
+
+lm3s6965-datasheet.pdf
+
+spmu029-ek-lm3s6965-users-manual.pdf
+
+spmz860-stellaris-errata.pdf
+
+(on) [selected=true]
+Scored steps
+
+Hidden from the model
+[title: Full screen]
+
+Scored steps
+
+verifier/drive.py written
+Upload a file
+[file input ]
+
+[textarea The harness]
+"""Hidden driver: microSD bring-up on the EK-LM3S6965 (QEMU lm3s6965evb).
+
+Runs the built firmware with three microSD cards (SDHC, SDSC, SD v1) and once
+more with instruction tracing, talks to it over UART0, and evaluates the
+register writes QEMU logs against the datasheet, errata, board manual and the
+task requirements. Short extra runs probe block numbers past the end of each
+card and block numbers with eight digits on a 16 GiB card. Prints one
+metric=value line per check (1 pass, 0 fail); reasons go to stderr.
+
+usage: python3 drive.py firmware.elf
+"""
+import json
+import os
+import random
+import re
+import select
+import shutil
+import socket
+import subprocess
+import sys
+import tempfile
+import threading
+import time
+
+QEMU = os.environ.get("QEMU", "qemu-system-arm")
+BLOCK = 512
+
+# test_outputs.py kills this driver after 300 s, so every run is bounded:
+# worst case about 3 x (30 s + ~15 s parsing) + 4 x 12 s + 60 s. A correct firmware
+# needs a few seconds in total and writes about 2 MB of trace per functional run.
+RUN_BUDGET = 30                 # seconds per functional run
+PROBE_BUDGET = 12               # seconds per short extra run (range and large card)
+TIMING_BUDGET = 60              # seconds for the instruction-traced run
+TRACE_LIMIT = 64 << 20          # bytes of QEMU trace per functional run
+FEED_LIMIT = 1_000_000          # trace lines evaluated per functional run
+
+METRICS = [
+    "card_io_ok",       # data, card type, SD SPI rules, pins, clock gating, UART, data-phase bit rate
+    "clock_ok",         # 50 MHz from the 8 MHz crystal through the PLL; never an invalid clock
+    "ldo_errata_ok",    # LDO raised to 2.75 V before the PLL is powered (errata LM3SYSCTL#09)
+    "id_clock_ok",      # card identification at 100-400 kHz
+    "ssi_reconfig_ok",  # SSICR0/SSICPSR written only with SSE clear
+    "oled_cs_ok",       # OLED chip select (PA3) never asserted while the SSI clocks frames
+    "reinit_ok",        # a second card initialisation works and is again at 100-400 kHz
+    "rcgc_delay_ok",    # >= 3 system clocks between a module clock enable and its first access
+    "range_ok",         # a block past the end of the card is refused on every card, nothing written
+    "large_card_ok",    # reads and writes at eight-digit block numbers on a 16 GiB card
+]
+
+# ---------------------------------------------------------------- trace parsing
+
+RE_MEM = re.compile(r"^memory_region_ops_(read|write) cpu \d+ mr 0x[0-9a-f]+ addr 0x([0-9a-f]+) "
+                    r"value 0x([0-9a-f]+) size (\d+)")
+RE_EXEC = re.compile(r"^Trace \d+: 0x[0-9a-f]+ \[[0-9a-f]+/([0-9a-f]+)/")
+RE_CMD = re.compile(r"^sdcard_normal_command .*?CMD(\d+) arg 0x([0-9a-f]+) \(state (\w+)\)")
+RE_ACMD = re.compile(r"^sdcard_app_command .*?ACMD(\d+) arg 0x([0-9a-f]+) \(state (\w+)\)")
+RE_WBLK = re.compile(r"^sdcard_write_block addr 0x([0-9a-f]+) size 0x([0-9a-f]+)")
+
+def parse_line(line):
+    m = RE_MEM.match(line)
+    if m:
+        return (m.group(1)[0], int(m.group(2), 16), int(m.group(3), 16), int(m.group(4)))
+    m = RE_EXEC.match(line)
+    if m:
+        return ("x", int(m.group(1), 16))
+    m = RE_CMD.match(line)
+    if m:
+        return ("cmd", int(m.group(1)), int(m.group(2), 16), m.group(3))
+    m = RE_ACMD.match(line)
+    if m:
+        return ("acmd", int(m.group(1)), int(m.group(2), 16), m.group(3))
+    m = RE_WBLK.match(line)
+    if m:
+        return ("wblk", int(m.group(1), 16), int(m.group(2), 16))
+    return None
+
+# ---------------------------------------------------------------- board model
+
+SYSCTL = 0x400FE000
+GPIO_PORTS = {0x40004000: "A", 0x40005000: "B", 0x40006000: "C", 0x40007000: "D",
+              0x40024000: "E", 0x40025000: "F", 0x40026000: "G"}
+UART0 = 0x4000C000
+SSI0 = 0x40008000
+
+# (RCGC register offset, bit) -> module base; each module spans 4 KiB
+CLOCK_GATES = {
+    (0x104, 0): UART0, (0x104, 1): 0x4000D000, (0x104, 2): 0x4000E000,
+    (0x104, 4): SSI0, (0x104, 12): 0x40020000,
+    (0x104, 16): 0x40030000, (0x104, 17): 0x40031000, (0x104, 18): 0x40032000, (0x104, 19): 0x40033000,
+    (0x108, 0): 0x40004000, (0x108, 1): 0x40005000, (0x108, 2): 0x40006000, (0x108, 3): 0x40007000,
+    (0x108, 4): 0x40024000, (0x108, 5): 0x40025000, (0x108, 6): 0x40026000,
+    (0x100, 3): 0x40000000, (0x100, 16): 0x40038000,
+}
+GATE_OF = {base: key for key, base in CLOCK_GATES.items()}
+
+CRYSTAL_HZ = 8000000            # EK-LM3S6965 main crystal
+XTAL_8MHZ = 0xE
+MINSYSDIV = 3                   # 50 MHz part
+
+def module_of(addr):
+    base = addr & ~0xFFF
+    return base if base in GATE_OF else None
+
+class Clock:
+    """System clock per datasheet 5.2.4 (RCC/RCC2), as (valid, fmin, fmax, why)."""
+
+    def __init__(self):
+        self.rcc = 0x078E3AD1
+        self.rcc2 = 0x07802810
+
+    def fields(self):
+        rcc, rcc2 = self.rcc, self.rcc2
+        use2 = rcc2 >> 31 & 1
+        return {
+            "bypass": (rcc2 >> 11 & 1) if use2 else (rcc >> 11 & 1),
+            "pwrdn": (rcc2 >> 13 & 1) if use2 else (rcc >> 13 & 1),
+            "oscsrc": (rcc2 >> 4 & 7) if use2 else (rcc >> 4 & 3),
+            "sysdiv": (rcc2 >> 23 & 0x3F) if use2 else (rcc >> 23 & 0xF),
+            "usesysdiv": rcc >> 22 & 1,
+            "moscdis": rcc & 1,
+            "ioscdis": rcc >> 1 & 1,
+            "xtal": rcc >> 6 & 0xF,
+        }
+
+    def state(self):
+        f = self.fields()
+        if not f["bypass"]:
+            if f["pwrdn"]:
+                return (False, 0, 0, "PLL selected while powered down")
+            if f["oscsrc"] != 0:
+                return (False, 0, 0, "PLL reference is not the main oscillator")
+            if f["moscdis"]:
+                return (False, 0, 0, "PLL reference (main oscillator) is disabled (MOSCDIS=1)")
+            if f["xtal"] != XTAL_8MHZ:
+                return (False, 0, 0, "XTAL=0x%X does not match the 8 MHz crystal" % f["xtal"])
+            hz = 200e6 / (max(f["sysdiv"], MINSYSDIV) + 1)
+            return (True, hz, hz, "PLL")
+        src = f["oscsrc"]
+        if src == 0:
+            if f["moscdis"]:
+                return (False, 0, 0, "running from the main oscillator while it is disabled")
+            lo = hi = CRYSTAL_HZ
+        elif src == 1:
+            if f["ioscdis"]:
+                return (False, 0, 0, "running from the internal oscillator while it is disabled")
+            lo, hi = 12e6 * 0.7, 12e6 * 1.3
+        elif src == 2:
+            lo, hi = 3e6 * 0.7, 3e6 * 1.3
+        elif src == 3:
+            lo, hi = 30e3 * 0.5, 30e3 * 1.5
+        elif src == 7:
+            lo = hi = 32768
+        else:
+            return (False, 0, 0, "reserved oscillator source %d" % src)
+        if f["usesysdiv"]:
+            div = f["sysdiv"] + 1
+            lo, hi = lo / div, hi / div
+        return (True, lo, hi, "oscillator %d" % src)
+
+class Board:
+    """Register state reconstructed from the write trace, plus rule bookkeeping."""
+
+    def __init__(self, label):
+        self.label = label
+        self.clock = Clock()
+        self.ldopctl = 0
+        self.rcgc = {0x100: 0, 0x104: 0, 0x108: 0}
+        self.gpio = {p: {"data": 0, "dir": 0, "afsel": 0, "den": 0} for p in "ABCDEFG"}
+        self.uart = {"ibrd": 0, "fbrd": 0, "lib": 0, "lfb": 0, "lcrh": 0, "ctl": 0x300}
+        self.ssi = {"cr0": 0, "cr1": 0, "cpsr": 0}
+        self.viol = {m: [] for m in METRICS}
+        self.pll_used = False
+        self.pll_powered_once = False
+        self.ldo_at_pll = None
+        self.tx_bytes = 0
+        self.frames = []        # (index, value, card selected, lo_hz, hi_hz)
+        self.events = []        # ("frame", i) / ("cmd"/"acmd", cmd, arg, state, last_frame)
+        self.write_blocks = []
+        self.initialised = False
+
+    def note(self, metric, msg):
+        if len(self.viol[metric]) < 8:
+            self.viol[metric].append(msg)
+        elif len(self.viol[metric]) == 8:
+            self.viol[metric].append("...")
+
+    # -- helpers
+    def gated(self, base):
+        off, bit = GATE_OF[base]
+        return self.rcgc[off] >> bit & 1
+
+    def pin(self, port, bit):
+        g = self.gpio[port]
+        return {k: g[k] >> bit & 1 for k in g}
+
+    def sysclk(self):
+        return self.clock.state()
+
+    # -- writes
+    def write(self, addr, value):
+        if SYSCTL <= addr < SYSCTL + 0x1000:
+            self.write_sysctl(addr - SYSCTL, value)
+            return
+        mod = module_of(addr)
+        if mod is not None and not self.gated(mod):
+            self.note("card_io_ok", "write to 0x%08x before its module clock is enabled" % addr)
+        base = addr & ~0xFFF
+        if base in GPIO_PORTS:
+            self.write_gpio(GPIO_PORTS[base], addr - base, value)
+        elif base == UART0:
+            self.write_uart(addr - base, value)
+        elif base == SSI0:
+            self.write_ssi(addr - base, value)
+
+    def write_sysctl(self, off, value):
+        if off == 0x034:
+            self.ldopctl = value & 0x3F
+        elif off in (0x060, 0x070):
+            before = self.clock.fields()
+            if off == 0x060:
+                self.clock.rcc = value
+            else:
+                self.clock.rcc2 = value
+            after = self.clock.fields()
+            if before["pwrdn"] and not after["pwrdn"] and not self.pll_powered_once:
+                self.pll_powered_once = True
+                self.ldo_at_pll = self.ldopctl
+            if not after["bypass"]:
+                self.pll_used = True
+            ok, _, _, why = self.clock.state()
+            if not ok:
+                self.note("clock_ok", "invalid system clock after RCC%s write 0x%08x: %s"
+                          % ("2" if off == 0x070 else "", value, why))
+        elif off in self.rcgc:
+            self.rcgc[off] = value
+
+    def write_gpio(self, port, off, value):
+        g = self.gpio[port]
+        if off < 0x400:
+            mask = (off >> 2) & 0xFF & g["dir"]     # as QEMU's PL061: only output bits change
+            g["data"] = (g["data"] & ~mask) | (value & mask)
+        elif off == 0x400:
+            g["dir"] = value & 0xFF
+        elif off == 0x420:
+            g["afsel"] = value & 0xFF
+        elif off == 0x51C:
+            g["den"] = value & 0xFF
+
+    def write_uart(self, off, value):
+        u = self.uart
+        if off == 0x000:
+            self.check_tx()
+        elif off == 0x024:
+            u["ibrd"] = value & 0xFFFF
+        elif off == 0x028:
+            u["fbrd"] = value & 0x3F
+        elif off == 0x02C:
+            u["lcrh"] = value & 0xFF
+            u["lib"], u["lfb"] = u["ibrd"], u["fbrd"]   # divisor latched by the LCRH write
+        elif off == 0x030:
+            u["ctl"] = value
+
+    def check_tx(self):
+        self.tx_bytes += 1
+        u = self.uart
+        ok, lo, hi, why = self.sysclk()
+        if not ok:
+            self.note("card_io_ok", "UART byte sent with an invalid system clock (%s)" % why)
+        elif not (abs(lo - 50e6) <= 0.25e6 and abs(hi - 50e6) <= 0.25e6):
+            self.note("clock_ok", "UART output while the system clock is %.3f-%.3f MHz, not 50 MHz"
+                      % (lo / 1e6, hi / 1e6))
+        if not self.gated(UART0) or not self.gated(0x40004000):
+            self.note("card_io_ok", "UART0 or GPIOA clock not enabled while transmitting")
+        for bit, name in ((0, "PA0/U0RX"), (1, "PA1/U0TX")):
+            p = self.pin("A", bit)
+            if not (p["afsel"] and p["den"]):
+                self.note("card_io_ok", "%s not configured as UART (AFSEL/DEN)" % name)
+        if (u["ctl"] & 0x301) != 0x301:
+            self.note("card_io_ok", "UART0 not enabled for TX and RX (UARTCTL=0x%x)" % u["ctl"])
+        if (u["lcrh"] >> 5 & 3) != 3 or u["lcrh"] & 0x0B:
+            self.note("card_io_ok", "UART0 line control 0x%02x is not 8N1" % u["lcrh"])
+        brd = u["lib"] + u["lfb"] / 64.0
+        if ok:
+            if brd < 1:
+                self.note("card_io_ok", "UART0 baud-rate divisor never latched (no LCRH write after IBRD/FBRD)")
+            else:
+                for f in (lo, hi):
+                    baud = f / (16 * brd)
+                    if abs(baud - 115200) > 0.02 * 115200:
+                        self.note("card_io_ok", "UART0 at %.0f baud (latched divisor %.4f, sysclk %.2f MHz)"
+                                  % (baud, brd, f / 1e6))
+                        break
+
+    def write_ssi(self, off, value):
+        s = self.ssi
+        if off in (0x000, 0x010):
+            if s["cr1"] & 0x02:
+                self.note("ssi_reconfig_ok", "SSI%s written (0x%x) while SSE=1"
+                          % ("CR0" if off == 0 else "CPSR", value))
+            s["cr0" if off == 0 else "cpsr"] = value & (0xFFFF if off == 0 else 0xFF)
+        elif off == 0x004:
+            s["cr1"] = value & 0x0F
+        elif off == 0x008:
+            self.frame(value)
+
+    def frame(self, value):
+        s = self.ssi
+        idx = len(self.frames)
+        ok, lo, hi, why = self.sysclk()
+        cps = s["cpsr"] & 0xFE
+        scr = s["cr0"] >> 8 & 0xFF
+        if ok and cps >= 2:
+            div = cps * (1 + scr)
+            rlo, rhi = lo / div, hi / div
+        else:
+            rlo = rhi = -1.0
+        if not ok:
+            self.note("card_io_ok", "SSI frame with an invalid system clock (%s)" % why)
+        elif not (abs(lo - 50e6) <= 0.25e6 and abs(hi - 50e6) <= 0.25e6):
+            self.note("clock_ok", "SSI frame while the system clock is %.3f-%.3f MHz, not 50 MHz"
+                      % (lo / 1e6, hi / 1e6))
+        if not (s["cr1"] & 0x02) or s["cr1"] & 0x04:
+            self.note("card_io_ok", "SSI0 data written while not enabled as master (SSICR1=0x%x)" % s["cr1"])
+        if (s["cr0"] & 0x3F) not in (0x07,) or ((s["cr0"] >> 6) & 3) not in (0, 3):
+            self.note("card_io_ok", "SSI0 frame format SSICR0=0x%04x is not 8-bit SPI mode 0/3" % s["cr0"])
+        if ok and lo < 2 * rhi:
+            self.note("card_io_ok", "SSIClk %.0f Hz exceeds SysClk/2 in master mode" % rhi)
+        if not (self.gated(SSI0) and self.gated(0x40004000) and self.gated(0x40007000)):
+            self.note("card_io_ok", "SSI0/GPIOA/GPIOD clock not enabled while transferring")
+        for bit, name in ((2, "PA2/SSI0Clk"), (4, "PA4/SSI0Rx"), (5, "PA5/SSI0Tx")):
+            p = self.pin("A", bit)
+            if not (p["afsel"] and p["den"]):
+                self.note("card_io_ok", "%s not configured for SSI0 (AFSEL/DEN)" % name)
+        d0 = self.pin("D", 0)
+        selected = bool(d0["dir"] and not d0["data"])      # what QEMU's card sees on PD0
+        if selected and not (d0["den"] and not d0["afsel"]):
+            self.note("card_io_ok", "PD0 card select is not a digital GPIO output (DEN/AFSEL)")
+        a3 = self.pin("A", 3)
+        oled_sel = (a3["afsel"] and a3["den"]) or (not a3["afsel"] and a3["dir"] and a3["den"] and not a3["data"])
+        if oled_sel:
+            self.note("oled_cs_ok", "frame %d clocked with the OLED selected (PA3 %s)"
+                      % (idx, "is SSI0Fss" if a3["afsel"] else "driven low"))
+        self.frames.append((idx, value & 0xFF, selected, rlo, rhi))
+        self.events.append(("frame", idx))
+
+    def sd_event(self, kind, cmd, arg, state):
+        self.events.append((kind, cmd, arg, state, len(self.frames) - 1))
+
+def feed_file(board, path, max_lines=None):
+    """Replay a functional-run trace; False if it was cut at max_lines."""
+    with open(path, errors="replace") as f:
+        for n, line in enumerate(f):
+            if max_lines is not None and n >= max_lines:
+                return False
+            ev = parse_line(line)
+            if ev is None:
+                continue
+            if ev[0] == "w":
+                board.write(ev[1], ev[2])
+            elif ev[0] in ("cmd", "acmd"):
+                board.sd_event(*ev)
+            elif ev[0] == "wblk":
+                board.write_blocks.append(ev[1])
+    return True
+
+# ---------------------------------------------------------------- SD session analysis
+
+def crc7(data):
+    crc = 0
+    for byte in data:
+        for i in range(7, -1, -1):
+            bit = (byte >> i) & 1
+            top = (crc >> 6) & 1
+            crc = (crc << 1) & 0x7F
+            if bit ^ top:
+                crc ^= 0x09
+    return crc
+
+def sessions(board):
+    """Split the SD command events into initialisation sessions.
+
+    A session starts at a CMD0; repeated CMD0s with nothing between them belong
+    to the same session (drivers retry GO_IDLE_STATE).
+    """
+    out = []
+    cmds = [e for e in board.events if e[0] in ("cmd", "acmd")]
+    for e in cmds:
+        is_cmd0 = e[0] == "cmd" and e[1] == 0
+        if is_cmd0 and not (out and out[-1]["cmds"][-1][:2] == ("cmd", 0)):
+            out.append({"cmd0": e, "cmds": [e]})
+        elif out:
+            out[-1]["cmds"].append(e)
+    for s in out:
+        s["first_low"], s["high_start"] = select_bounds(board.frames, s["cmd0"][4] - 5)
+    for a, b in zip(out, out[1:]):
+        a["stop"] = b["high_start"]
+    return out
+
+def select_bounds(frames, cmd_first):
+    """Start of the selected run holding the command, and of the deselected run before it."""
+    first_low = max(cmd_first, 0)
+    while first_low > 0 and frames[first_low - 1][2]:
+        first_low -= 1
+    high_start = first_low
+    while high_start > 0 and not frames[high_start - 1][2]:
+        high_start -= 1
+    return first_low, high_start
+
+def session_checks(board, sess, need_hcs, metric_id, check_data_rate):
+    """Identification window, 74 clocks, CRC on CMD0/CMD8, HCS, data-phase bit rate."""
+    frames = board.frames
+    cmd0_last = sess["cmd0"][4]
+    cmd0_first = cmd0_last - 5
+    if cmd0_first < 0:
+        board.note("card_io_ok", "CMD0 without its six command bytes")
+        return
+    cmd_bytes = [frames[i][1] for i in range(cmd0_first, cmd0_last + 1)]
+    if cmd_bytes[5] != (crc7(cmd_bytes[:5]) << 1 | 1):
+        board.note("card_io_ok", "CMD0 sent with CRC byte 0x%02x" % cmd_bytes[5])
+    # deselected run before the frames that select the card for CMD0
+    first_low, high_start = sess["first_low"], sess["high_start"]
+    high = frames[high_start:first_low]
+    if len(high) < 10:
+        board.note("card_io_ok", "%d clocks with the card deselected before CMD0 (need >= 74)" % (8 * len(high)))
+    for fr in high[-10:]:
+        if not (fr[3] >= 100e3 and 0 < fr[4] <= 400e3):
+            board.note(metric_id, "power-up clocks before CMD0 at %.0f-%.0f Hz" % (fr[3], fr[4]))
+            break
+    # identification ends with the R1 of the ACMD41 that precedes the first transfer-state command
+    ready = None
+    seen_cmd8 = None
+    for e in sess["cmds"]:
+        if e[0] == "cmd" and e[1] == 8:
+            seen_cmd8 = e
+        if e[0] == "acmd" and e[1] == 41:
+            ready = e
+            if need_hcs and not (e[2] >> 30 & 1):
+                board.note("card_io_ok", "ACMD41 without HCS (arg 0x%08x) on a high-capacity card" % e[2])
+        if e[3] == "transfer":
+            break
+    if seen_cmd8 is not None:
+        last = seen_cmd8[4]
+        b = [frames[k][1] for k in range(last - 5, last + 1)]
+        if b[5] != (crc7(b[:5]) << 1 | 1):
+            board.note("card_io_ok", "CMD8 sent with CRC byte 0x%02x" % b[5])
+    # R1 of the successful ACMD41 comes two frames after its last command byte (QEMU ssi-sd);
+    # without one, the whole session counts as identification
+    end = ready[4] + 2 if ready is not None else sess.get("stop", len(frames)) - 1
+    for k in range(first_low, min(end, len(frames) - 1) + 1):
+        fr = frames[k]
+        if fr[2] and not (fr[3] >= 100e3 and 0 < fr[4] <= 400e3):
+            board.note(metric_id, "identification frame %d at %.0f-%.0f Hz" % (k, fr[3], fr[4]))
+            break
+    if check_data_rate:
+        data_cmds = [e for e in sess["cmds"] if e[0] == "cmd" and e[1] in (17, 24)]
+        if data_cmds:
+            start = data_cmds[0][4] - 5
+            stop = sess.get("stop", len(frames))          # up to the next session's power-up clocks
+            for k in range(start, stop):
+                fr = frames[k]
+                if fr[2] and not (fr[3] >= 10e6 and 0 < fr[4] <= 25e6):
+                    board.note("card_io_ok", "data-phase frame %d at %.0f-%.0f Hz (need 10-25 MHz)"
+                               % (k, fr[3], fr[4]))
+                    break
+
+# ---------------------------------------------------------------- QEMU and UART
+
+# QEMU resets RCC to 0x078E3AC0 (main oscillator on and selected); the silicon resets
+# it to 0x078E3AD1 (datasheet, RCC register). The CPU starts in this shim, which
+# writes the documented value and jumps to the reset vector, as run-sd.sh does, so
+# read-modify-write code sees what it would on the board.
+#   ldr r0,=0x400FE060; ldr r1,=0x078E3AD1; str r1,[r0]; movs r0,#4; ldr r0,[r0]; bx r0
+RCC_SHIM = bytes.fromhex("034804490160042000680047" "00bf00bf" "60e00f40" "d13a8e07")
+SHIM_ADDR = 0x2000FF00
+
+class TraceLimit(Exception):
+    pass
+
+class Qemu:
+    def __init__(self, elf, img, v1, log, errlog, timing=False, shim=None, qmp=None,
+                 budget=None, trace_limit=None):
+        args = [QEMU, "-M", "lm3s6965evb", "-nographic", "-monitor", "none",
+                "-chardev", "stdio,id=uart,mux=off,signal=off", "-serial", "chardev:uart",
+                "-device", "loader,file=%s,addr=0x%08X,force-raw=on" % (shim, SHIM_ADDR),
+                "-device", "loader,addr=0x%08X,cpu-num=0" % (SHIM_ADDR | 1),
+                "-kernel", elf, "-drive", "if=sd,format=raw,file=%s" % img,
+                "-trace", "memory_region_ops_write", "-trace", "sdcard_normal_command",
+                "-trace", "sdcard_app_command", "-trace", "sdcard_write_block", "-D", log]
+        if v1:
+            args += ["-global", "sd-card.spec_version=1"]
+        if timing:      # one instruction per block, every block logged: instruction counts
+            args += ["-singlestep", "-d", "nochain,exec", "-trace", "memory_region_ops_read"]
+        if qmp:
+            args += ["-qmp", "unix:%s,server=on,wait=off" % qmp]
+        self.qmp_path = qmp
+        self.log = log
+        self.trace_limit = trace_limit
+        self.deadline = time.monotonic() + budget if budget else None
+        self.err = open(errlog, "wb")
+        self.p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                  stderr=self.err, bufsize=0)
+        self.buf = b""
+
+    def swap_card(self, img, timeout=20):
+        """Replace the card in the slot (the SD model resets on insertion)."""
+        s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.settimeout(timeout)
+        s.connect(self.qmp_path)
+        f = s.makefile("rwb", buffering=0)
+
+        def call(cmd, **arguments):
+            msg = {"execute": cmd}
+            if arguments:
+                msg["arguments"] = arguments
+            f.write(json.dumps(msg).encode() + b"\n")
+            while True:
+                reply = json.loads(f.readline())
+                if "return" in reply:
+                    return reply["return"]
+                if "error" in reply:
+                    raise OSError("QMP %s: %s" % (cmd, reply["error"].get("desc")))
+
+        try:
+            json.loads(f.readline())                        # greeting
+            call("qmp_capabilities")
+            call("blockdev-change-medium", device="sd0", filename=img, format="raw")
+        finally:
+            f.close()
+            s.close()
+
+    def send(self, text):
+        self.p.stdin.write(text.encode() + b"\n")
+        self.p.stdin.flush()
+
+    def check_trace(self):
+        if self.trace_limit is None:
+            return
+        try:
+            size = os.path.getsize(self.log)
+        except OSError:
+            return
+        if size > self.trace_limit:
+            raise TraceLimit("run stopped: more than %d MiB of bus trace (runaway loop?)"
+                             % (self.trace_limit >> 20))
+
+    def line(self, timeout):
+        end = time.monotonic() + timeout
+        if self.deadline is not None and self.deadline < end:
+            end, why = self.deadline, "run stopped: time budget used up"
+        else:
+            why = "no reply from the firmware"
+        while b"\n" not in self.buf:
+            left = end - time.monotonic()
+            if left <= 0:
+                raise TimeoutError(why)
+            self.check_trace()
+            r, _, _ = select.select([self.p.stdout], [], [], min(left, 0.5))
+            if r:
+                chunk = os.read(self.p.stdout.fileno(), 65536)
+                if not chunk:
+                    raise EOFError("QEMU exited")
+                self.buf += chunk
+        out, self.buf = self.buf.split(b"\n", 1)
+        return out.decode(errors="replace").strip()
+
+    def expect_ready(self, timeout=20):
+        end = time.monotonic() + timeout
+        while True:
+            left = end - time.monotonic()
+            if self.line(max(left, 0.01)) == "READY":
+                return
+
+    def stop(self):
+        """SIGTERM first so QEMU flushes its log and the card image, then SIGKILL."""
+        if self.p.poll() is None:
+            self.p.terminate()
+            try:
+                self.p.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                self.p.kill()
+                self.p.wait(timeout=10)
+        for s in (self.p.stdin, self.p.stdout, self.err):
+            try:
+                s.close()
+            except OSError:
+                pass
+
+def make_card(path, size, rng, lbas):
+    """Sparse card image with random content in the given blocks."""
+    content = {}
+    with open(path, "wb") as f:
+        f.truncate(size)
+        for lba in lbas:
+            data = bytes(rng.getrandbits(8) for _ in range(BLOCK))
+            f.seek(lba * BLOCK)
+            f.write(data)
+            content[lba] = data
+    return content
+
+def read_card(path, lba):
+    with open(path, "rb") as f:
+        f.seek(lba * BLOCK)
+        return f.read(BLOCK)
+
+CARDS = {
+    "SDHC": (4 << 30, False),
+    "SDSC": (64 << 20, False),
+    "SDV1": (32 << 20, True),
+}
+
+def pick_lbas(rng, size, n_read, n_write):
+    blocks = size // BLOCK
+    bands = [(1, 2048), (2048, blocks // 2), (blocks // 2, blocks - 64), (blocks - 64, blocks)]
+    if blocks > (4 << 20):      # SDHC: make sure some blocks lie above the 2 GiB byte address
+        bands[1] = (2048, 1 << 22)
+        bands[2] = ((1 << 22) + 1, blocks - 64)
+    chosen = set()
+    reads, writes = [], []
+    for i in range(n_read):
+        lo, hi = bands[i % len(bands)]
+        while True:
+            lba = rng.randrange(lo, hi)
+            if lba not in chosen:
+                break
+        chosen.add(lba)
+        reads.append(lba)
+    for i in range(n_write):
+        lo, hi = bands[(i * 2 + 1) % len(bands)]
+        while True:
+            lba = rng.randrange(lo, hi)
+            if lba not in chosen:
+                break
+        chosen.add(lba)
+        writes.append(lba)
+    return reads, writes
+
+def functional_run(elf, work, name, rng, shim):
+    size, v1 = CARDS[name]
+    img = os.path.join(work, name + ".img")
+    log = os.path.join(work, name + ".log")
+    reads, writes = pick_lbas(rng, size, 4, 2)
+    content = make_card(img, size, rng, reads)
+    swap = None
+    if name == "SDHC":      # the SDHC card is later swapped for a standard-capacity one
+        swap_img = os.path.join(work, "swap.img")
+        swap_lbas, _ = pick_lbas(rng, CARDS["SDSC"][0], 2, 0)
+        swap = (swap_img, swap_lbas, make_card(swap_img, CARDS["SDSC"][0], rng, swap_lbas))
+    board = Board(name)
+    io_errors = []
+    reinit = ["second initialisation not reached"] if swap else []
+    q = Qemu(elf, img, v1, log, os.path.join(work, name + ".err"), shim=shim,
+             qmp=os.path.join(work, name + ".qmp") if swap else None,
+             budget=RUN_BUDGET, trace_limit=TRACE_LIMIT)
+    try:
+        q.expect_ready()
+        q.send("I")
+        reply = q.line(20)
+        if reply != "OK " + name:
+            io_errors.append("I -> %r, expected 'OK %s'" % (reply[:40], name))
+        if reply.startswith("OK"):
+            board.initialised = True
+        for lba in reads:
+            q.send("R %d" % lba)
+            r = q.line(20)
+            if r != "DATA " + content[lba].hex():
+                io_errors.append("R %d -> wrong data (%s)" % (lba, r[:40]))
+        for lba in writes:
+            data = bytes(rng.getrandbits(8) for _ in range(BLOCK))
+            content[lba] = data
+            q.send("W %d %s" % (lba, data.hex()))
+            r = q.line(20)
+            if r != "OK":
+                io_errors.append("W %d -> %r" % (lba, r[:40]))
+            q.send("R %d" % lba)
+            r = q.line(20)
+            if r != "DATA " + data.hex():
+                io_errors.append("read-back of block %d after W wrong (%s)" % (lba, r[:40]))
+        if swap:
+            reinit = []
+            swap_img, swap_lbas, swap_content = swap
+            q.swap_card(swap_img)
+            q.send("I")
+            r = q.line(20)
+            if r != "OK SDSC":
+                reinit.append("I after swapping in an SDSC card -> %r" % r[:40])
+            for lba in swap_lbas:
+                q.send("R %d" % lba)
+                r = q.line(20)
+                if r != "DATA " + swap_content[lba].hex():
+                    reinit.append("R %d on the swapped card -> wrong data (%s)" % (lba, r[:40]))
+    except (TimeoutError, EOFError, OSError, ValueError, TraceLimit) as e:
+        io_errors.append("%s" % e)
+        if swap:
+            reinit.append(str(e))
+    finally:
+        q.stop()
+    if not feed_file(board, log, FEED_LIMIT):
+        io_errors.append("trace evaluated up to line %d only" % FEED_LIMIT)
+    for lba in writes:
+        if read_card(img, lba) != content[lba]:
+            io_errors.append("block %d not on the card after W" % lba)
+    expected = {lba * BLOCK for lba in writes}
+    stray = sorted(set(board.write_blocks) - expected)
+    if stray:
+        io_errors.append("writes to unexpected card addresses %s" % [hex(a) for a in stray[:4]])
+    if board.tx_bytes == 0:
+        io_errors.append("no UART output")
+    for msg in io_errors:
+        board.note("card_io_ok", msg)
+    ses = sessions(board)
+    if not ses:
+        board.note("card_io_ok", "no CMD0 seen")
+        board.note("id_clock_ok", "no card initialisation seen")
+    else:
+        session_checks(board, ses[0], name == "SDHC", "id_clock_ok", True)
+        if swap:
+            if len(ses) < 2:
+                board.note("reinit_ok", "second initialisation not seen")
+            else:
+                session_checks(board, ses[1], False, "reinit_ok", False)
+    for msg in reinit:
+        board.note("reinit_ok", msg)
+    if not board.pll_used:
+        board.note("ldo_errata_ok", "the PLL is never used")
+        board.note("clock_ok", "the PLL is never used")
+    elif board.ldo_at_pll != 0x1B:
+        board.note("ldo_errata_ok", "LDOPCTL=0x%02x when the PLL was powered up (need 0x1B, 2.75 V)"
+                   % (board.ldo_at_pll or 0))
+    for path in (img, log, swap[0] if swap else None):
+        try:
+            if path:
+                os.remove(path)
+        except OSError:
+            pass
+    board.frames, board.events, board.write_blocks = [], [], []    # only the verdicts are kept
+    return board
+
+# ---------------------------------------------------------------- short extra runs
+
+LARGE_CARD = 16 << 30           # the card size in the service log; a power of two, as QEMU requires
+
+def start_probe(elf, work, name, size, v1, content_lbas, rng, shim):
+    """A card with random content in the given blocks and firmware started on it."""
+    img = os.path.join(work, name + ".img")
+    content = make_card(img, size, rng, content_lbas)
+    q = Qemu(elf, img, v1, os.path.join(work, name + ".log"), os.path.join(work, name + ".err"),
+             shim=shim, budget=PROBE_BUDGET, trace_limit=TRACE_LIMIT)
+    return q, img, content
+
+def remove_probe(work, name):
+    for ext in (".img", ".log"):
+        try:
+            os.remove(os.path.join(work, name + ext))
+        except OSError:
+            pass
+
+def range_run(elf, work, name, rng, shim):
+    """Block numbers past the end of the card get ERR, on every card type; returns the reasons.
+
+    Block 2^23 + k has a byte address that wraps to block k in 32 bits, so a
+    byte-addressed card would answer with block k or overwrite it.
+    """
+    size, v1 = CARDS[name]
+    blocks = size // BLOCK
+    k = rng.randrange(1, 2048)
+    wrapping = (1 << 23) + k
+    bad = []
+    probe = "range-" + name
+    q, img, content = start_probe(elf, work, probe, size, v1, [k], rng, shim)
+    try:
+        q.expect_ready()
+        q.send("I")
+        reply = q.line(10)
+        if not reply.startswith("OK"):
+            bad.append("no card initialised (%r); rule not exercised" % reply[:40])
+        else:
+            for lba in (blocks, wrapping, 4294967295):
+                q.send("R %d" % lba)
+                r = q.line(10)
+                if not r.startswith("ERR"):
+                    bad.append("R %d on a card of %d blocks -> %r, expected ERR" % (lba, blocks, r[:40]))
+            data = bytes(rng.getrandbits(8) for _ in range(BLOCK))
+            for lba in (blocks, wrapping):
+                q.send("W %d %s" % (lba, data.hex()))
+                r = q.line(10)
+                if not r.startswith("ERR"):
+                    bad.append("W %d on a card of %d blocks -> %r, expected ERR" % (lba, blocks, r[:40]))
+            q.send("R %d" % k)                      # the card still works after the refusals
+            r = q.line(10)
+            if r != "DATA " + content[k].hex():
+                bad.append("R %d after the refused blocks -> wrong data (%s)" % (k, r[:40]))
+    except (TimeoutError, EOFError, OSError, ValueError, TraceLimit) as e:
+        bad.append(str(e))
+    finally:
+        q.stop()
+    if read_card(img, k) != content[k]:
+        bad.append("block %d overwritten by a write to block %d" % (k, wrapping))
+    remove_probe(work, probe)
+    return ["[%s] %s" % (name, b) for b in bad]
+
+def large_card_run(elf, work, rng, shim):
+    """Reads and writes at eight-digit block numbers on a 16 GiB card; returns the reasons."""
+    blocks = LARGE_CARD // BLOCK
+    r_lbas = [rng.randrange(10_000_000, 1 << 24), rng.randrange(1 << 24, blocks - 1)]
+    w_lbas = [lba + 1 for lba in r_lbas] + [blocks - 1]
+    bad = []
+    probe = "large"
+    q, img, content = start_probe(elf, work, probe, LARGE_CARD, False, r_lbas, rng, shim)
+    try:
+        q.expect_ready()
+        q.send("I")
+        reply = q.line(10)
+        if reply != "OK SDHC":
+            bad.append("I -> %r, expected 'OK SDHC'" % reply[:40])
+        else:
+            for lba in r_lbas:
+                q.send("R %d" % lba)
+                r = q.line(10)
+                if r != "DATA " + content[lba].hex():
+                    bad.append("R %d -> wrong data (%s)" % (lba, r[:40]))
+            for lba in w_lbas:
+                data = bytes(rng.getrandbits(8) for _ in range(BLOCK))
+                content[lba] = data
+                q.send("W %d %s" % (lba, data.hex()))
+                r = q.line(10)
+                if r != "OK":
+                    bad.append("W %d -> %r" % (lba, r[:40]))
+                q.send("R %d" % lba)
+                r = q.line(10)
+                if r != "DATA " + data.hex():
+                    bad.append("read-back of block %d after W wrong (%s)" % (lba, r[:40]))
+    except (TimeoutError, EOFError, OSError, ValueError, TraceLimit) as e:
+        bad.append(str(e))
+    finally:
+        q.stop()
+    if not bad:
+        for lba in w_lbas:
+            if read_card(img, lba) != content[lba]:
+                bad.append("block %d not on the card after W" % lba)
+    remove_probe(work, probe)
+    return bad
+
+# ---------------------------------------------------------------- timing run
+
+class TimingModel:
+    """Instruction-accurate check of the 3-system-clock rule after RCGCn writes."""
+
+    def __init__(self):
+        self.insn = 0
+        self.rcgc = {0x100: 0, 0x104: 0, 0x108: 0}
+        self.pending = {}           # module base -> (insn index of the enabling write, saw sysctl read)
+        self.viol = []
+        self.gating = []
+        self.accessed = set()       # modules accessed after their clock enable
+        self.lines = 0
+
+    def on(self, ev):
+        self.lines += 1
+        if ev[0] == "x":
+            self.insn += 1
+            return
+        if ev[0] not in ("r", "w"):
+            return
+        addr = ev[1]
+        if SYSCTL <= addr < SYSCTL + 0x1000:
+            off = addr - SYSCTL
+            if ev[0] == "r":
+                for base in self.pending:
+                    self.pending[base] = (self.pending[base][0], True)
+            elif off in self.rcgc:
+                new = ev[2] & ~self.rcgc[off]
+                self.rcgc[off] = ev[2]
+                for (o, bit), base in CLOCK_GATES.items():
+                    if o == off and new >> bit & 1:
+                        self.pending[base] = (self.insn, False)
+            return
+        mod = module_of(addr)
+        if mod is None:
+            return
+        off, bit = GATE_OF[mod]
+        if not (self.rcgc[off] >> bit & 1):
+            if len(self.gating) < 4:
+                self.gating.append("%s of 0x%08x before its module clock is enabled"
+                                   % ("read" if ev[0] == "r" else "write", addr))
+            return
+        self.accessed.add(mod)
+        if mod in self.pending:
+            at, sysread = self.pending.pop(mod)
+            between = self.insn - at - 1
+            if between < 3 and not sysread:
+                self.viol.append("module 0x%08x accessed %d instruction(s) after its clock enable"
+                                 % (mod, between))
+
+def timing_run(elf, work, rng, shim, max_lines=60_000_000, max_time=TIMING_BUDGET):
+    size, v1 = CARDS["SDSC"]
+    img = os.path.join(work, "timing.img")
+    make_card(img, size, rng, [])
+    fifo = os.path.join(work, "timing.fifo")
+    os.mkfifo(fifo)
+    model = TimingModel()
+    done = threading.Event()
+
+    def reader():
+        try:
+            with open(fifo, errors="replace") as f:
+                for line in f:
+                    ev = parse_line(line)
+                    if ev is not None:
+                        model.on(ev)
+                    if model.lines >= max_lines or done.is_set():
+                        break
+        except OSError:
+            pass
+
+    t = threading.Thread(target=reader, daemon=True)
+    t.start()
+    q = Qemu(elf, img, v1, fifo, os.path.join(work, "timing.err"), timing=True, shim=shim,
+             budget=max_time)
+    note = None
+    try:
+        q.expect_ready(timeout=max_time / 2)
+        q.send("I")
+        q.line(max_time / 2)
+    except (TimeoutError, EOFError, OSError) as e:
+        note = "timing run: %s" % e
+    finally:
+        done.set()
+        q.stop()
+        t.join(timeout=30)
+    for base, name in ((UART0, "UART0"), (SSI0, "SSI0")):
+        if base not in model.accessed:
+            model.viol.append("%s was never enabled and accessed in the timing run" % name)
+    return model, note
+
+# ---------------------------------------------------------------- main
+
+def find_elf(path):
+    """The built image: the path itself, or the ELF file inside it if it is a directory."""
+    if os.path.isdir(path):
+        for root, _, files in os.walk(path):
+            for name in sorted(files):
+                cand = os.path.join(root, name)
+                with open(cand, "rb") as f:
+                    if f.read(4) == b"\x7fELF":
+                        return cand
+        raise FileNotFoundError("no ELF image under %s" % path)
+    if not os.path.isfile(path):
+        raise FileNotFoundError("firmware image %s not found" % path)
+    return path
+
+def main():
+    elf = sys.argv[1] if len(sys.argv) > 1 else os.environ.get("FIRMWARE_ELF", "/out/firmware.elf")
+    results = {m: 0 for m in METRICS}
+    reasons = {m: [] for m in METRICS}
+    work = tempfile.mkdtemp(prefix="sdgrade-")
+    rng = random.Random(os.urandom(16))
+    try:
+        elf = find_elf(elf)
+        shim = os.path.join(work, "rcc-reset-shim.bin")
+        with open(shim, "wb") as f:
+            f.write(RCC_SHIM)
+        boards = [functional_run(elf, work, name, rng, shim) for name in ("SDHC", "SDSC", "SDV1")]
+        model, tnote = timing_run(elf, work, rng, shim)
+        for m in METRICS:
+            for b in boards:
+                reasons[m] += ["[%s] %s" % (b.label, v) for v in b.viol[m]]
+        # rules about the SSI and the card bus only count if the firmware drove a card at all
+        if not any(b.initialised for b in boards):
+            for m in ("id_clock_ok", "ssi_reconfig_ok", "oled_cs_ok", "reinit_ok"):
+                reasons[m].append("no card was ever initialised; rule not exercised")
+        reasons["rcgc_delay_ok"] += model.viol
+        reasons["card_io_ok"] += ["[timing] " + g for g in model.gating]
+        for name in ("SDHC", "SDSC", "SDV1"):
+            reasons["range_ok"] += range_run(elf, work, name, rng, shim)
+        reasons["large_card_ok"] += large_card_run(elf, work, rng, shim)
+        if tnote:   # judged on what was traced; UART0 and SSI0 must still have been reached
+            print("info: %s" % tnote, file=sys.stderr)
+        for m in METRICS:
+            results[m] = 0 if reasons[m] else 1
+    except Exception as e:                                  # no stale passes on any failure
+        for m in METRICS:
+            results[m] = 0
+            reasons[m].append("driver error: %r" % (e,))
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    for m in METRICS:
+        print("%s=%d" % (m, results[m]))
+    for m in METRICS:
+        for r in reasons[m]:
+            print("%s: %s" % (m, r), file=sys.stderr)
+    sys.stdout.flush()
+
+if __name__ == "__main__":
+    main()
+
+[/textarea]
+
+Board: Stellaris LM3S6965 · Cortex-M3, QEMU machine lm3s6965evb.
+
+Withheld. The firmware is built from the agent's /app/firmware.c and this is run with the image as its one argument. It has board(elf, bytes, expected) to put bytes on the UART, and every line it prints as metric=value is a field a check below can hold to a budget.
+
+Generate checks from your steps
+Drafts scored steps from what you wrote.
+
+1
+
+Prompt
+
+Our data logger is built on the EK-LM3S6965 evaluation board. Its firmware, `/app/firmware.c`, serves the board's microSD card to a host over UART0 (the virtual COM port). The header comment in that file describes the host protocol, and the host software depends on it.
+
+The firmware is still the bench prototype, and 30 pilot units are running it. Some have worked for weeks and others can't be used at all. What the service desk has so far, including a capture from a returned unit, is in `/app/data/service-log.txt`. Nobody has reproduced any of it here.
+
+Bring the firmware up to the product requirements:
+
+- System clock 50 MHz from the board's 8 MHz crystal through the PLL.
+- UART0 at 115200 baud, 8N1, within ±2 % on every unit.
+- The microSD card in SPI mode on SSI0, wired as on the board. Card identification at 100–400 kHz, data transfers at 10–25 MHz.
+- SDSC, SDHC and version 1.x cards, including a card swapped in and initialised again with `I`.
+
+The board documentation is in `/app/files`: the LM3S6965 datasheet, the Stellaris errata (SPMZ860) and the EK-LM3S6965 user's manual. `pdftotext` is installed. The QEMU board model executes the firmware but does not model the clock tree, bus timing or pin functions.
+
+Build in `/app/build` with the same command the release build uses:
+
+    cd /app/build
+    arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os -ffreestanding -fno-tree-loop-distribute-patterns -nostdlib -I/app/data -T /app/data/link.ld /app/data/start.c /app/firmware.c -lgcc -o firmware.elf
+
+Run with a card in the slot: `sh /app/data/run-sd.sh firmware.elf card.img [v1]`. Its header explains the card images and types. `/app/data/run.sh` runs the board without a card.
+
+Deliver the corrected `/app/firmware.c`. Only that file is collected; keep `app_main` and the host protocol.
+
+2
+
+Step [input Step 2 = "Whenever SSI0 sends a frame, PA3 (the OLED chip select) is not the SSI0 frame signal and is not driven low."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 2: the field it reads = "oled_cs_ok"][input Step 2: lowest accepted = "1"]and [input Step 2: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+3
+
+Step [input Step 3 = "The LDO voltage is raised to 2.75V before enabling the PLL to address the Rev A2 silicon errata"]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 3: the field it reads = "ldo_errata_ok"][input Step 3: lowest accepted = "1"]and [input Step 3: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+4
+
+Step [input Step 4 = "The system clock is 50 MHz from the 8 MHz crystal through the PLL whenever the UART or SSI is in use, and the chip never runs from a disabled or misconfigured clock on the way there."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 4: the field it reads = "clock_ok"][input Step 4: lowest accepted = "1"]and [input Step 4: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+5
+
+Step [input Step 5 = "At least 3 system clock cycles must pass after a peripheral's clock is enabled before the peripheral is accessed."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 5: the field it reads = "rcgc_delay_ok"][input Step 5: lowest accepted = "1"]and [input Step 5: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+[pressed=false] [title: naive_a] naive_a
+
+×
+
+6
+
+Step [input Step 6 = "Card identification, including the power-up clocks before CMD0, runs between 100 kHz and 400 kHz, with the prescaler's lowest bit ignored as the hardware does."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 6: the field it reads = "id_clock_ok"][input Step 6: lowest accepted = "1"]and [input Step 6: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+7
+
+Step [input Step 7 = "SSI0's clock settings (SSICR0 and SSICPSR) are written only while the port is disabled."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 7: the field it reads = "ssi_reconfig_ok"][input Step 7: lowest accepted = "1"]and [input Step 7: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+8
+
+Step [input Step 8 = "Reading and writing work on version 1, standard and high-capacity cards, with the right card type reported and no stray writes. Card start-up follows the SD SPI rules, UART and SSI pins and clocks are set up before use, the UART runs at 115200 baud 8N1 within 2 %, and SPI data runs at 10-25 MHz."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 8: the field it reads = "card_io_ok"][input Step 8: lowest accepted = "1"]and [input Step 8: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+9
+
+Step [input Step 9 = "When a different card is inserted and initialised again, identification runs at 100-400 kHz again and the new card reads correctly with its own addressing."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 9: the field it reads = "reinit_ok"][input Step 9: lowest accepted = "1"]and [input Step 9: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+10
+
+Step [input Step 10 = "A block number past the end of the card gets an error on every card type, including numbers that would overflow a 32-bit byte address, and the low block such a number would wrap to is left unchanged."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 10: the field it reads = "range_ok"][input Step 10: lowest accepted = "1"]and [input Step 10: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
+11
+
+Step [input Step 11 = "On a 16 GB high-capacity card, reads and writes work at block numbers with eight digits."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 11: the field it reads = "large_card_ok"][input Step 11: lowest accepted = "1"]and [input Step 11: highest accepted = "1"]
+
+Worth
+[disabled] −
+1
++
+point, 10% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+×
+
++ Add a step
+
+3 to 20 steps: 10 written, 10 points.
+
+12
+
+End result
+
+what the checks accept
+oled_cs_ok: 1
+ldo_errata_ok: 1
+clock_ok: 1
+rcgc_delay_ok: 1
+id_clock_ok: 1
+ssi_reconfig_ok: 1
+card_io_ok: 1
+reinit_ok: 1
+range_ok: 1
+large_card_ok: 1
+
+See the checks file this writes verifier/test_outputs.py
+
+[textarea The generated checks file]
+# generated from the criteria in task.json. Edits here are overwritten.
+"""The withheld suite. One test per thing you are checking."""
+import subprocess
+from functools import cache
+from pathlib import Path
+
+from board import build   # the grader's own, for what this task is on
+
+SOLUTION = Path("/app/firmware.c")
+DRIVER = Path("/tests/drive.py")
+
+@cache
+def _run() -> tuple[bool, str]:
+    """Build the answer and run the driver on it, once for every check."""
+    built = build(str(SOLUTION), "/tmp/built")
+    if built.returncode != 0:
+        return False, built.stdout + built.stderr
+    run = subprocess.run(["python3", str(DRIVER), "/tmp/built"], capture_output=True, text=True, timeout=300)
+    return True, run.stdout
+
+# label -> (low, high): the band you would accept from a colleague.
+EXPECTED = {
+    "oled_cs_ok": (1, 1),
+    "ldo_errata_ok": (1, 1),
+    "clock_ok": (1, 1),
+    "rcgc_delay_ok": (1, 1),
+    "id_clock_ok": (1, 1),
+    "ssi_reconfig_ok": (1, 1),
+    "card_io_ok": (1, 1),
+    "reinit_ok": (1, 1),
+    "range_ok": (1, 1),
+    "large_card_ok": (1, 1),
+}
+
+def _lines() -> dict[str, str]:
+    """Parse `metric=value` or `metric: value` lines. Nothing here judges the answer."""
+    built, text = _run()
+    out = {}
+    for line in (text if built else "").splitlines():
+        sep = "=" if "=" in line else ":" if ":" in line else None
+        if sep is None:
+            continue
+        label, _, value = line.partition(sep)
+        out.setdefault(label.strip(), value.strip())    # the first value wins, as ConstraintBench reads it
+    return out
+
+def _reported() -> dict[str, float]:
+    out = {}
+    for label, value in _lines().items():
+        # a number is a number: 256, 256.0 and 1.25e-3 as float reads them, 0x100 as int(x, 0) does
+        for read in (float, lambda v: int(v, 0)):
+            try:
+                out[label] = read(value)
+                break
+            except ValueError:
+                continue
+    return out
+
+# --- format: did it follow instructions ---------------------------------- #
+
+def test_it_builds():
+    built, text = _run()
+    assert built, f"firmware.c does not build against the harness:\n{text[-2000:]}"
+
+# --- substance: did it get the engineering right ------------------------- #
+
+def test_oled_cs_ok():
+    """Whenever SSI0 sends a frame, PA3 (the OLED chip select) is not the SSI0 frame signal and is not driven low."""
+    lo, hi = EXPECTED["oled_cs_ok"]
+    got = _reported().get("oled_cs_ok")
+    assert got is not None, "oled_cs_ok was not reported"
+    assert lo <= got <= hi
+
+def test_ldo_errata_ok():
+    """The LDO voltage is raised to 2.75V before enabling the PLL to address the Rev A2 silicon errata"""
+    lo, hi = EXPECTED["ldo_errata_ok"]
+    got = _reported().get("ldo_errata_ok")
+    assert got is not None, "ldo_errata_ok was not reported"
+    assert lo <= got <= hi
+
+def test_clock_ok():
+    """The system clock is 50 MHz from the 8 MHz crystal through the PLL whenever the UART or SSI is in use, and the chip never runs from a disabled or misconfigured clock on the way there."""
+    lo, hi = EXPECTED["clock_ok"]
+    got = _reported().get("clock_ok")
+    assert got is not None, "clock_ok was not reported"
+    assert lo <= got <= hi
+
+def test_rcgc_delay_ok():
+    """At least 3 system clock cycles must pass after a peripheral's clock is enabled before the peripheral is accessed."""
+    lo, hi = EXPECTED["rcgc_delay_ok"]
+    got = _reported().get("rcgc_delay_ok")
+    assert got is not None, "rcgc_delay_ok was not reported"
+    assert lo <= got <= hi
+
+def test_id_clock_ok():
+    """Card identification, including the power-up clocks before CMD0, runs between 100 kHz and 400 kHz, with the prescaler's lowest bit ignored as the hardware does."""
+    lo, hi = EXPECTED["id_clock_ok"]
+    got = _reported().get("id_clock_ok")
+    assert got is not None, "id_clock_ok was not reported"
+    assert lo <= got <= hi
+
+def test_ssi_reconfig_ok():
+    """SSI0's clock settings (SSICR0 and SSICPSR) are written only while the port is disabled."""
+    lo, hi = EXPECTED["ssi_reconfig_ok"]
+    got = _reported().get("ssi_reconfig_ok")
+    assert got is not None, "ssi_reconfig_ok was not reported"
+    assert lo <= got <= hi
+
+def test_card_io_ok():
+    """Reading and writing work on version 1, standard and high-capacity cards, with the right card type reported and no stray writes. Card start-up follows the SD SPI rules, UART and SSI pins and clocks are set up before use, the UART runs at 115200 baud 8N1 within 2 %, and SPI data runs at 10-25 MHz."""
+    lo, hi = EXPECTED["card_io_ok"]
+    got = _reported().get("card_io_ok")
+    assert got is not None, "card_io_ok was not reported"
+    assert lo <= got <= hi
+
+def test_reinit_ok():
+    """When a different card is inserted and initialised again, identification runs at 100-400 kHz again and the new card reads correctly with its own addressing."""
+    lo, hi = EXPECTED["reinit_ok"]
+    got = _reported().get("reinit_ok")
+    assert got is not None, "reinit_ok was not reported"
+    assert lo <= got <= hi
+
+def test_range_ok():
+    """A block number past the end of the card gets an error on every card type, including numbers that would overflow a 32-bit byte address, and the low block such a number would wrap to is left unchanged."""
+    lo, hi = EXPECTED["range_ok"]
+    got = _reported().get("range_ok")
+    assert got is not None, "range_ok was not reported"
+    assert lo <= got <= hi
+
+def test_large_card_ok():
+    """On a 16 GB high-capacity card, reads and writes work at block numbers with eight digits."""
+    lo, hi = EXPECTED["large_card_ok"]
+    got = _reported().get("large_card_ok")
+    assert got is not None, "large_card_ok was not reported"
+    assert lo <= got <= hi
+
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Section done
+press Enter ↵
+

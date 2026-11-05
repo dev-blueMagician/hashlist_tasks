@@ -1,0 +1,151 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/gold
+title: Hashlist Data Operations Platform
+section: 5.2 Correct answer
+open: Correct answer
+captured: Sat Oct 31 2026 19:50:41 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+5.2
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+5.1 Your steps
+
+(on) (current) 5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+(on) [selected=true]
+Correct answer
+
+Hidden from the model
+[title: Full screen]
+
+Correct answer
+
+Answer what the grader gets: files, or folders ending in /, which go without their build output
+[input The answer file = "/app/solution.c"]
+
+Add a file or folder
+
+references/gold.c empty
+Upload a file
+[file input ]
+
+[textarea Your correct answer]
+
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

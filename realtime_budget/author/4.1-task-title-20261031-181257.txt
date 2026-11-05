@@ -1,0 +1,182 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/title
+title: Hashlist Data Operations Platform
+section: 4.1 Task title
+open: Prompt
+captured: Sat Oct 31 2026 18:12:57 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+4.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+(on) (current) 4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Prompt
+
+(on) (current) 4.1 Task title
+
+4.2 Context
+
+4.3 Prompt
+
+What the model is handed.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+(on) [selected=true]
+Prompt
+
+[title: Full screen]
+
+(on) Task title [input Task title = "ECP-300 coolant pump resets after software 3.2.0"]
+A task is a problem you give the model to solve. Name it in a few words.
+
+Context
+
+agent/CONTEXT.md
+Upload a file
+[file input ]
+
+[textarea Context for the model]
+
+[/textarea]
+
+Prompt
+
+agent/PROMPT.md 1398 characters
+Upload a file
+[file input ]
+
+[textarea The prompt the model is handed]
+Since software 3.2.0 went out to the fleet in July, ECP-300 coolant pumps reset now and then: the pump stops for about 300 ms and starts again. The pumps report two kinds of reset, TMON budget overruns and independent watchdog (IWDG) resets. No such reset was reported on 3.1.0.
+
+The material is in `/app/data`:
+
+- `field/`: the fleet reset log and a description of its columns
+- `traces/`: the three reference traces of 3.2.0 (bench at nominal speed, bench at maximum speed, a workshop visit with ECM reprogramming); `tools/tracestat.py` summarises a trace
+- `src/`: the timing-related sources of 3.2.0
+- `docs/`: TAG-01 timing analysis guideline, SRS-ECP300 timing requirements, VN-07 network specification excerpt, release notes, trace format
+
+The STM32F405 datasheet and the RM0090 reference manual are in `/app/files`.
+
+The code is frozen for the 3.2.1 maintenance release. Only the timing configuration `src/os_cfg.c` may change: task budgets, task priorities, and the IWDG prescaler and reload. Periods and deadlines are fixed by the SRS. Write the corrected file to `/app/solution.c`, which starts as a copy of the 3.2.0 `os_cfg.c`. It has to meet the timing and watchdog requirements of SRS-ECP300.
+
+Keep `/app/solution.c` a configuration file like the original, with `os_cfg.h` as its only project header. It must compile with:
+
+```
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c
+```
+
+[/textarea]
+
+In /app/data : docs/release_notes_3.2.0.md, docs/SRS-ECP300_timing.md, docs/TAG-01_timing_analysis_guideline.md, docs/trace_format.md, docs/VN-07_vehicle_network_excerpt.md, field/README.md, field/reset_log_3.2.0.csv, src/CanIf_Cfg.h, src/can_if_glue.c, src/foc_isr.c, src/FreeRTOSConfig.h, src/iwdg.c, src/os_cfg.c, src/os_cfg.h, src/system_clock.c, src/tasks.c, src/tmon.c, src/tmon.h, src/trace_hooks.c, tools/tracestat.py, traces/bench_maxspeed_5200rpm.csv, traces/bench_nominal_2400rpm.csv, traces/service_bay_ecm_reflash.csv . Name the ones the model needs .
+
+Put in
+The problem, how often it happens, and when.
+
+Leave out
+The cause, the answer, your method, and anything that hints at how it is graded.
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

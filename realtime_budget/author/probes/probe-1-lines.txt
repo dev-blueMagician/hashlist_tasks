@@ -1,0 +1,3 @@
+for f in os_cfg gold naive_a naive_b naive_c comment_main evil; do cp /tmp/t/$f.c /app/solution.c; echo "== $f"; gcc -O2 -std=c11 -Wall -Wextra -I/tmp/t -o /tmp/prog /tmp/t/harness.c /app/solution.c -lm && /tmp/prog | grep -v "^info_[mr]_"; done
+cp /tmp/t/gold.c /app/solution.c && mkdir -p /tmp/src && cp /tmp/t/os_cfg.h /tmp/src/ && gcc -O2 -std=c11 -Wall -I/tmp/src -c /app/solution.c -o /tmp/sol.o && echo prompt-compile-ok
+cp /tmp/t/os_cfg.c /app/solution.c && gcc -O2 -std=c11 -I/tmp/t -o /tmp/prog /tmp/t/harness.c /app/solution.c -lm && /tmp/prog | grep "^info_"

@@ -305,7 +305,7 @@ static int sd_write(uint32_t lba, const uint8_t *buf)
 
 /* ---- host protocol -------------------------------------------------------- */
 
-static char line[1100];
+static char line[1035];
 static uint8_t block[512];
 
 static int read_line(void)

@@ -1,0 +1,170 @@
+{
+  "C_MAX_US": {
+    "SpeedCtrl": 150.0,
+    "CanComm": 380.0,
+    "Monitor": 780.0,
+    "Supervisor": 240.0,
+    "NvM": 3900.0
+  },
+  "ISR_MAX_US": {
+    "ADC_IRQHandler": 9.0,
+    "CAN1_RX0_IRQHandler": 52.0,
+    "SysTick_Handler": 3.0
+  },
+  "traces": {
+    "bench_nominal_2400rpm": {
+      "SpeedCtrl": {
+        "jobs": 500,
+        "net_max_us": 134.9047619047619,
+        "tmon_max_us": 134.9047619047619,
+        "resp_max_us": 160.82142857142858
+      },
+      "CanComm": {
+        "jobs": 100,
+        "net_max_us": 289.7738095238095,
+        "tmon_max_us": 289.7738095238095,
+        "resp_max_us": 502.5833333333333
+      },
+      "Monitor": {
+        "jobs": 50,
+        "net_max_us": 688.5535714285714,
+        "tmon_max_us": 691.4464285714286,
+        "resp_max_us": 1458.1488095238096
+      },
+      "Supervisor": {
+        "jobs": 25,
+        "net_max_us": 209.36904761904762,
+        "tmon_max_us": 209.36904761904762,
+        "resp_max_us": 1653.4285714285713
+      },
+      "NvM": {
+        "jobs": 5,
+        "net_max_us": 2280.9523809523807,
+        "tmon_max_us": 2296.3571428571427,
+        "resp_max_us": 4724.452380952381
+      },
+      "ADC_IRQHandler": {
+        "count": 10000,
+        "exec_max_us": 8.101190476190476,
+        "min_gap_us": 50.0
+      },
+      "CAN1_RX0_IRQHandler": {
+        "count": 50,
+        "exec_max_us": 8.482142857142858,
+        "min_gap_us": 9726.27380952381
+      },
+      "SysTick_Handler": {
+        "count": 500,
+        "exec_max_us": 2.8988095238095237,
+        "min_gap_us": 1000.0
+      },
+      "kick_interval_max_us": 20095.035714285714,
+      "size_bytes": 941527
+    },
+    "bench_maxspeed_5200rpm": {
+      "SpeedCtrl": {
+        "jobs": 500,
+        "net_max_us": 150.0,
+        "tmon_max_us": 150.0,
+        "resp_max_us": 186.79761904761904
+      },
+      "CanComm": {
+        "jobs": 100,
+        "net_max_us": 289.4583333333333,
+        "tmon_max_us": 289.4583333333333,
+        "resp_max_us": 527.3392857142857
+      },
+      "Monitor": {
+        "jobs": 50,
+        "net_max_us": 780.0,
+        "tmon_max_us": 782.5357142857143,
+        "resp_max_us": 1580.3095238095239
+      },
+      "Supervisor": {
+        "jobs": 25,
+        "net_max_us": 209.64880952380952,
+        "tmon_max_us": 209.64880952380952,
+        "resp_max_us": 1800.3988095238096
+      },
+      "NvM": {
+        "jobs": 5,
+        "net_max_us": 2558.660714285714,
+        "tmon_max_us": 2576.0,
+        "resp_max_us": 5882.6547619047615
+      },
+      "ADC_IRQHandler": {
+        "count": 10000,
+        "exec_max_us": 9.0,
+        "min_gap_us": 50.0
+      },
+      "CAN1_RX0_IRQHandler": {
+        "count": 50,
+        "exec_max_us": 8.494047619047619,
+        "min_gap_us": 9729.470238095239
+      },
+      "SysTick_Handler": {
+        "count": 500,
+        "exec_max_us": 3.0,
+        "min_gap_us": 1000.0
+      },
+      "kick_interval_max_us": 20088.089285714286,
+      "size_bytes": 941539
+    },
+    "service_bay_ecm_reflash": {
+      "SpeedCtrl": {
+        "jobs": 800,
+        "net_max_us": 127.98809523809524,
+        "tmon_max_us": 178.39285714285714,
+        "resp_max_us": 212.17261904761904
+      },
+      "CanComm": {
+        "jobs": 160,
+        "net_max_us": 380.0,
+        "tmon_max_us": 431.0,
+        "resp_max_us": 658.5297619047619
+      },
+      "Monitor": {
+        "jobs": 80,
+        "net_max_us": 689.9285714285714,
+        "tmon_max_us": 740.4761904761905,
+        "resp_max_us": 1588.0833333333333
+      },
+      "Supervisor": {
+        "jobs": 40,
+        "net_max_us": 240.0,
+        "tmon_max_us": 268.2142857142857,
+        "resp_max_us": 1837.4107142857142
+      },
+      "NvM": {
+        "jobs": 8,
+        "net_max_us": 3900.0,
+        "tmon_max_us": 4113.613095238095,
+        "resp_max_us": 7846.375
+      },
+      "ADC_IRQHandler": {
+        "count": 16000,
+        "exec_max_us": 8.101190476190476,
+        "min_gap_us": 50.0
+      },
+      "CAN1_RX0_IRQHandler": {
+        "count": 700,
+        "exec_max_us": 52.0,
+        "min_gap_us": 600.0
+      },
+      "SysTick_Handler": {
+        "count": 800,
+        "exec_max_us": 3.0,
+        "min_gap_us": 1000.0
+      },
+      "kick_interval_max_us": 20134.64285714286,
+      "size_bytes": 1560730
+    }
+  },
+  "observed_tmon_max_us": {
+    "SpeedCtrl": 178.39285714285714,
+    "CanComm": 431.0,
+    "Monitor": 782.5357142857143,
+    "Supervisor": 268.2142857142857,
+    "NvM": 4113.613095238095
+  }
+}

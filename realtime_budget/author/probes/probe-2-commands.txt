@@ -1,0 +1,8 @@
+id; ls -la /app /app/files
+stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/src /app/data/src/os_cfg.c
+cd /app/data && find . -type f | LC_ALL=C sort | xargs sha256sum
+sha256sum /app/files/*
+cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-copied
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp/s.o && echo prompt-compile-ok
+python3 /app/data/tools/tracestat.py /app/data/traces/service_bay_ecm_reflash.csv
+pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | grep -A4 "Table 35"

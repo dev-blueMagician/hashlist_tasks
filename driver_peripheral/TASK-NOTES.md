@@ -4,10 +4,11 @@ Authoring notes only; keep outside the solver upload.
 
 ## Task and current state
 
+- **Final state: accepted.** Reviewer Jaan's message, pasted by the user 2026-11-05 (no saved page, so scores and the review page are not seen). Nothing further to do on this task. See "Acceptance and grader defect" at the end. Older "next action" text below is history.
 - Required behavior and the work the solver must do: repair the legacy microSD firmware `/app/firmware.c` for the EK-LM3S6965 (Rev A2) so it meets the stated clock, UART, SPI and card-type requirements on the hardware, keeping the UART protocol (see "Task design").
 - Allowed changes and deliverable: any change to `/app/firmware.c`; only that file is collected (answer file `/app/firmware.c`, 5.2).
-- Task identifier and current package or revision: DOP builder `task-mvttqdbt`; local package `package/` (hashes in the evidence sections below).
-- Platform state and save confirmation: Run pressed by the user 2026-10-30; task "In review" ("With a reviewer … Nothing is needed from you until they are done", `author/scre.html`). Editing assumed locked. Uploaded drive.py = f48a94a1… (Verify 2 revision).
+- Task identifier and current package or revision: DOP builder `task-mvttqdbt`; local package `package/`, rework revision of 2026-11-02 (hashes under "Rework after the verdict"). Passed Verify 4 on 2026-11-03, then model runs and review. Uploaded: everything changed (prompt, starter, service log, 5.1 steps, naive_a, drive.py, 5.4 steps).
+- Platform state and save confirmation: Run pressed by the user 2026-10-30, then "In review" (`author/scre.html`). Reviewer's decision seen 2026-11-02: "Sent back", with a "Fix it" button; see "Reviewer verdict" under Outstanding issues. Whether Fix it reopens editing is not yet seen. Last uploaded drive.py = f48a94a1… (Verify 2 revision), so the platform still holds the old package. 2026-11-03: the user opened section 4 and pasted the new prompt without pressing Fix it. The saved page `author/4.3-prompt-20261103-123133.txt` shows "Saved", "1805 characters" and all 13 non-blank lines of the local PROMPT.md. The old prompt is in git (HEAD, ba046f3a). `service-log.txt` is not in the file tree yet.
 - Run side effects and existing authorization: screen 1.3 "Pressing Run also hands the task in for review." The user pressed Run; the task is submitted.
 
 ## Environment and submission contract
@@ -18,7 +19,7 @@ Authoring notes only; keep outside the solver upload.
 | Required commands and installed dependencies | gcc, QEMU, python3 3.11, git, pdftotext, timeout; no make/gdb | gcc, QEMU, Python 3.12, pytest 9.1.1 | probe 1; Verify 1 |
 | Working directory and visible files | `/app`: `data/` (link.ld, run.sh, start.c, uart.h, run-sd.sh, starter/firmware.c), `files/` (3 TI PDFs), `firmware.c` and `build/` from setup.sh | `/tests` (verifier files incl. drive.py, board.py, start.c, link.ld, uart.h); `/app/firmware.c` from the run | checksum run 17:30; board.py template |
 | Startup, linker, libraries, and generated inputs | /app/data/start.c (reset → app_main, 2-entry vector table), link.ld | /tests/start.c, /tests/link.ld (grader's own copies; assumed equal) | screen 3.1; template |
-| Compile and link command | prompt: `cd /app/build; arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os -ffreestanding -fno-tree-loop-distribute-patterns -nostdlib -I/app/data -T /app/data/link.ld /app/data/start.c /app/firmware.c -lgcc -o firmware.elf` | board.build: same flags with /tests paths, `-o /tmp/built` | front-end template; Verify 1 builds gold/naive |
+| Compile and link command | prompt: `cd /app; mkdir -p build && cd build; arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os -ffreestanding -fno-tree-loop-distribute-patterns -nostdlib -I/app/data -T /app/data/link.ld /app/data/start.c /app/firmware.c -lgcc -o firmware.elf` | board.build: same flags with /tests paths, `-o /tmp/built` | front-end template; Verify 1 builds gold/naive |
 | Run, simulate, or flash command | `sh /app/data/run-sd.sh firmware.elf card.img [v1]` (RCC shim, SD card) | `python3 /tests/drive.py /tmp/built` (own QEMU runs with shim, traces, QMP card swap) | probes 3–4; test_outputs.py |
 | Transport and synchronization | UART0 on stdio, line protocol, `READY` after reset | same; drive.py waits for READY, 20 s per reply | drive.py |
 | Time, memory, network, and other limits | 2 CPU, 2 GiB, 8 GiB disk, internet off, working time 30 min; step limit and grader timeout: confirm saved values (recommended 100 steps, 15 min) | drive.py timeout 300 s in test_outputs; build 180 s | 2.2, 2.3, test_outputs.py |
@@ -193,7 +194,7 @@ Inference (no verifier output available):
 - Effect: understates runaway-loop firmware (one failing run scored 0 instead of ~0.125–0.25). No false passes; the other 8 runs scored above 0, so their driver runs completed.
 - Fairness note a reviewer may raise: attempt 18's SD sequence (0xFF after deselect, none before the next command) works on most real cards but not on QEMU's ssi-sd. The starter's loop and its comment cover this, and the model saw the failure in its own runs.
 
-Correction package (local only, not uploaded, task locked): `corrections/verifier/drive.py` = f48a94a1 plus: per functional run 40 s budget, stop at 64 MiB of trace, evaluate ≤ 1 M trace lines (card_io_ok fails if cut), delete each trace and drop stored frames after evaluation; traced run 80 s (was 240 s); a timing-run timeout no longer fails rcgc_delay_ok by itself (UART0 and SSI0 must still have been reached). Host checks `python -I author/test_drive_local.py corrections/verifier/drive.py`: 0 failures; worst-case runtime estimate 256 s. Not run under QEMU; gold and naive_a must be re-verified through Verify before any re-upload.
+Correction package (local only, not uploaded, task locked; merged into `package/verifier/drive.py` on 2026-11-02, so `corrections/` is now only a record): `corrections/verifier/drive.py` = f48a94a1 plus: per functional run 40 s budget, stop at 64 MiB of trace, evaluate ≤ 1 M trace lines (card_io_ok fails if cut), delete each trace and drop stored frames after evaluation; traced run 80 s (was 240 s); a timing-run timeout no longer fails rcgc_delay_ok by itself (UART0 and SSI0 must still have been reached). Host checks `python -I author/test_drive_local.py corrections/verifier/drive.py`: 0 failures; worst-case runtime estimate 256 s. Not run under QEMU; gold and naive_a must be re-verified through Verify before any re-upload.
 
 Step texts (2026-10-30): the saved texts (Verify table, `author/screen-6c.html`) for `clock_ok` and `reinit_ok` say less than their checks, `oled_cs_ok` names one method, and `ssi_reconfig_ok` adds "re-enabled afterward", which it does not check. Earlier advice to keep them was wrong. Comparison and wording in `corrections/step-texts.md`; `corrections/scored-steps.json` is the matching steps file for the extension's Fill.
 
@@ -205,4 +206,77 @@ Step texts (2026-10-30): the saved texts (Verify table, `author/screen-6c.html`)
 - Saved prompt compared (`author/screen-4.3.html`): title "microSD bring-up on the EK-LM3S6965"; Context empty; `agent/PROMPT.md` "2147 characters" = local file without its final newline; all 19 non-blank lines identical.
 - Section 7.1 (`author/screen-7.html`): "Default run — Optimised run: Kimi ×2 → Opus → Qwen ×6 on every task, then any model whose scores vary is topped up to 6 runs." Models: MoonshotAI Kimi K3, Anthropic Claude Opus 5.5, Qwen3.8 Max (0902), "in stages, up to 6 each", "2 to 18 runs, as the scores decide". No cost shown on 7.1; 7.2 Run / 7.3 Running not seen.
 - 2026-10-30: `CLAUDE.md` moved to the parent folder (`../CLAUDE.md`, now with a shared-kit section); the template moved to `../_kit/TASK-NOTES.template.md`. Lessons from this task are in `../_kit/LESSONS.md`.
-- Next action: wait for the reviewer. If changes are requested and editing reopens: upload `corrections/verifier/drive.py` to 5.4 (only if the reviewer's points do not change it), set the step texts from `corrections/step-texts.md` in the user's wording, run Verify, confirm gold 1.00 and naive_a 0.13, then compare the saved drive.py hash. No acceptance, score or payment is implied by the run results.
+- Reviewer verdict (page saved 2026-11-02, moved here from the other task's folder: `author/hashlist-data-operations-platform-20261102-200609.txt`): sent back. "This is a real and good bring-up task", but "trivial for the strongest model": Opus passed its only run with 1.00 (across 9 runs: 1 strict pass, mean 0.43). Requested changes:
+  1. Report fewer and less direct symptoms (mixed field reports, not one line per fault) and do not name the silicon revision in the prompt; let the solver find it from the board, for example a DID0 value in a log. Mapping it cites: OLED pixels -> PA3, ERR 2 -> v1 cards, >2 GB -> SDHC addressing, 50 MHz lock-ups + A2 -> LDO errata.
+  2. Add one fault that only shows in a test run on the bench model (not hinted in the prompt), then re-run with at least 6 Opus runs. "A task is accepted only when the strongest model fails most of at least 6 runs."
+- Rework log (no action left): Fix it pressed 2026-11-03: it opens the builder at 4.3 and the new prompt was still there (user report). Probe 6 passed, and the checksum run confirmed the section 3 uploads (see "Rework after the verdict"). The user pasted 5.1 in their own words (`author/5.1-your-steps-20261103-145353.txt`, "references/steps.md written"). Three lines changed the meaning: 3 lost "main" from the oscillator, 7 said UART and SPI rates must not exceed a maximum (the checks also fail rates that are too low), 9 was garbled. `package/references/steps.md` now holds their wording with those three fixed and two typos; re-pasted, and `author/5.1-your-steps-20261103-150321.txt` matches it line for line. `naive_a.c` pasted into 5.3; `author/5.3-common-mistakes-20261103-150724.txt` matches it exactly. `drive.py` pasted into 5.4; `author/5.4-scored-steps-20261103-151039.txt` matches it once runs of blank lines are collapsed (the extension's capture turns the 28 double blank lines into single ones, `page.js` line 80; it says nothing about the saved file's blank lines, and Python ignores them). 5.4 texts compared with the checks again: the old `id_clock_ok` text claimed an even prescaler is required (the driver only clears the lowest bit, so an odd value with a rate in range passes), `card_io_ok` said less than the check (SD SPI rules, pins, clocks, 8N1), `oled_cs_ok` said "to the card" (the check covers every frame); all three reworded in `author/scored-steps.json`. `corrections/step-texts.md` wrongly marks 5 and 7 as matching. Filled with the extension: `author/5.4-scored-steps-20261103-151554.txt` shows 10 rows equal to `author/scored-steps.json` (cb646a1e) in text, field, band, Worth and mistake toggles, "10 written, 10 points", and the generated test file has `test_it_builds` plus 10 tests with band 1..1, no "Generate checks" pressed. Verify 3 (`author/6.1-verify-20261103-153054.txt`, 15:26–15:29): gold 1.00 strict true, naive_a 0.10 strict false, GRADER SOUND, one listed problem: "The prompt names /app/build, but the agent box has nothing there" (false alarm: setup creates the folder and models used it in the earlier runs). Prompt reworded so it names no such path (`cd /app`, `mkdir -p build && cd build`); same compile line. The user re-pasted 4.3 and ran Verify 4: no problems listed (see "Rework after the verdict"). Still to do: compare a saved 4.3 page with `PROMPT.md` (no page saved since the rewording). Find out how to get 6 Opus runs before pressing Run, because Run submits: 7.1 last showed only "Default run", where Opus got one run on 2026-10-30. No acceptance, score or payment is implied by the run results.
+
+## Rework after the verdict (2026-11-02)
+
+Files, SHA-256 prefix: `agent/PROMPT.md` b9480fa6 (1815 characters; 35f9221e until the /app/build rewording), `environment/data/service-log.txt` 4e82bb28 (new), `environment/data/starter/firmware.c` 7d9007df, `references/naive_a.c` 0b38d0f0, `references/steps.md` 0f187a1a, `verifier/drive.py` f8c8b209. Unchanged: `references/gold.c` f2063e16, `environment/data/run-sd.sh` ff27f652, the PDFs, `hooks/setup.sh`.
+
+Changes:
+
+- Reviewer's item 1: the prompt no longer lists symptoms or names the silicon revision. The new `/app/data/service-log.txt` holds four mixed tickets and a capture with DID0 = 10010002. The OLED and 50 MHz lock-up reports are gone, so PA3 and the LDO errata now rest on "wired as on the board" and the documents.
+- Reviewer's item 2, the new fault: the starter's `line[]` is now 1035 bytes (was 1100), which fits a `W` line with a 7-digit block number only. From block 10 000 000 up (about 4.8 GiB) the line is cut, and `W` answers `ERR 0`. Reads still work. It needs a test on a card above about 5 GB; the log names 16 GB cards and the `run-sd.sh` header only shows 64M and 4G. Check `large_card_ok`, on a 16 GiB card. Gold keeps 1100.
+- Also graded now, an old fault in the starter: on a byte-addressed card `lba * 512u` wraps from block 2^23 up, so `R` returns a low block and `W` overwrites it. Check `range_ok`, on all three card types. Gold already refused these blocks (`sd_address`).
+- `drive.py` = the `corrections/` driver plus these two checks. Budgets changed: functional run 30 s, each of 4 short runs 12 s, timing run 60 s; worst-case estimate 262 s against the 300 s test timeout.
+
+Observed in the Opus transcript (`author/hashlist-…-200609.txt`, lines 13092–15151: 22 steps, about 6.5 min, attempt 7):
+
+- It read the errata and board manual closely, and applied LM3SYSCTL#09 and #11, the PA3 fix and SSE clear without prompting beyond the symptom list.
+- Its own tests: `I`, `W 5`, `R 5`, `R 6`, `I`, `R 5` with data `ab…`; the last block of 2 GiB and 4 GiB cards with data `cd…`; one past the end; a bad command. It did not swap a card ("wasn't tested") or use a card above 4 GiB.
+- Its `sd_addr` is `lba * 512u` with no check, so its firmware has the wrap fault, which the old grader did not test.
+
+Decided against: grading LM3SYSCTL#11. Its failure needs a different crystal setting after an external reset (errata text: XTAL 6 MHz, PLLCFG stale at 8 MHz, on a 6 MHz crystal). This firmware always writes 8 MHz, so PLLCFG stays right and gold needs no workaround.
+
+Inference at the time: strict pass needs every check, so a run must catch both quiet faults and still find PA3 and the LDO errata without a symptom. The runs bore this out; see "Acceptance and grader defect".
+
+Host evidence, narrow: `py -I -B author/test_drive_local.py` (simulated firmware for both new rules, including no vacuous pass, a static check of the buffers and the guard, and what the prompt must not say).
+
+Probe 6 (`author/try-box-6.txt`, 16 commands, runtime image, built with the grader's flags; `author/docs-only.c` = gold with both quiet faults put back; output `author/2.4-toolchain-20261103-131643.txt`, run 13:07):
+
+- gold 10/10, no reasons printed. docs_only 8/10, failing only `range_ok` (SDSC and SDV1: wrapped `R` returned data, wrapped `W` said OK and overwrote the low block) and `large_card_ok` (`W` at 8-digit blocks -> `ERR 0`, reads fine). naive_a and starter 1/10 = 0.10, only `rcgc_delay_ok` passing. Each drive.py run took about 1 s.
+- This supports the rework in the model's box only. The verifier image and generated tests are still to be shown by Verify.
+- QEMU accepts the 16 GiB sparse image: 0 blocks used, 8 GiB disk barely touched. gold passing `range_ok` shows `W` past the end is refused and the card stays usable.
+- `did_probe` printed the service log's DID0, DID1, DC0–DC2, RCC, RCC2 and LDOPCTL exactly.
+- Box status "Answer in the box", because the probe unpacks gold under `/tmp/t`. The checksum run below cleared it.
+
+Checksum run after the section 3 uploads (`author/2.4-toolchain-20261103-135237.txt`, 13:38, status "Worked", 3 commands): `/app/data/starter/firmware.c` and `/app/firmware.c` 7d9007df…, `run-sd.sh` ff27f652…, `line[1035]` at line 308. `/app/data/service-log.txt` is 2cfd6ecf…, 1304 bytes: exactly the local text with CRLF line endings (computed; local is LF, 4e82bb28…). How the CRLF got there is unknown; the starter upload kept its bytes. Harmless, since only the solver reads this file and the grader does not, so it stays as it is. The box's commands now hold only the three checksum lines.
+
+Verify 4 (`author/6.1-verify-20261103-154436.txt`, finished 15:43, after the prompt rewording): no problems listed, gold reward 1.00 strict true, naive_a 0.10 strict false, "GRADER SOUND". Gold passes all 10 steps; naive_a passes only step 4 (`rcgc_delay_ok`), as marked. This is the first evidence for the rework through the real grading route.
+
+Upload differences to check on the platform: `service-log.txt` should land at `/app/data/service-log.txt`, as the prompt names it (Verify checks this). Add the two new 5.4 steps with Fill, not "Generate checks", which rewrites the texts.
+
+## Acceptance and grader defect (reported 2026-11-05)
+
+Stated by the reviewer:
+
+- Accepted, as a real bring-up task: real documents, and a grader that builds the firmware and runs it against three kinds of card.
+- Strongest model, six runs: it found the OLED chip select and the LDO errata. Four runs failed on the 16 GB card with eight-digit block numbers. Single runs failed on a block past the end of the card, or changed the SPI clock while the port was enabled.
+- Weaker models: mostly left PA3 as the SSI frame signal or never got a card working. None handled the 16 GB card or blocks past the end.
+- Defect: `oled_cs_ok` dropped a GPIODATA write made before the pin was an output, as QEMU does. All six strongest runs set PA3 high before making it an output, so all lost that check. The reviewer corrected this in their own scoring and asked that future checks keep the level written whatever the pin direction.
+
+Deduced from that message:
+
+- On the platform's own score none of the six strongest runs was a strict pass, which overstated the difficulty. At least four would still fail without the defect, so "fails most of 6" holds. How many passed after the correction is not stated, because the failures may overlap.
+
+Checked here (host only, `Board` class driven with hand-written writes; no QEMU or Verify):
+
+- Reproduced on `package/verifier/drive.py` (f8c8b209, the uploaded revision): "high, then output" on PA3 is flagged as driven low. "Output, then high" is not.
+- The same masking feeds `selected` for PD0 at line 340, so the 74-clock rule would miscount a card select set the same way. The reviewer did not report this one.
+- Datasheet: p. 293 says an input pin's data bit captures the port value; p. 300 says written values reach pins configured as outputs. Neither says a level written earlier is kept or lost, so treat the reviewer's rule as the requirement, not as a statement about silicon.
+- Why it was missed: gold and the starter both set DIR first, so Verify never saw the other order. The 5.4 text says "not driven low", and the check was stricter than that.
+
+Fix for any later driver built from this one, tried on a scratch copy. PA3 "high, then output" and PD0 are then clean; PA3 driven low by any order and PA3 as SSI0Fss stay flagged; all 55 host checks still pass on both versions:
+
+```python
+bits = (off >> 2) & 0xFF
+g["latch"] = (g["latch"] & ~bits) | (value & bits)   # add "latch": 0 to each port; rules read this
+mask = bits & g["dir"]                               # as before: "data" is what QEMU's PL061 holds
+g["data"] = (g["data"] & ~mask) | (value & mask)
+```
+
+Then read `latch` in `selected` and `oled_sel`.
+
+`package/verifier/drive.py` stays unpatched as the record of what was accepted. `corrections/verifier/drive.py` has the same defect. Don't reuse either without this fix.

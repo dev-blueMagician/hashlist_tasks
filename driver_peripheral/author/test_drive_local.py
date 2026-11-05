@@ -165,8 +165,135 @@ if hasattr(drive, "TraceLimit"):
         check(True, "check_trace quiet under the limit and for a missing log")
     parse = drive.FEED_LIMIT * 15e-6            # measured 13 us per trace line on the author PC
     worst = 3 * (drive.RUN_BUDGET + parse + 2) + drive.TIMING_BUDGET + 5
+    worst += 4 * (getattr(drive, "PROBE_BUDGET", 0) + 2)
     check(worst < 270, "worst-case run time %.0f s (parse %.0f s per run) leaves 30 s under the 300 s test timeout"
           % (worst, parse))
+
+# the two short runs against a simulated firmware (the rules, not QEMU or a real image)
+if hasattr(drive, "range_run"):
+    disk = {}
+
+
+    class FakeFirmware:
+        """Answers the host protocol as a firmware with the given faults would."""
+        wraps = False           # byte address kept in 32 bits, no check of the block number
+        line_limit = 1100       # characters of a command line kept
+        fails_init = False
+        hangs = False
+
+        def __init__(self, elf, img, v1, log, errlog, **kw):
+            self.img, self.v1, self.replies = img, v1, []
+            self.blocks = disk[img]["size"] // drive.BLOCK
+            self.hc = disk[img]["size"] > (2 << 30)
+
+        def expect_ready(self):
+            pass
+
+        def send(self, text):
+            cards = disk[self.img]["blocks"]
+            if text == "I":
+                kind = "SDV1" if self.v1 else "SDHC" if self.hc else "SDSC"
+                self.replies.append("ERR 2" if self.fails_init else "OK " + kind)
+                return
+            op, lba = text.split()[:2]
+            lba = int(lba)
+            if len(text) > self.line_limit:
+                self.replies.append("ERR 0")
+                return
+            if not self.hc:
+                if lba > 0x7FFFFF and not self.wraps:
+                    self.replies.append("ERR 7")
+                    return
+                lba = (lba * 512 & 0xFFFFFFFF) // 512
+            if lba >= self.blocks:
+                self.replies.append("ERR 1")
+            elif op == "R":
+                self.replies.append("DATA " + cards.get(lba, bytes(drive.BLOCK)).hex())
+            else:
+                cards[lba] = bytes.fromhex(text.split()[2])
+                self.replies.append("OK")
+
+        def line(self, timeout):
+            if self.hangs:
+                raise TimeoutError("no reply from the firmware")
+            return self.replies.pop(0)
+
+        def stop(self):
+            pass
+
+
+    def fake_make_card(path, size, rng, lbas):
+        content = {lba: bytes(rng.getrandbits(8) for _ in range(drive.BLOCK)) for lba in lbas}
+        disk[path] = {"size": size, "blocks": dict(content)}
+        return content
+
+
+    def fake_read_card(path, lba):
+        return disk[path]["blocks"].get(lba, bytes(drive.BLOCK))
+
+
+    drive.Qemu, drive.make_card, drive.read_card = FakeFirmware, fake_make_card, fake_read_card
+    import random
+    rng = random.Random(1)
+    CARD_NAMES = ("SDHC", "SDSC", "SDV1")
+
+
+    def range_reasons():
+        return [r for name in CARD_NAMES for r in drive.range_run("e", "w", name, rng, "s")]
+
+
+    def large_reasons():
+        return drive.large_card_run("e", "w", rng, "s")
+
+
+    check(range_reasons() == [], "a correct firmware passes range_ok")
+    check(large_reasons() == [], "a correct firmware passes large_card_ok")
+
+    FakeFirmware.wraps = True
+    r = range_reasons()
+    check(any("[SDSC] R 83" in x for x in r) and any("[SDSC] W 83" in x for x in r), "wrapped R and W flagged on SDSC")
+    check(any("[SDV1] R 83" in x for x in r), "wrapped R flagged on SDV1")
+    check(any("overwritten" in x for x in r), "the overwritten low block is flagged")
+    check(not any("[SDHC]" in x for x in r), "SDHC has no wrap to flag")
+    check(large_reasons() == [], "the wrap fault leaves large_card_ok alone")
+    FakeFirmware.wraps = False
+
+    FakeFirmware.line_limit = 1034
+    r = large_reasons()
+    check(any("-> 'ERR 0'" in x for x in r), "a 1034-character line limit fails eight-digit writes (%s)" % r[:1])
+    check(not any(x.startswith("R ") for x in r), "eight-digit reads still pass with that limit")
+    check(range_reasons() == [], "the line limit leaves range_ok alone")
+    FakeFirmware.line_limit = 1100
+
+    FakeFirmware.fails_init = True
+    check(range_reasons() != [] and large_reasons() != [], "no vacuous pass when no card initialises")
+    FakeFirmware.fails_init = False
+    FakeFirmware.hangs = True
+    check(range_reasons() != [] and large_reasons() != [], "a firmware that stops answering fails both")
+    FakeFirmware.hangs = False
+
+# the package: the starter's fault, gold's fix, and what the prompt must not say
+ROOT = os.path.join(HERE, "..", "package")
+
+
+def line_size(rel):
+    with open(os.path.join(ROOT, *rel.split("/"))) as f:
+        return int(re.search(r"static char line\[(\d+)\]", f.read()).group(1))
+
+
+for rel, size in (("environment/data/starter/firmware.c", 1035), ("references/naive_a.c", 1035)):
+    check(line_size(rel) == size, "%s keeps %d bytes: 7-digit blocks fit, 8-digit do not" % (rel, size))
+check(line_size("references/gold.c") >= 2 + 10 + 1 + 1024 + 1, "gold's line buffer holds a ten-digit block number")
+with open(os.path.join(ROOT, "references", "gold.c")) as f:
+    check("lba > 0x007FFFFFu" in f.read(), "gold refuses blocks whose byte address overflows")
+with open(os.path.join(ROOT, "agent", "PROMPT.md"), encoding="utf-8") as f:
+    prompt = f.read()
+for word in ("A2", "revision", "LDO", "OLED", "locked up", "lock-up", "2 GB"):
+    check(word not in prompt, "the prompt does not say %r" % word)
+check("/app/data/service-log.txt" in prompt, "the prompt names the service log")
+with open(os.path.join(ROOT, "environment", "data", "service-log.txt")) as f:
+    log = f.read()
+check("10010002" in log and "A2" not in log and "OLED" not in log, "the log gives DID0, not the revision or the display")
 
 print("\n%d failure(s)" % fails)
 sys.exit(1 if fails else 0)

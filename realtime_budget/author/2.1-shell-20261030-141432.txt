@@ -1,0 +1,123 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/template
+title: Hashlist Data Operations Platform
+section: 2.1 Shell
+open: What the C harness with budgets shell sets up
+captured: Fri Oct 30 2026 14:14:32 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+task-mvr6ixva
+
+2.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+(on) (current) 2.1 Shell
+
+2.2 Limits
+
+2.3 Internet
+
+2.4 Toolchain
+
+The shell the model works in, and how it is set up.
+
+2.1
+
+Shell
+
+Most popular
+
+Python Requires Python
+
+(on) C harness with budgets Requires C
+
+All shells, by domain
+
+Software
+Python Requires Python
+
+(on) C harness with budgets Requires C
+
+Firmware and automotive
+Firmware on QEMU or Renode Requires C and Python
+
+Eclipse software Requires Python
+
+Hardware design
+KiCad Requires Python (pcbnew)
+
+KiCad · GUI Requires Python (pcbnew), for your answers
+
+Blender Requires Python (Blender's)
+
+Blender · GUI Requires Python (Blender's), for your answers
+
+FreeCAD · GUI Requires Python (FreeCAD's), for your answers
+
+Other
+Desktop · GUI app No code needed
+
+What the C harness with budgets shell sets up
+
+A Docker container with gcc. The agent writes /app/solution.c; your hidden harness links it, runs it and prints what it measured, and each budget is a band on one of those numbers.
+
+Tools
+
+bash(command), view_image(path), submit(notes)
+
+Scoring
+
+one check per budget; reward = fraction within budget, strict pass = all
+
+Needs
+
+a model, or a reference solution
+
+Already here
+
+C3-077 TEST-CRC
+
+The files this task is made of
+
+agent/PROMPT.md you write it The prompt, as the engineer would have received it
+
+environment/Dockerfile written for you The container the agent works in: gcc, and your data
+
+/app/solution.c the agent writes it Where the agent writes its fix
+
+verifier/harness.c you write it [title: Never copied into the container the agent works in] withheld Links the solution, runs it, prints metric=value lines
+
+verifier/test_outputs.py written for you [title: Never copied into the container the agent works in] withheld Builds it and holds each metric to its budget
+
+references/gold.c you write it [title: Never copied into the container the agent works in] withheld Your correct fix
+
+references/naive_a.c you write it [title: Never copied into the container the agent works in] withheld The plausible wrong fix
+
+Default settings gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263 · 1 CPU · 2 GiB memory · 4 GiB disk · 40 steps · internet off Tested for this shell. Most tasks need nothing else.
+
+Use default settings
+press Enter ↵
+Edit settings
+

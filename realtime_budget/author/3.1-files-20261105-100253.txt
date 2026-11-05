@@ -1,0 +1,235 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/files
+title: Hashlist Data Operations Platform
+section: 3.1 Files
+open: Use one of my environments | reset_log_3.2.0.csv × | Scripts before and after the model optional, hidden from the
+captured: Thu Nov 05 2026 10:02:53 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+3.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+(on) (current) 3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Environment
+
+(on) (current) 3.1 Files
+
+The files in the box.
+
+Use one of my environments
+
+(on) Use one you built
+
+Build a new one
+
+EK-LM3S6965 microSD bring-up Firmware on QEMU or Renode · 10 files · 1 task · edited 11/3/2026
+
+This task gets its own copy. Change the saved one under My environments .
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+(on) reset_log_3.2.0.csv
+
+[expanded=true] src
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+[selected=false]
+[title: /app/data/src/iwdg.c] iwdg.c
+
+×
+
+(on) [selected=true]
+[title: /app/data/field/reset_log_3.2.0.csv] reset_log_3.2.0.csv
+
+×
+
+[title: Full screen]
+
+[title: /app/data/field/reset_log_3.2.0.csv] /app/data/field/reset_log_3.2.0.csv
+[title: Copy the path]
+1.4 KB
+Delete
+
+[textarea ]
+
+[/textarea]
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+timestamp_utc,unit_serial,sw_version,reset_cause,t ask,tmon_measured_us,tmon_budget_us,can_rx_frames_ last_100ms,lsi_hz,operating_hours
+
+2026-07-19T08:14:52Z,ECP3-20417,3.2.0,TMON_OVERRUN ,NvM,5102,4800,371,31890,1843.2
+
+2026-07-27T15:02:11Z,ECP3-19882,3.2.0,TMON_OVERRUN ,Monitor,1069,960,344,35210,2210.7
+
+2026-08-03T10:41:37Z,ECP3-21160,3.2.0,IWDG,,,,389, 45630,1288.0
+
+2026-08-09T07:55:03Z,ECP3-20417,3.2.0,TMON_OVERRUN ,SpeedCtrl,233,200,362,31870,1902.4
+
+2026-08-14T13:20:45Z,ECP3-18731,3.2.0,TMON_OVERRUN ,NvM,4955,4800,312,29840,3104.9
+
+2026-08-22T09:07:18Z,ECP3-22045,3.2.0,TMON_OVERRUN ,CanComm,489,470,330,38720,640.3
+
+2026-08-30T16:48:29Z,ECP3-21160,3.2.0,IWDG,,,,420, 45610,1351.6
+
+2026-09-04T11:33:50Z,ECP3-19882,3.2.0,TMON_OVERRUN ,Monitor,1121,960,406,35180,2302.0
+
+2026-09-11T08:02:14Z,ECP3-23390,3.2.0,TMON_OVERRUN ,Supervisor,318,300,377,33450,412.8
+
+2026-09-17T14:26:41Z,ECP3-17604,3.2.0,IWDG,,,,352, 46240,3820.5
+
+2026-09-23T10:15:09Z,ECP3-22045,3.2.0,TMON_OVERRUN ,SpeedCtrl,241,200,395,38690,744.1
+
+2026-09-29T12:51:33Z,ECP3-18731,3.2.0,TMON_OVERRUN ,NvM,5317,4800,428,29860,3233.7
+
+2026-10-06T09:39:57Z,ECP3-20990,3.2.0,TMON_OVERRUN ,CanComm,517,470,401,36030,1530.2
+
+2026-10-13T15:12:20Z,ECP3-23390,3.2.0,TMON_OVERRUN ,Monitor,1012,960,290,33470,520.6
+
+2026-10-20T07:44:06Z,ECP3-17604,3.2.0,IWDG,,,,437, 46210,3899.0
+
+2026-10-26T13:05:48Z,ECP3-21875,3.2.0,TMON_OVERRUN ,NvM,5208,4800,401,34410,1012.3
+
+Scripts before and after the model optional, hidden from the model
+
+Run in the box as root, in the workdir: one before the model's first step, one after its last and before the answer file is read. The correct answer and each common mistake run with them too. Use them to set up the starting state, or to pack what the model changed into the answer file, so the model is not graded on packing it. A setup that fails stops the run as an error. A teardown that fails is no answer, a score of 0, as it fails on what the run left; Verify shows it on your correct answer first. What setup makes under the workdir is given to the model's user, so the model can edit it; anything it makes elsewhere stays root's. A teardown that writes the answer file replaces a correct answer typed as that file: write your answers as scripts that change what teardown packs.
+
+Before the model starts hooks/setup.sh
+[textarea hooks/setup.sh]
+#!/bin/sh
+# Before the model starts: the 3.2.0 configuration is the starting point.
+set -e
+cp /app/data/src/os_cfg.c /app/solution.c
+
+[/textarea]
+
+After the model stops hooks/teardown.sh
+[textarea hooks/teardown.sh]
+
+[/textarea]
+
+Section done
+press Enter ↵
+

@@ -1,0 +1,449 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/toolchain
+title: Hashlist Data Operations Platform
+section: 2.4 Toolchain
+open: (no tab or panel marked open)
+captured: Fri Oct 30 2026 18:17:07 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+task-mvr6ixva
+
+2.4
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+2.2 Limits
+
+2.3 Internet
+
+(on) (current) 2.4 Toolchain [title: The box was tried and works]
+
+The shell the model works in, and how it is set up.
+
+2.4
+
+Toolchain
+
+(on) Describe it
+
+My own Dockerfile (optional)
+
+Language [select  = "Python"]
+
+Base image [input  = "gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263"]
+
+Packages apt names, or pip: prefixed, comma separated [input build-essential, pip:numpy = "python3, python3-pandas, poppler-utils"]
+
+environment/Dockerfile written from the form
+
+[textarea The Dockerfile]
+FROM gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263
+RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pandas poppler-utils && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY environment/data /app/data
+
+[/textarea]
+
+Try the box Worked · 06:14 PM
+Try again
+
+Builds the box and runs these commands, one per line.
+
+[textarea Commands to run in the box]
+id; ls -la /app /app/files
+stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/src /app/data/src/os_cfg.c
+cd /app/data && find . -type f | LC_ALL=C sort | xargs sha256sum
+sha256sum /app/files/*
+cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-copied
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp/s.o && echo prompt-compile-ok
+python3 /app/data/tools/tracestat.py /app/data/traces/service_bay_ecm_reflash.csv
+pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | grep -A4 "Table 35"
+
+[/textarea]
+
+The box done 122 lines · 8 steps
+
+18:12:56dop: try_box started on a8f5f7998783:2
+
+18:13:05dop: building Daytona image dop-task-task-mvr6ixva-runtime:dev from environment/Dockerfile
+
+18:13:09#1 [internal] load remote build context
+
+18:13:09#2 copy /context /
+
+18:13:10#3 [internal] load metadata for docker.io/library/gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263
+
+18:13:10#4 [1/5] FROM docker.io/library/gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263
+
+18:13:21#5 [2/5] RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+
+18:13:23#6 [3/5] RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pandas poppler-utils && rm -rf /var/lib/apt/lists/*
+
+18:13:23Get:1 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm InRelease [151 kB]
+
+18:13:23Get:2 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm-updates InRelease [55.4 kB]
+
+18:13:24Get:3 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security InRelease [34.8 kB]
+
+18:13:24Get:4 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 Packages [8790 kB]
+
+18:13:24Get:5 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm-updates/main amd64 Packages [6924 B]
+
+18:13:24Get:6 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 Packages [349 kB]
+
+18:13:24Fetched 9387 kB in 1s (10.4 MB/s)
+
+18:13:25Reading package lists...
+
+18:13:25Reading package lists...
+
+18:13:25Building dependency tree...
+
+18:13:25Reading state information...
+
+18:13:25python3 is already the newest version (3.11.2-1+b1).
+
+18:13:26python3 set to manually installed.
+
+18:13:26The following additional packages will be installed:
+
+18:13:26  libblas3 libgfortran5 liblapack3 libnspr4 libnss3 libpoppler126
+
+18:13:26  python3-dateutil python3-numpy python3-pandas-lib python3-pkg-resources
+
+18:13:26  python3-six python3-tz
+
+18:13:27Suggested packages:
+
+18:13:27  gfortran python3-dev python3-pytest python-pandas-doc python3-statsmodels
+
+18:13:27  python3-setuptools
+
+18:13:27Recommended packages:
+
+18:13:27  poppler-data python3-scipy python3-matplotlib python3-bottleneck
+
+18:13:28  python3-numexpr python3-odf python3-openpyxl python3-bs4 python3-html5lib
+
+18:13:28  python3-lxml python3-tables python3-jinja2 python3-numba
+
+18:13:28The following NEW packages will be installed:
+
+18:13:28  libblas3 libgfortran5 liblapack3 libnspr4 libnss3 libpoppler126
+
+18:13:28  poppler-utils python3-dateutil python3-numpy python3-pandas
+
+18:13:29  python3-pandas-lib python3-pkg-resources python3-six python3-tz
+
+18:13:290 upgraded, 14 newly installed, 0 to remove and 30 not upgraded.
+
+18:13:29Need to get 18.5 MB of archives.
+
+18:13:29After this operation, 87.8 MB of additional disk space will be used.
+
+18:13:29Get:1 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libblas3 amd64 3.11.0-2 [149 kB]
+
+18:13:29Get:2 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libgfortran5 amd64 12.2.0-14+deb12u1 [793 kB]
+
+18:13:30Get:3 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 liblapack3 amd64 3.11.0-2 [2323 kB]
+
+18:13:30Get:4 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnspr4 amd64 2:4.35-1 [113 kB]
+
+18:13:30Get:5 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 libnss3 amd64 2:3.87.1-1+deb12u4 [1331 kB]
+
+18:13:30Get:6 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 libpoppler126 amd64 22.12.0-2+deb12u3 [1856 kB]
+
+18:13:30Get:7 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 poppler-utils amd64 22.12.0-2+deb12u3 [192 kB]
+
+18:13:31Get:8 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-six all 1.16.0-4 [17.5 kB]
+
+18:13:31Get:9 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-dateutil all 2.8.2-2 [78.3 kB]
+
+18:13:31Get:10 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-pkg-resources all 66.1.1-1+deb12u2 [297 kB]
+
+18:13:31Get:11 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-numpy amd64 1:1.24.2-1+deb12u1 [4960 kB]
+
+18:13:31Get:12 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-tz all 2022.7.1-4 [30.1 kB]
+
+18:13:32Get:13 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-pandas-lib amd64 1.5.3+dfsg-2 [3499 kB]
+
+18:13:32Get:14 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 python3-pandas all 1.5.3+dfsg-2 [2885 kB]
+
+18:13:32debconf: delaying package configuration, since apt-utils is not installed
+
+18:13:32Fetched 18.5 MB in 0s (116 MB/s)
+
+18:13:32Selecting previously unselected package libblas3:amd64.
+
+18:13:33(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 23302 files and directories currently installed.)
+
+18:13:33Preparing to unpack .../00-libblas3_3.11.0-2_amd64.deb ...
+
+18:13:33Unpacking libblas3:amd64 (3.11.0-2) ...
+
+18:13:33Selecting previously unselected package libgfortran5:amd64.
+
+18:13:33Preparing to unpack .../01-libgfortran5_12.2.0-14+deb12u1_amd64.deb ...
+
+18:13:34Unpacking libgfortran5:amd64 (12.2.0-14+deb12u1) ...
+
+18:13:34Selecting previously unselected package liblapack3:amd64.
+
+18:13:34Preparing to unpack .../02-liblapack3_3.11.0-2_amd64.deb ...
+
+18:13:34Unpacking liblapack3:amd64 (3.11.0-2) ...
+
+18:13:34Selecting previously unselected package libnspr4:amd64.
+
+18:13:35Preparing to unpack .../03-libnspr4_2%3a4.35-1_amd64.deb ...
+
+18:13:35Unpacking libnspr4:amd64 (2:4.35-1) ...
+
+18:13:35Selecting previously unselected package libnss3:amd64.
+
+18:13:35Preparing to unpack .../04-libnss3_2%3a3.87.1-1+deb12u4_amd64.deb ...
+
+18:13:35Unpacking libnss3:amd64 (2:3.87.1-1+deb12u4) ...
+
+18:13:35Selecting previously unselected package libpoppler126:amd64.
+
+18:13:36Preparing to unpack .../05-libpoppler126_22.12.0-2+deb12u3_amd64.deb ...
+
+18:13:36Unpacking libpoppler126:amd64 (22.12.0-2+deb12u3) ...
+
+18:13:36Selecting previously unselected package poppler-utils.
+
+18:13:36Preparing to unpack .../06-poppler-utils_22.12.0-2+deb12u3_amd64.deb ...
+
+18:13:36Unpacking poppler-utils (22.12.0-2+deb12u3) ...
+
+18:13:37Selecting previously unselected package python3-six.
+
+18:13:37Preparing to unpack .../07-python3-six_1.16.0-4_all.deb ...
+
+18:13:37Unpacking python3-six (1.16.0-4) ...
+
+18:13:37Selecting previously unselected package python3-dateutil.
+
+18:13:37Preparing to unpack .../08-python3-dateutil_2.8.2-2_all.deb ...
+
+18:13:38Unpacking python3-dateutil (2.8.2-2) ...
+
+18:13:38Selecting previously unselected package python3-pkg-resources.
+
+18:13:38Preparing to unpack .../09-python3-pkg-resources_66.1.1-1+deb12u2_all.deb ...
+
+18:13:39Preparing to unpack .../10-python3-numpy_1%3a1.24.2-1+deb12u1_amd64.deb ...
+
+18:13:38Unpacking python3-pkg-resources (66.1.1-1+deb12u2) ...
+
+18:13:38Selecting previously unselected package python3-numpy.
+
+18:13:39Unpacking python3-numpy (1:1.24.2-1+deb12u1) ...
+
+18:13:39Selecting previously unselected package python3-tz.
+
+18:13:39Preparing to unpack .../11-python3-tz_2022.7.1-4_all.deb ...
+
+18:13:39Unpacking python3-tz (2022.7.1-4) ...
+
+18:13:40Selecting previously unselected package python3-pandas-lib:amd64.
+
+18:13:40Preparing to unpack .../12-python3-pandas-lib_1.5.3+dfsg-2_amd64.deb ...
+
+18:13:40Unpacking python3-pandas-lib:amd64 (1.5.3+dfsg-2) ...
+
+18:13:40Selecting previously unselected package python3-pandas.
+
+18:13:40Preparing to unpack .../13-python3-pandas_1.5.3+dfsg-2_all.deb ...
+
+18:13:41Unpacking python3-pandas (1.5.3+dfsg-2) ...
+
+18:13:41Setting up python3-pkg-resources (66.1.1-1+deb12u2) ...
+
+18:13:41Setting up python3-tz (2022.7.1-4) ...
+
+18:13:41Setting up python3-six (1.16.0-4) ...
+
+18:13:42Setting up libblas3:amd64 (3.11.0-2) ...
+
+18:13:42update-alternatives: using /usr/lib/x86_64-linux-gnu/blas/libblas.so.3 to provide /usr/lib/x86_64-linux-gnu/libblas.so.3 (libblas.so.3-x86_64-linux-gnu) in auto mode
+
+18:13:42Setting up libnspr4:amd64 (2:4.35-1) ...
+
+18:13:43Setting up libgfortran5:amd64 (12.2.0-14+deb12u1) ...
+
+18:13:43Setting up python3-dateutil (2.8.2-2) ...
+
+18:13:43Setting up liblapack3:amd64 (3.11.0-2) ...
+
+18:13:43update-alternatives: using /usr/lib/x86_64-linux-gnu/lapack/liblapack.so.3 to provide /usr/lib/x86_64-linux-gnu/liblapack.so.3 (liblapack.so.3-x86_64-linux-gnu) in auto mode
+
+18:13:43Setting up libnss3:amd64 (2:3.87.1-1+deb12u4) ...
+
+18:13:44Setting up python3-numpy (1:1.24.2-1+deb12u1) ...
+
+18:13:44Setting up libpoppler126:amd64 (22.12.0-2+deb12u3) ...
+
+18:13:44Setting up poppler-utils (22.12.0-2+deb12u3) ...
+
+18:13:44Setting up python3-pandas (1.5.3+dfsg-2) ...
+
+18:13:44Setting up python3-pandas-lib:amd64 (1.5.3+dfsg-2) ...
+
+18:13:44Processing triggers for libc-bin (2.36-9+deb12u14) ...
+
+18:13:45#7 [4/5] WORKDIR /app
+
+18:13:45#8 [5/5] COPY environment/data /app/data
+
+18:13:45#9 exporting to image
+
+18:13:52dop: building Daytona image dop-task-task-mvr6ixva-verifier:dev from verifier/Dockerfile
+
+18:13:56dop: opening the box on daytona…
+
+18:14:19ran 8 commands
+
+18:14:20dop: done
+
+#1 0:00 bash: id; ls -la /app /app/files · bash: stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/s… · bash: cd /app/data && find . -type f | LC_ALL=C sort | xargs sha2… · bash: sha256sum /app/files/* · bash: cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-… · bash: gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp… · bash: python3 /app/data/tools/tracestat.py /app/data/traces/servi… · bash: pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | g…
+
+→ bash exit 0 0.9s
+
+id; ls -la /app /app/files
+
+uid=0(root) gid=0(root) groups=0(root)
+/app:
+total 4
+drwxr-xr-x 1 root root   49 Oct 30 22:14 .
+drwxr-xr-x 1 root root   86 Oct 30 22:13 ..
+drwxr-xr-x 7 root root   93 Oct 30 22:13 data
+drwxr-xr-x 2 root root  166 Oct 30 22:14 files
+-rw-r--r-- 1 root root 1105 Oct 30 22:14 solution.c
+
+/app/files:
+total 23616
+drwxr-xr-x 2 root root      166 Oct 30 22:14 .
+drwxr-xr-x 1 root root       49 Oct 30 22:14 ..
+-r--r--r-- 1 root root  2792056 Oct 30 22:13 DS_stm32f405rg.pdf
+-r--r--r-- 1 root root 21385881 Oct 30 22:13 rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+→ bash exit 0 0.9s
+
+stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/src /app/data/src/os_cfg.c
+
+root:root 644 /app/solution.c
+root:root 755 /app/data
+root:root 755 /app/data/src
+root:root 644 /app/data/src/os_cfg.c
+
+→ bash exit 0 0.9s
+
+cd /app/data && find . -type f | LC_ALL=C sort | xargs sha256sum
+
+24a7271bed8ca3f06c95f7166c4cf5e2bdad5d79cca2a90e93ede6253ef2495d  ./docs/SRS-ECP300_timing.md
+d1f0c05b716450f04f225cc31a3f2c053cdbf6391eb9c0153b650b186d94dbf6  ./docs/TAG-01_timing_analysis_guideline.md
+0e9a6085c3740e7e8728cecedefa8357f84537d1230ff261a6906d4672625241  ./docs/VN-07_vehicle_network_excerpt.md
+4ce0b89916b327a88c2a4fe345c1dbc75520c8494b2155fb544181df3d397cec  ./docs/release_notes_3.2.0.md
+e8ca0fa77183d293c8a642030376f2b81c10db9983653f7d2920cf7a2c9d2235  ./docs/trace_format.md
+3592b066956d8015001e6d3b27c370ce3a1aa755596c7dbbc04a72068c11837b  ./field/README.md
+2852ec95b30f902d2d790f58fd66d33622c7ff445d2db6383f0c2eeea444822a  ./field/reset_log_3.2.0.csv
+921d1695204082d18f271addd085e746d11143caf85befde1ce093b5b19dfab9  ./src/CanIf_Cfg.h
+d655dceaa6abc5f4f3f405b10e1333dc1d9cd8d7a955c11b500f884c89506b75  ./src/FreeRTOSConfig.h
+62e76f554b2fb6bc70d16cf63b2dd4d0670026062cc9c75daa2c67e3cf8c636c  ./src/can_if_glue.c
+3f8972261f12ce009966c7916ba12d8c96265d2edce8ce6638198336ec270b3c  ./src/foc_isr.c
+6eed3166fb662d42821c98fd7d558a6b73ce9a935be5c82c0593d75e8d2eb0ef  ./src/iwdg.c
+c3a8d6a81c175ea6942f6203bc9428854a4f4c06c928056139b4dc7bac6f15f1  ./src/os_cfg.c
+5b767c48c7571722965c539f122b2c210d478aad8f4d5c0091b8628559d370b1  ./src/os_cfg.h
+abfd5c93d7c0881d9c12c0b4ab861108ffaad55249b1ca148db5a50817d0863c  ./src/system_clock.c
+8ca2d60f5926706e4d7ecb7b72912b368e8ad8966927c9187d3604c54940abf5  ./src/tasks.c
+8bd1faf0a683cc3934598c273a3daf0da45d4a9dd3ec80364971b771d26e44ed  ./src/tmon.c
+066f4e476453aedc96fa26c4f652491e7f0afd5fc40ff14cd504ae02e1083f88  ./src/tmon.h
+e8a840e80d4a12f2e02c2606ae1e9d7208801834b1d493ce3ad9cf2657522047  ./src/trace_hooks.c
+ef50fe622e374eac40eb13cef12d3183ffa7874d9fddb3774596a01de60d8873  ./tools/tracestat.py
+284788d470c24b743e635f222c950cf74c0141197b23761bc812765b8b799e76  ./traces/bench_maxspeed_5200rpm.csv
+e297017d990eab68faf0abdc977644da9a1f0c249928d0ff0569d09d837d7489  ./traces/bench_nominal_2400rpm.csv
+090f59a602677763e00a7b5d830256d593d60faea78c81264bc916c598dab9ab  ./traces/service_bay_ecm_reflash.csv
+
+→ bash exit 0 0.9s
+
+sha256sum /app/files/*
+
+1f41b4fa49a9960215ebb76cd0a75f20241db82eed60d308345a80463caeed22  /app/files/DS_stm32f405rg.pdf
+f3ff2322eec21f4e49081f68481b764506eee81dba6031bc767e2f8955b27cca  /app/files/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+→ bash exit 0 0.9s
+
+cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-copied
+
+starter-copied
+
+→ bash exit 0 0.9s
+
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp/s.o && echo prompt-compile-ok
+
+prompt-compile-ok
+
+→ bash exit 0 0.9s
+
+python3 /app/data/tools/tracestat.py /app/data/traces/service_bay_ecm_reflash.csv
+
+task         jobs    net max   net mean   TMON max   resp max
+SpeedCtrl     800    128.0us    118.9us    178.4us    209.9us
+CanComm       160    380.0us    307.4us    431.0us    656.0us
+Monitor        80    689.9us    640.0us    740.5us   1585.7us
+Supervisor     40    240.0us    209.8us    268.2us   1834.7us
+NvM             8   3900.0us   2760.4us   4113.2us   7843.4us
+
+interrupt             count   exec max  exec mean   min gap seen
+SysTick_Handler         800     3.00us     2.55us        945.3us
+ADC_IRQHandler        16000     8.10us     7.65us         50.0us
+CAN1_RX0_IRQHandler     700    52.00us    43.49us        236.3us
+
+IWDG refresh interval: max 20134.6 us, min 19827.5 us (40 refreshes)
+
+→ bash exit 0 0.9s
+
+pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | grep -A4 "Table 35"
+
+The parameters given in Table 34 and Table 35 are derived from tests performed under
+ambient temperature and VDD supply voltage conditions summarized in Table 14.
+
+High-speed internal (HSI) RC oscillator
+Table 34. HSI oscillator characteristics (1)
+--
+Table 35. LSI oscillator characteristics (1)
+Symbol
+
+Parameter
+
+The box works: all 8 commands ran cleanly.
+
+Section done
+press Enter ↵
+

@@ -1,0 +1,57 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/network
+title: Hashlist Data Operations Platform
+section: 2.3 Internet
+open: (no tab or panel marked open)
+captured: Fri Oct 30 2026 15:44:23 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+task-mvr6ixva
+
+2.3
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+2.2 Limits
+
+(on) (current) 2.3 Internet
+
+2.4 Toolchain
+
+The shell the model works in, and how it is set up.
+
+2.3
+
+Internet
+
+Internet is off
+Nothing leaves the box, so every run sees the same material.
+
+[checked=false]
+
+Continue
+press Enter ↵
+

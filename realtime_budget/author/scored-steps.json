@@ -1,0 +1,10 @@
+{"steps": [
+  {"text": "The SpeedCtrl budget covers the largest time TMON can measure for a fault-free SpeedCtrl job and is at most 25 % above it.", "field": "budget_speedctrl_ratio", "low": 1, "high": 1.25, "worth": 3, "wrong": ["naive_a", "naive_c"]},
+  {"text": "The CanComm budget covers the largest time TMON can measure for a fault-free CanComm job and is at most 25 % above it.", "field": "budget_cancomm_ratio", "low": 1, "high": 1.25, "worth": 3, "wrong": ["naive_a", "naive_c"]},
+  {"text": "The Monitor budget covers the largest time TMON can measure for a fault-free Monitor job and is at most 25 % above it.", "field": "budget_monitor_ratio", "low": 1, "high": 1.25, "worth": 3, "wrong": ["naive_a", "naive_c"]},
+  {"text": "The Supervisor budget covers the largest time TMON can measure for a fault-free Supervisor job and is at most 25 % above it.", "field": "budget_supervisor_ratio", "low": 1, "high": 1.25, "worth": 3, "wrong": ["naive_a", "naive_c"]},
+  {"text": "The NvM budget covers the largest time TMON can measure for a fault-free NvM job and is at most 25 % above it.", "field": "budget_nvm_ratio", "low": 1, "high": 1.25, "worth": 3, "wrong": ["naive_a", "naive_c"]},
+  {"text": "Every task meets its deadline when each task may run up to its full budget.", "field": "deadlines_met", "low": 5, "high": 5, "worth": 1, "wrong": []},
+  {"text": "The watchdog does not expire in fault-free operation, even on a unit whose LSI runs at the 47 kHz maximum.", "field": "wdg_margin_us", "low": 1, "high": 1000000, "worth": 2, "wrong": ["naive_b"]},
+  {"text": "If the Supervisor stops, the watchdog resets the controller within 80 ms, even on a unit whose LSI runs at the 17 kHz minimum.", "field": "wdg_max_timeout_ms", "low": 0, "high": 80, "worth": 1, "wrong": []}
+]}

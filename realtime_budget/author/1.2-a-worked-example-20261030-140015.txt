@@ -1,0 +1,78 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/example
+title: Hashlist Data Operations Platform
+section: 1.2 A worked example
+open: 1 The prompt
+captured: Fri Oct 30 2026 14:00:15 GMT-0400 (Eastern Daylight Time)
+
+Save and exit
+task-mvr6ixva
+
+1.2
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+(on) (current) 1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Brief
+
+1.1 What good looks like
+
+(on) (current) 1.2 A worked example
+
+1.3 How a run works
+
+What makes a good task.
+
+1.2
+
+A worked example
+
+The task those scores came from. Open any part.
+
+[expanded=true] 1 The prompt
+
+What the model is given. It names the symptom and where to look, never the cause.
+
+The diagnostic gateway rejects every SOVD request that arrives while a UDS session is already open on the same ECU, returning 0x22 instead of queueing it. Bench traces are in data/session.log.
+
+Find the condition that causes the rejection, and give the arbitration window the fix has to hold across.
+
+[expanded=false] 2 The container
+
+[expanded=false] 3 The golden set
+
+[expanded=false] 4 The checks
+
+[expanded=false] 5 The result
+
+Some shells grade a file the model leaves behind. Here, a chair built in Blender from two photos.
+
+in       two photos of the chair
+out      /app/model.blend
+
+verifier/report.py
+  silhouette overlap   from the two photo cameras
+  silhouette overlap   from hidden cameras
+  surface distance     part by part
+
+Continue
+press Enter ↵
+

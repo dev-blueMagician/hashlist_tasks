@@ -1,0 +1,153 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/steps
+title: Hashlist Data Operations Platform
+section: 5.1 Your steps
+open: Your steps
+captured: Thu Nov 05 2026 09:43:12 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+5.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+(on) (current) 5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+(on) [selected=true]
+Your steps
+
+Hidden from the model
+[title: Full screen]
+
+How would a good engineer solve this problem, step by step?
+
+One step a line, up to twenty. They become your scored steps.
+
+No AI-generated steps.
+
+references/steps.md written
+
+[textarea Your steps]
+Start with the reset log. There are TMON overruns in each task, along with IWDG resets. All the resets happen during intense CAN reception, and the IWDG resets are in units where LSI runs fast.
+The WCET values of each task should be their largest net execution times in three reference traces – SpeedCtrl (150 µs), CanComm (380 µs), Monitor (780 µs), Supervisor (240 µs), and NvM (3900 µs). The interrupt WCET values will be as follows: ADC (9.0 µs), CAN1_RX0 (52.0 µs), and SysTick (3.0 µs).
+The TMON values include more than the execution time of the task itself, when CAN messages are received. The `CAN1_RX0_IRQHandler` in `can_if_glue.c` does not have any TMON brackets; hence, the execution time is charged to whatever task is executing. TAG-01 Appendix A is obsolete and requires an update.
+Find the fastest rate at which the CAN receive interrupt can fire. Work it out from the bus rules, not from the traffic in the traces (TAG-01 section 2.3). The bank 1 filter in can_if_glue.c (ID 0x7DF, mask 0x700) accepts every ID from 0x700 to 0x7FF, and while any ECU on the network is being reprogrammed, VN-07 section 4.5 lets those frames fill the bus back to back with STmin 0. Without stuff bits, the shortest 8-byte frame is 111 bit times (VN-07 section 5.1), which comes to 222 µs at 500 kbit/s. Use 222 µs for the analysis. The 1 ms STmin and the 236 µs shortest gap in the workshop trace are both slower than what the bus allows.
+Based on TAG-01 Section 3, the largest monitored time for are SpeedCtrl 257 µs, CanComm 539 µs, Monitor 1150 µs, Supervisor 347 µs, and NvM 5533 µs. Assign each budget between their largest time and 25% over it. Then use Section 4 to determine whether each task satisfies its deadline with the new budgets.
+Finally, work out the longest gap between two watchdog refreshes, which is the 20 ms Supervisor period plus the Supervisor's response time with the new budgets (TAG-01 section 5). Then choose an IWDG prescaler and reload that work at both ends of the LSI range. The timeout has to be longer than the gap when LSI runs at its datasheet maximum of 47 kHz, and no more than 80 ms when LSI runs at its datasheet minimum of 17 kHz. For example, with budgets 10 % above the monitored times, the gap is 24.47 ms, and prescaler 0 with reload 319 gives 27.2 ms at 47 kHz and 75.3 ms at 17 kHz.
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

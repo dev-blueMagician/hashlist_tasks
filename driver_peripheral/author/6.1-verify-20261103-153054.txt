@@ -1,0 +1,934 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/fd343339-2a6c-4a57-bf7e-caf86870d0f2/grade
+title: Hashlist Data Operations Platform
+section: 6.1 Verify
+open: (no tab or panel marked open)
+captured: Tue Nov 03 2026 15:30:54 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+microSD bring-up on the EK-LM3S6965
+
+6.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+(on) (current) 6 Verify
+
+7 Run
+
+Verify
+
+(on) (current) 6.1 Verify
+
+Checks the correct answer beats every common mistake.
+
+6.1
+
+Verify
+
+1 problem to fix
+
+Verify again
+
+1
+The prompt names /app/build, but the agent box has nothing there.
+Upload it in Environment and copy it into the box at that path, or fix the path in the prompt. If the model is meant to create it, ignore this.
+
+Why?
+
+Every model told to open it finds nothing, so every run measures guessing.
+
+Fix this in Files
+
+Scores
+
+Correct answer 1.00
+
+naive_a 0.10
+
+Step by step
+
+Step Points Correct answer naive_a
+
+1 Whenever SSI0 sends a frame, PA3 (the OLED chip select) is not the SSI0 frame signal and is not driven low. 1 ✓ ✗
+
+2 The LDO voltage is raised to 2.75V before enabling the PLL to address the Rev A2 silicon errata 1 ✓ ✗
+
+3 The system clock is 50 MHz from the 8 MHz crystal through the PLL whenever the UART or SSI is in use, and the chip never runs from a disabled or misconfigured clock on the way there. 1 ✓ ✗
+
+4 At least 3 system clock cycles must pass after a peripheral's clock is enabled before the peripheral is accessed. 1 ✓ ✓
+
+5 Card identification, including the power-up clocks before CMD0, runs between 100 kHz and 400 kHz, with the prescaler's lowest bit ignored as the hardware does. 1 ✓ ✗
+
+6 SSI0's clock settings (SSICR0 and SSICPSR) are written only while the port is disabled. 1 ✓ ✗
+
+7 Reading and writing work on version 1, standard and high-capacity cards, with the right card type reported and no stray writes. Card start-up follows the SD SPI rules, UART and SSI pins and clocks are set up before use, the UART runs at 115200 baud 8N1 within 2 %, and SPI data runs at 10-25 MHz. 1 ✓ ✗
+
+8 When a different card is inserted and initialised again, identification runs at 100-400 kHz again and the new card reads correctly with its own addressing. 1 ✓ ✗
+
+9 A block number past the end of the card gets an error on every card type, including numbers that would overflow a 32-bit byte address, and the low block such a number would wrap to is left unchanged. 1 ✓ ✗
+
+10 On a 16 GB high-capacity card, reads and writes work at block numbers with eight digits. 1 ✓ ✗
+
+! a mistake that passes a step it should fail.
+
+Show the grader's log
+
+Graderdone419 lines
+
+15:26:17dop: check_grader started on 5bf49f6c2b75:2
+
+15:26:20dop: building Daytona image dop-task-task-mvttqdbt-runtime:dev from environment/Dockerfile
+
+15:26:24dop: building Daytona image dop-task-task-mvttqdbt-verifier:dev from verifier/Dockerfile
+
+15:26:27#1 [internal] load remote build context
+
+15:26:27#2 copy /context /
+
+15:26:27#3 [internal] load metadata for docker.io/library/python:3.12-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254
+
+15:26:27#4 [1/6] FROM docker.io/library/python:3.12-slim-bookworm@sha256:782412e85d0f0984994c290652577d4018aff08145c85b262bb63dc0c7522254
+
+15:26:28#5 [2/6] RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+
+15:26:28#6 [3/6] RUN apt-get update && apt-get install -y --no-install-recommends gcc-arm-none-eabi libnewlib-arm-none-eabi qemu-system-arm && rm -rf /var/lib/apt/lists/*
+
+15:26:28Get:1 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm InRelease [151 kB]
+
+15:26:28Get:2 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm-updates InRelease [55.4 kB]
+
+15:26:28Get:3 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security InRelease [34.8 kB]
+
+15:26:29Get:4 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 Packages [8790 kB]
+
+15:26:29Get:5 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm-updates/main amd64 Packages [6924 B]
+
+15:26:29Get:6 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 Packages [349 kB]
+
+15:26:29Fetched 9387 kB in 1s (11.1 MB/s)
+
+15:26:29Reading package lists...
+
+15:26:30Reading package lists...
+
+15:26:30Building dependency tree...
+
+15:26:30Reading state information...
+
+15:26:30The following additional packages will be installed:
+
+15:26:31  binutils-arm-none-eabi iso-codes libaio1 libasound2 libasound2-data libbpf1
+
+15:26:31  libbrlapi0.8 libbsd0 libcacard0 libcap2-bin libcapstone4 libdaxctl1
+
+15:26:31  libdrm-common libdrm2 libdw1 libelf1 libepoxy0 libexecs0 libexpat1 libfdt1
+
+15:26:31  libfuse3-3 libgbm1 libglib2.0-0 libgstreamer-plugins-base1.0-0
+
+15:26:31  libgstreamer1.0-0 libibverbs1 libisl23 libjpeg62-turbo libkmod2 libmpc3
+
+15:26:32  libmpfr6 libndctl6 libnewlib-dev libnl-3-200 libnl-route-3-200 libnspr4
+
+15:26:32  libnss3 libnuma1 libopus0 liborc-0.4-0 libpcsclite1 libpixman-1-0 libpmem1
+
+15:26:32  libpng16-16 librdmacm1 libsasl2-2 libsasl2-modules-db libslirp0 libsndio7.0
+
+15:26:32  libspice-server1 libunwind8 liburing2 libusb-1.0-0 libusbredirparser1
+
+15:26:32  libvdeplug2 libwayland-server0 qemu-system-common qemu-system-data
+
+15:26:33Suggested packages:
+
+15:26:33  isoquery libasound2-plugins alsa-utils fuse3 low-memory-monitor
+
+15:26:33  libvisual-0.4-plugins gstreamer1.0-tools libnewlib-doc opus-tools pcscd
+
+15:26:33  sndiod gstreamer1.0-plugins-ugly samba vde2
+
+15:26:33Recommended packages:
+
+15:26:34  alsa-ucm-conf alsa-topology-conf libpam-cap libglib2.0-data shared-mime-info
+
+15:26:34  xdg-user-dirs gstreamer1.0-plugins-base ibverbs-providers
+
+15:26:34  libstdc++-arm-none-eabi-newlib libsasl2-modules gstreamer1.0-libav
+
+15:26:34  gstreamer1.0-plugins-good qemu-system-gui qemu-utils ipxe-qemu
+
+15:26:34  qemu-efi-aarch64 qemu-efi-arm qemu-block-extra
+
+15:26:35The following NEW packages will be installed:
+
+15:26:35  binutils-arm-none-eabi gcc-arm-none-eabi iso-codes libaio1 libasound2
+
+15:26:35  libasound2-data libbpf1 libbrlapi0.8 libbsd0 libcacard0 libcap2-bin
+
+15:26:35  libcapstone4 libdaxctl1 libdrm-common libdrm2 libdw1 libelf1 libepoxy0
+
+15:26:35  libexecs0 libexpat1 libfdt1 libfuse3-3 libgbm1 libglib2.0-0
+
+15:26:36  libgstreamer-plugins-base1.0-0 libgstreamer1.0-0 libibverbs1 libisl23
+
+15:26:36  libjpeg62-turbo libkmod2 libmpc3 libmpfr6 libndctl6 libnewlib-arm-none-eabi
+
+15:26:36  libnewlib-dev libnl-3-200 libnl-route-3-200 libnspr4 libnss3 libnuma1
+
+15:26:36  libopus0 liborc-0.4-0 libpcsclite1 libpixman-1-0 libpmem1 libpng16-16
+
+15:26:37  librdmacm1 libsasl2-2 libsasl2-modules-db libslirp0 libsndio7.0
+
+15:26:37  libspice-server1 libunwind8 liburing2 libusb-1.0-0 libusbredirparser1
+
+15:26:37  libvdeplug2 libwayland-server0 qemu-system-arm qemu-system-common
+
+15:26:37  qemu-system-data
+
+15:26:370 upgraded, 61 newly installed, 0 to remove and 6 not upgraded.
+
+15:26:38Need to get 124 MB of archives.
+
+15:26:38After this operation, 970 MB of additional disk space will be used.
+
+15:26:38Get:1 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 binutils-arm-none-eabi amd64 2.40-2+18+b1 [2852 kB]
+
+15:26:38Get:2 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libisl23 amd64 0.25-1.1 [683 kB]
+
+15:26:38Get:3 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libmpfr6 amd64 4.2.0-1 [701 kB]
+
+15:26:39Get:4 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libmpc3 amd64 1.3.1-1 [51.5 kB]
+
+15:26:39Get:5 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 gcc-arm-none-eabi amd64 15:12.2.rel1-1 [48.5 MB]
+
+15:26:39Get:6 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 iso-codes all 4.15.0-1 [2906 kB]
+
+15:26:39Get:7 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libaio1 amd64 0.3.113-4 [13.4 kB]
+
+15:26:39Get:8 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libasound2-data all 1.2.8-1 [20.5 kB]
+
+15:26:40Get:9 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libasound2 amd64 1.2.8-1+b1 [362 kB]
+
+15:26:40Get:10 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libelf1 amd64 0.188-2.1 [174 kB]
+
+15:26:40Get:11 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libbpf1 amd64 1:1.1.2-0+deb12u1 [145 kB]
+
+15:26:40Get:12 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libbrlapi0.8 amd64 6.5-7+deb12u1 [90.5 kB]
+
+15:26:40Get:13 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libbsd0 amd64 0.11.7-2 [117 kB]
+
+15:26:41Get:14 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libglib2.0-0 amd64 2.74.6-2+deb12u9 [1403 kB]
+
+15:26:41Get:15 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnspr4 amd64 2:4.35-1 [113 kB]
+
+15:26:41Get:16 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 libnss3 amd64 2:3.87.1-1+deb12u4 [1331 kB]
+
+15:26:41Get:17 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libpcsclite1 amd64 1.9.9-2 [49.7 kB]
+
+15:26:41Get:18 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libcacard0 amd64 1:2.8.0-3 [91.1 kB]
+
+15:26:42Get:19 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libcap2-bin amd64 1:2.66-4+deb12u3+b1 [35.2 kB]
+
+15:26:42Get:20 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libcapstone4 amd64 4.0.2-5 [569 kB]
+
+15:26:42Get:21 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libkmod2 amd64 30+20221128-1 [57.9 kB]
+
+15:26:42Get:22 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libdaxctl1 amd64 76.1-1 [21.1 kB]
+
+15:26:42Get:23 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libdrm-common all 2.4.114-1 [7112 B]
+
+15:26:43Get:24 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libdrm2 amd64 2.4.114-1+b1 [37.5 kB]
+
+15:26:43Get:25 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libdw1 amd64 0.188-2.1 [235 kB]
+
+15:26:43Get:26 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libepoxy0 amd64 1.5.10-1 [189 kB]
+
+15:26:43Get:27 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libexecs0 amd64 1.3-2 [8840 B]
+
+15:26:43Get:28 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 libexpat1 amd64 2.5.0-1+deb12u4 [106 kB]
+
+15:26:44Get:29 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libfdt1 amd64 1.6.1-4+b1 [19.0 kB]
+
+15:26:44Get:30 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libfuse3-3 amd64 3.14.0-4 [88.1 kB]
+
+15:26:44Get:31 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libwayland-server0 amd64 1.21.0-1 [35.9 kB]
+
+15:26:44Get:32 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libgbm1 amd64 22.3.6-1+deb12u2 [38.1 kB]
+
+15:26:44Get:33 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libunwind8 amd64 1.6.2-3 [51.2 kB]
+
+15:26:45Get:34 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libgstreamer1.0-0 amd64 1.22.0-2+deb12u1 [1170 kB]
+
+15:26:45Get:35 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 liborc-0.4-0 amd64 1:0.4.33-2 [164 kB]
+
+15:26:45Get:36 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libgstreamer-plugins-base1.0-0 amd64 1.22.0-3+deb12u6 [934 kB]
+
+15:26:45Get:37 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnl-3-200 amd64 3.7.0-0.2+b1 [63.1 kB]
+
+15:26:46Get:38 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnl-route-3-200 amd64 3.7.0-0.2+b1 [185 kB]
+
+15:26:46Get:39 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libibverbs1 amd64 44.0-2 [60.7 kB]
+
+15:26:46Get:40 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libjpeg62-turbo amd64 1:2.1.5-2 [166 kB]
+
+15:26:46Get:41 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libndctl6 amd64 76.1-1 [61.7 kB]
+
+15:26:46Get:42 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnewlib-dev all 3.3.0-1.3+deb12u1 [257 kB]
+
+15:26:47Get:43 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnewlib-arm-none-eabi all 3.3.0-1.3+deb12u1 [45.4 MB]
+
+15:26:47Get:44 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libnuma1 amd64 2.0.16-1 [21.0 kB]
+
+15:26:47Get:45 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libopus0 amd64 1.3.1-3 [195 kB]
+
+15:26:47Get:46 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libpixman-1-0 amd64 0.42.2-1 [546 kB]
+
+15:26:47Get:47 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libpmem1 amd64 1.12.1-2 [90.0 kB]
+
+15:26:48Get:48 http://snapshot.debian.org/archive/debian-security/20261006T000000Z bookworm-security/main amd64 libpng16-16 amd64 1.6.39-2+deb12u6 [277 kB]
+
+15:26:48Get:49 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 librdmacm1 amd64 44.0-2 [68.6 kB]
+
+15:26:48Get:50 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libsasl2-modules-db amd64 2.1.28+dfsg-10 [20.3 kB]
+
+15:26:48Get:51 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libsasl2-2 amd64 2.1.28+dfsg-10 [59.7 kB]
+
+15:26:48Get:52 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libslirp0 amd64 4.7.0-1 [63.0 kB]
+
+15:26:49Get:53 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libsndio7.0 amd64 1.9.0-0.3+b2 [27.3 kB]
+
+15:26:49Get:54 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libspice-server1 amd64 0.15.1-1 [346 kB]
+
+15:26:49Get:55 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 liburing2 amd64 2.3-3 [12.6 kB]
+
+15:26:49Get:56 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libusb-1.0-0 amd64 2:1.0.26-1 [62.6 kB]
+
+15:26:49Get:57 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libusbredirparser1 amd64 0.13.0-2 [18.7 kB]
+
+15:26:50Get:58 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 libvdeplug2 amd64 4.0.1-4 [27.9 kB]
+
+15:26:50Get:59 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 qemu-system-common amd64 1:7.2+dfsg-7+deb12u18+b3 [2189 kB]
+
+15:26:50Get:60 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 qemu-system-data all 1:7.2+dfsg-7+deb12u18 [1297 kB]
+
+15:26:50Get:61 http://snapshot.debian.org/archive/debian/20261006T000000Z bookworm/main amd64 qemu-system-arm amd64 1:7.2+dfsg-7+deb12u18+b3 [8909 kB]
+
+15:26:51debconf: delaying package configuration, since apt-utils is not installed
+
+15:26:51Fetched 124 MB in 2s (67.0 MB/s)
+
+15:26:51Selecting previously unselected package binutils-arm-none-eabi.
+
+15:26:51(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 6703 files and directories currently installed.)
+
+15:26:51Preparing to unpack .../00-binutils-arm-none-eabi_2.40-2+18+b1_amd64.deb ...
+
+15:26:52Unpacking binutils-arm-none-eabi (2.40-2+18+b1) ...
+
+15:26:52Selecting previously unselected package libisl23:amd64.
+
+15:26:52Preparing to unpack .../01-libisl23_0.25-1.1_amd64.deb ...
+
+15:26:53Unpacking libisl23:amd64 (0.25-1.1) ...
+
+15:26:53Selecting previously unselected package libmpfr6:amd64.
+
+15:26:53Preparing to unpack .../02-libmpfr6_4.2.0-1_amd64.deb ...
+
+15:26:53Unpacking libmpfr6:amd64 (4.2.0-1) ...
+
+15:26:53Selecting previously unselected package libmpc3:amd64.
+
+15:26:54Preparing to unpack .../03-libmpc3_1.3.1-1_amd64.deb ...
+
+15:26:54Unpacking libmpc3:amd64 (1.3.1-1) ...
+
+15:26:54Selecting previously unselected package gcc-arm-none-eabi.
+
+15:26:54Preparing to unpack .../04-gcc-arm-none-eabi_15%3a12.2.rel1-1_amd64.deb ...
+
+15:26:54Unpacking gcc-arm-none-eabi (15:12.2.rel1-1) ...
+
+15:26:55Selecting previously unselected package iso-codes.
+
+15:26:55Preparing to unpack .../05-iso-codes_4.15.0-1_all.deb ...
+
+15:26:55Unpacking iso-codes (4.15.0-1) ...
+
+15:26:55Selecting previously unselected package libaio1:amd64.
+
+15:26:56Preparing to unpack .../06-libaio1_0.3.113-4_amd64.deb ...
+
+15:26:56Unpacking libaio1:amd64 (0.3.113-4) ...
+
+15:26:56Selecting previously unselected package libasound2-data.
+
+15:26:56Preparing to unpack .../07-libasound2-data_1.2.8-1_all.deb ...
+
+15:26:57Unpacking libasound2-data (1.2.8-1) ...
+
+15:26:57Selecting previously unselected package libasound2:amd64.
+
+15:26:57Preparing to unpack .../08-libasound2_1.2.8-1+b1_amd64.deb ...
+
+15:26:57Unpacking libasound2:amd64 (1.2.8-1+b1) ...
+
+15:26:57Selecting previously unselected package libelf1:amd64.
+
+15:26:58Preparing to unpack .../09-libelf1_0.188-2.1_amd64.deb ...
+
+15:26:58Unpacking libelf1:amd64 (0.188-2.1) ...
+
+15:26:58Selecting previously unselected package libbpf1:amd64.
+
+15:26:58Preparing to unpack .../10-libbpf1_1%3a1.1.2-0+deb12u1_amd64.deb ...
+
+15:26:58Unpacking libbpf1:amd64 (1:1.1.2-0+deb12u1) ...
+
+15:26:58Selecting previously unselected package libbrlapi0.8:amd64.
+
+15:26:59Preparing to unpack .../11-libbrlapi0.8_6.5-7+deb12u1_amd64.deb ...
+
+15:26:59Unpacking libbrlapi0.8:amd64 (6.5-7+deb12u1) ...
+
+15:26:59Selecting previously unselected package libbsd0:amd64.
+
+15:26:59Preparing to unpack .../12-libbsd0_0.11.7-2_amd64.deb ...
+
+15:26:59Unpacking libbsd0:amd64 (0.11.7-2) ...
+
+15:27:00Selecting previously unselected package libglib2.0-0:amd64.
+
+15:27:00Preparing to unpack .../13-libglib2.0-0_2.74.6-2+deb12u9_amd64.deb ...
+
+15:27:00Unpacking libglib2.0-0:amd64 (2.74.6-2+deb12u9) ...
+
+15:27:00Selecting previously unselected package libnspr4:amd64.
+
+15:27:01Preparing to unpack .../14-libnspr4_2%3a4.35-1_amd64.deb ...
+
+15:27:01Unpacking libnspr4:amd64 (2:4.35-1) ...
+
+15:27:01Selecting previously unselected package libnss3:amd64.
+
+15:27:01Preparing to unpack .../15-libnss3_2%3a3.87.1-1+deb12u4_amd64.deb ...
+
+15:27:01Unpacking libnss3:amd64 (2:3.87.1-1+deb12u4) ...
+
+15:27:02Selecting previously unselected package libpcsclite1:amd64.
+
+15:27:02Preparing to unpack .../16-libpcsclite1_1.9.9-2_amd64.deb ...
+
+15:27:02Unpacking libpcsclite1:amd64 (1.9.9-2) ...
+
+15:27:02Selecting previously unselected package libcacard0:amd64.
+
+15:27:02Preparing to unpack .../17-libcacard0_1%3a2.8.0-3_amd64.deb ...
+
+15:27:03Unpacking libcacard0:amd64 (1:2.8.0-3) ...
+
+15:27:03Selecting previously unselected package libcap2-bin.
+
+15:27:03Preparing to unpack .../18-libcap2-bin_1%3a2.66-4+deb12u3+b1_amd64.deb ...
+
+15:27:03Unpacking libcap2-bin (1:2.66-4+deb12u3+b1) ...
+
+15:27:04Selecting previously unselected package libcapstone4:amd64.
+
+15:27:04Preparing to unpack .../19-libcapstone4_4.0.2-5_amd64.deb ...
+
+15:27:04Unpacking libcapstone4:amd64 (4.0.2-5) ...
+
+15:27:04Selecting previously unselected package libkmod2:amd64.
+
+15:27:04Preparing to unpack .../20-libkmod2_30+20221128-1_amd64.deb ...
+
+15:27:05Unpacking libkmod2:amd64 (30+20221128-1) ...
+
+15:27:05Selecting previously unselected package libdaxctl1:amd64.
+
+15:27:05Preparing to unpack .../21-libdaxctl1_76.1-1_amd64.deb ...
+
+15:27:05Unpacking libdaxctl1:amd64 (76.1-1) ...
+
+15:27:06Selecting previously unselected package libdrm-common.
+
+15:27:06Preparing to unpack .../22-libdrm-common_2.4.114-1_all.deb ...
+
+15:27:06Unpacking libdrm-common (2.4.114-1) ...
+
+15:27:06Selecting previously unselected package libdrm2:amd64.
+
+15:27:07Preparing to unpack .../23-libdrm2_2.4.114-1+b1_amd64.deb ...
+
+15:27:07Unpacking libdrm2:amd64 (2.4.114-1+b1) ...
+
+15:27:07Selecting previously unselected package libdw1:amd64.
+
+15:27:07Preparing to unpack .../24-libdw1_0.188-2.1_amd64.deb ...
+
+15:27:07Unpacking libdw1:amd64 (0.188-2.1) ...
+
+15:27:08Selecting previously unselected package libepoxy0:amd64.
+
+15:27:08Preparing to unpack .../25-libepoxy0_1.5.10-1_amd64.deb ...
+
+15:27:08Unpacking libepoxy0:amd64 (1.5.10-1) ...
+
+15:27:08Selecting previously unselected package libexecs0:amd64.
+
+15:27:08Preparing to unpack .../26-libexecs0_1.3-2_amd64.deb ...
+
+15:27:09Unpacking libexecs0:amd64 (1.3-2) ...
+
+15:27:09Selecting previously unselected package libexpat1:amd64.
+
+15:27:09Preparing to unpack .../27-libexpat1_2.5.0-1+deb12u4_amd64.deb ...
+
+15:27:09Unpacking libexpat1:amd64 (2.5.0-1+deb12u4) ...
+
+15:27:09Selecting previously unselected package libfdt1:amd64.
+
+15:27:10Preparing to unpack .../28-libfdt1_1.6.1-4+b1_amd64.deb ...
+
+15:27:10Unpacking libfdt1:amd64 (1.6.1-4+b1) ...
+
+15:27:10Selecting previously unselected package libfuse3-3:amd64.
+
+15:27:10Preparing to unpack .../29-libfuse3-3_3.14.0-4_amd64.deb ...
+
+15:27:11Unpacking libfuse3-3:amd64 (3.14.0-4) ...
+
+15:27:11Selecting previously unselected package libwayland-server0:amd64.
+
+15:27:11Preparing to unpack .../30-libwayland-server0_1.21.0-1_amd64.deb ...
+
+15:27:11Unpacking libwayland-server0:amd64 (1.21.0-1) ...
+
+15:27:11Selecting previously unselected package libgbm1:amd64.
+
+15:27:12Preparing to unpack .../31-libgbm1_22.3.6-1+deb12u2_amd64.deb ...
+
+15:27:12Unpacking libgbm1:amd64 (22.3.6-1+deb12u2) ...
+
+15:27:12Selecting previously unselected package libunwind8:amd64.
+
+15:27:12Preparing to unpack .../32-libunwind8_1.6.2-3_amd64.deb ...
+
+15:27:12Unpacking libunwind8:amd64 (1.6.2-3) ...
+
+15:27:13Selecting previously unselected package libgstreamer1.0-0:amd64.
+
+15:27:13Preparing to unpack .../33-libgstreamer1.0-0_1.22.0-2+deb12u1_amd64.deb ...
+
+15:27:13Unpacking libgstreamer1.0-0:amd64 (1.22.0-2+deb12u1) ...
+
+15:27:13Selecting previously unselected package liborc-0.4-0:amd64.
+
+15:27:14Preparing to unpack .../34-liborc-0.4-0_1%3a0.4.33-2_amd64.deb ...
+
+15:27:14Unpacking liborc-0.4-0:amd64 (1:0.4.33-2) ...
+
+15:27:14Selecting previously unselected package libgstreamer-plugins-base1.0-0:amd64.
+
+15:27:15Preparing to unpack .../35-libgstreamer-plugins-base1.0-0_1.22.0-3+deb12u6_amd64.deb ...
+
+15:27:15Unpacking libgstreamer-plugins-base1.0-0:amd64 (1.22.0-3+deb12u6) ...
+
+15:27:15Selecting previously unselected package libnl-3-200:amd64.
+
+15:27:15Preparing to unpack .../36-libnl-3-200_3.7.0-0.2+b1_amd64.deb ...
+
+15:27:15Unpacking libnl-3-200:amd64 (3.7.0-0.2+b1) ...
+
+15:27:16Selecting previously unselected package libnl-route-3-200:amd64.
+
+15:27:16Preparing to unpack .../37-libnl-route-3-200_3.7.0-0.2+b1_amd64.deb ...
+
+15:27:16Unpacking libnl-route-3-200:amd64 (3.7.0-0.2+b1) ...
+
+15:27:16Selecting previously unselected package libibverbs1:amd64.
+
+15:27:17Preparing to unpack .../38-libibverbs1_44.0-2_amd64.deb ...
+
+15:27:17Unpacking libibverbs1:amd64 (44.0-2) ...
+
+15:27:17Selecting previously unselected package libjpeg62-turbo:amd64.
+
+15:27:17Preparing to unpack .../39-libjpeg62-turbo_1%3a2.1.5-2_amd64.deb ...
+
+15:27:17Unpacking libjpeg62-turbo:amd64 (1:2.1.5-2) ...
+
+15:27:18Selecting previously unselected package libndctl6:amd64.
+
+15:27:18Preparing to unpack .../40-libndctl6_76.1-1_amd64.deb ...
+
+15:27:18Unpacking libndctl6:amd64 (76.1-1) ...
+
+15:27:18Selecting previously unselected package libnewlib-dev.
+
+15:27:18Preparing to unpack .../41-libnewlib-dev_3.3.0-1.3+deb12u1_all.deb ...
+
+15:27:19Unpacking libnewlib-dev (3.3.0-1.3+deb12u1) ...
+
+15:27:19Selecting previously unselected package libnewlib-arm-none-eabi.
+
+15:27:19Preparing to unpack .../42-libnewlib-arm-none-eabi_3.3.0-1.3+deb12u1_all.deb ...
+
+15:27:19Unpacking libnewlib-arm-none-eabi (3.3.0-1.3+deb12u1) ...
+
+15:27:19Selecting previously unselected package libnuma1:amd64.
+
+15:27:20Preparing to unpack .../43-libnuma1_2.0.16-1_amd64.deb ...
+
+15:27:20Unpacking libnuma1:amd64 (2.0.16-1) ...
+
+15:27:20Selecting previously unselected package libopus0:amd64.
+
+15:27:20Preparing to unpack .../44-libopus0_1.3.1-3_amd64.deb ...
+
+15:27:20Unpacking libopus0:amd64 (1.3.1-3) ...
+
+15:27:21Selecting previously unselected package libpixman-1-0:amd64.
+
+15:27:21Preparing to unpack .../45-libpixman-1-0_0.42.2-1_amd64.deb ...
+
+15:27:21Unpacking libpixman-1-0:amd64 (0.42.2-1) ...
+
+15:27:21Selecting previously unselected package libpmem1:amd64.
+
+15:27:22Preparing to unpack .../46-libpmem1_1.12.1-2_amd64.deb ...
+
+15:27:22Unpacking libpmem1:amd64 (1.12.1-2) ...
+
+15:27:22Selecting previously unselected package libpng16-16:amd64.
+
+15:27:22Preparing to unpack .../47-libpng16-16_1.6.39-2+deb12u6_amd64.deb ...
+
+15:27:23Unpacking libpng16-16:amd64 (1.6.39-2+deb12u6) ...
+
+15:27:23Selecting previously unselected package librdmacm1:amd64.
+
+15:27:23Preparing to unpack .../48-librdmacm1_44.0-2_amd64.deb ...
+
+15:27:23Unpacking librdmacm1:amd64 (44.0-2) ...
+
+15:27:24Selecting previously unselected package libsasl2-modules-db:amd64.
+
+15:27:24Preparing to unpack .../49-libsasl2-modules-db_2.1.28+dfsg-10_amd64.deb ...
+
+15:27:24Unpacking libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+
+15:27:24Selecting previously unselected package libsasl2-2:amd64.
+
+15:27:24Preparing to unpack .../50-libsasl2-2_2.1.28+dfsg-10_amd64.deb ...
+
+15:27:25Unpacking libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+
+15:27:25Selecting previously unselected package libslirp0:amd64.
+
+15:27:25Preparing to unpack .../51-libslirp0_4.7.0-1_amd64.deb ...
+
+15:27:25Unpacking libslirp0:amd64 (4.7.0-1) ...
+
+15:27:25Selecting previously unselected package libsndio7.0:amd64.
+
+15:27:26Preparing to unpack .../52-libsndio7.0_1.9.0-0.3+b2_amd64.deb ...
+
+15:27:26Unpacking libsndio7.0:amd64 (1.9.0-0.3+b2) ...
+
+15:27:26Selecting previously unselected package libspice-server1:amd64.
+
+15:27:26Preparing to unpack .../53-libspice-server1_0.15.1-1_amd64.deb ...
+
+15:27:27Unpacking libspice-server1:amd64 (0.15.1-1) ...
+
+15:27:27Selecting previously unselected package liburing2:amd64.
+
+15:27:27Preparing to unpack .../54-liburing2_2.3-3_amd64.deb ...
+
+15:27:27Unpacking liburing2:amd64 (2.3-3) ...
+
+15:27:28Selecting previously unselected package libusb-1.0-0:amd64.
+
+15:27:28Preparing to unpack .../55-libusb-1.0-0_2%3a1.0.26-1_amd64.deb ...
+
+15:27:28Unpacking libusb-1.0-0:amd64 (2:1.0.26-1) ...
+
+15:27:28Selecting previously unselected package libusbredirparser1:amd64.
+
+15:27:28Preparing to unpack .../56-libusbredirparser1_0.13.0-2_amd64.deb ...
+
+15:27:29Unpacking libusbredirparser1:amd64 (0.13.0-2) ...
+
+15:27:29Selecting previously unselected package libvdeplug2:amd64.
+
+15:27:29Preparing to unpack .../57-libvdeplug2_4.0.1-4_amd64.deb ...
+
+15:27:29Unpacking libvdeplug2:amd64 (4.0.1-4) ...
+
+15:27:29Selecting previously unselected package qemu-system-common.
+
+15:27:30Preparing to unpack .../58-qemu-system-common_1%3a7.2+dfsg-7+deb12u18+b3_amd64.deb ...
+
+15:27:30Unpacking qemu-system-common (1:7.2+dfsg-7+deb12u18+b3) ...
+
+15:27:30Selecting previously unselected package qemu-system-data.
+
+15:27:30Preparing to unpack .../59-qemu-system-data_1%3a7.2+dfsg-7+deb12u18_all.deb ...
+
+15:27:30Unpacking qemu-system-data (1:7.2+dfsg-7+deb12u18) ...
+
+15:27:31Selecting previously unselected package qemu-system-arm.
+
+15:27:31Preparing to unpack .../60-qemu-system-arm_1%3a7.2+dfsg-7+deb12u18+b3_amd64.deb ...
+
+15:27:31Unpacking qemu-system-arm (1:7.2+dfsg-7+deb12u18+b3) ...
+
+15:27:31Setting up libexpat1:amd64 (2.5.0-1+deb12u4) ...
+
+15:27:31Setting up libpixman-1-0:amd64 (0.42.2-1) ...
+
+15:27:32Setting up libwayland-server0:amd64 (1.21.0-1) ...
+
+15:27:32Setting up binutils-arm-none-eabi (2.40-2+18+b1) ...
+
+15:27:32Setting up libglib2.0-0:amd64 (2.74.6-2+deb12u9) ...
+
+15:27:32No schema files found: doing nothing.
+
+15:27:32Setting up libexecs0:amd64 (1.3-2) ...
+
+15:27:33Setting up libfdt1:amd64 (1.6.1-4+b1) ...
+
+15:27:33Setting up libusbredirparser1:amd64 (0.13.0-2) ...
+
+15:27:33Setting up libunwind8:amd64 (1.6.2-3) ...
+
+15:27:33Setting up libsasl2-modules-db:amd64 (2.1.28+dfsg-10) ...
+
+15:27:33Setting up libcap2-bin (1:2.66-4+deb12u3+b1) ...
+
+15:27:34Setting up libasound2-data (1.2.8-1) ...
+
+15:27:34Setting up libjpeg62-turbo:amd64 (1:2.1.5-2) ...
+
+15:27:34Setting up libepoxy0:amd64 (1.5.10-1) ...
+
+15:27:34Setting up libmpfr6:amd64 (4.2.0-1) ...
+
+15:27:34Setting up libnspr4:amd64 (2:4.35-1) ...
+
+15:27:35Setting up libopus0:amd64 (1.3.1-3) ...
+
+15:27:35Setting up libnewlib-dev (3.3.0-1.3+deb12u1) ...
+
+15:27:35Setting up libpng16-16:amd64 (1.6.39-2+deb12u6) ...
+
+15:27:35Setting up libmpc3:amd64 (1.3.1-1) ...
+
+15:27:35Setting up liborc-0.4-0:amd64 (1:0.4.33-2) ...
+
+15:27:36Setting up libpcsclite1:amd64 (1.9.9-2) ...
+
+15:27:36Setting up libfuse3-3:amd64 (3.14.0-4) ...
+
+15:27:36Setting up qemu-system-data (1:7.2+dfsg-7+deb12u18) ...
+
+15:27:36Setting up libnewlib-arm-none-eabi (3.3.0-1.3+deb12u1) ...
+
+15:27:37Setting up libsasl2-2:amd64 (2.1.28+dfsg-10) ...
+
+15:27:37Setting up libnuma1:amd64 (2.0.16-1) ...
+
+15:27:37Setting up libcapstone4:amd64 (4.0.2-5) ...
+
+15:27:37Setting up libslirp0:amd64 (4.7.0-1) ...
+
+15:27:37Setting up libasound2:amd64 (1.2.8-1+b1) ...
+
+15:27:38Setting up libnl-3-200:amd64 (3.7.0-0.2+b1) ...
+
+15:27:38Setting up libbrlapi0.8:amd64 (6.5-7+deb12u1) ...
+
+15:27:38Setting up libusb-1.0-0:amd64 (2:1.0.26-1) ...
+
+15:27:38Setting up liburing2:amd64 (2.3-3) ...
+
+15:27:38Setting up libisl23:amd64 (0.25-1.1) ...
+
+15:27:39Setting up libaio1:amd64 (0.3.113-4) ...
+
+15:27:39Setting up libbsd0:amd64 (0.11.7-2) ...
+
+15:27:39Setting up libdrm-common (2.4.114-1) ...
+
+15:27:39Setting up libelf1:amd64 (0.188-2.1) ...
+
+15:27:40Setting up iso-codes (4.15.0-1) ...
+
+15:27:40Setting up libbpf1:amd64 (1:1.1.2-0+deb12u1) ...
+
+15:27:40Setting up libkmod2:amd64 (30+20221128-1) ...
+
+15:27:40Setting up libdw1:amd64 (0.188-2.1) ...
+
+15:27:40Setting up gcc-arm-none-eabi (15:12.2.rel1-1) ...
+
+15:27:41Setting up libvdeplug2:amd64 (4.0.1-4) ...
+
+15:27:41Setting up libnss3:amd64 (2:3.87.1-1+deb12u4) ...
+
+15:27:41Setting up libcacard0:amd64 (1:2.8.0-3) ...
+
+15:27:41Setting up libnl-route-3-200:amd64 (3.7.0-0.2+b1) ...
+
+15:27:41Setting up libdaxctl1:amd64 (76.1-1) ...
+
+15:27:42Setting up libsndio7.0:amd64 (1.9.0-0.3+b2) ...
+
+15:27:42Setting up libdrm2:amd64 (2.4.114-1+b1) ...
+
+15:27:42Setting up libndctl6:amd64 (76.1-1) ...
+
+15:27:42Setting up libpmem1:amd64 (1.12.1-2) ...
+
+15:27:42Setting up libgstreamer1.0-0:amd64 (1.22.0-2+deb12u1) ...
+
+15:27:43Setcap worked! gst-ptp-helper is not suid!
+
+15:27:43Setting up libibverbs1:amd64 (44.0-2) ...
+
+15:27:43Setting up libgbm1:amd64 (22.3.6-1+deb12u2) ...
+
+15:27:43Setting up libgstreamer-plugins-base1.0-0:amd64 (1.22.0-3+deb12u6) ...
+
+15:27:44Setting up librdmacm1:amd64 (44.0-2) ...
+
+15:27:44Setting up libspice-server1:amd64 (0.15.1-1) ...
+
+15:27:44Setting up qemu-system-common (1:7.2+dfsg-7+deb12u18+b3) ...
+
+15:27:44Setting up qemu-system-arm (1:7.2+dfsg-7+deb12u18+b3) ...
+
+15:27:44Processing triggers for libc-bin (2.36-9+deb12u14) ...
+
+15:27:45#7 [4/6] RUN pip install --no-cache-dir pip==26.2.1 && pip install --no-cache-dir --uploaded-prior-to 2026-10-06T00:00:00Z pytest==9.1.1 pytest-json-ctrf==0.5.2
+
+15:27:45Collecting pip==26.2.1
+
+15:27:45  Downloading pip-26.2.1-py3-none-any.whl.metadata (4.6 kB)
+
+15:27:45Downloading pip-26.2.1-py3-none-any.whl (1.8 MB)
+
+15:27:46   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 11.0 MB/s eta 0:00:00
+
+15:27:46Installing collected packages: pip
+
+15:27:46  Attempting uninstall: pip
+
+15:27:46    Found existing installation: pip 25.0.1
+
+15:27:46    Uninstalling pip-25.0.1:
+
+15:27:47      Successfully uninstalled pip-25.0.1
+
+15:27:47Successfully installed pip-26.2.1
+
+15:27:47WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+15:27:47[notice] A new release of pip is available: 26.2.1 -> 26.3
+
+15:27:47[notice] To update, run: pip install --upgrade pip
+
+15:27:48Collecting pytest==9.1.1
+
+15:27:48  Downloading pytest-9.1.1-py3-none-any.whl.metadata (7.6 kB)
+
+15:27:48Collecting pytest-json-ctrf==0.5.2
+
+15:27:48  Downloading pytest_json_ctrf-0.5.2-py3-none-any.whl.metadata (4.2 kB)
+
+15:27:48Collecting iniconfig>=1.0.1 (from pytest==9.1.1)
+
+15:27:49  Downloading iniconfig-2.3.0-py3-none-any.whl.metadata (2.5 kB)
+
+15:27:50Collecting packaging>=22 (from pytest==9.1.1)
+
+15:27:50  Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+
+15:27:50Collecting pluggy<2,>=1.5 (from pytest==9.1.1)
+
+15:27:50  Downloading pluggy-1.6.0-py3-none-any.whl.metadata (4.8 kB)
+
+15:27:51Collecting pygments>=2.7.2 (from pytest==9.1.1)
+
+15:27:51  Downloading pygments-2.21.0-py3-none-any.whl.metadata (2.5 kB)
+
+15:27:51Downloading pytest-9.1.1-py3-none-any.whl (386 kB)
+
+15:27:52Downloading pytest_json_ctrf-0.5.2-py3-none-any.whl (7.4 kB)
+
+15:27:52Downloading pluggy-1.6.0-py3-none-any.whl (20 kB)
+
+15:27:52Downloading iniconfig-2.3.0-py3-none-any.whl (7.5 kB)
+
+15:27:52Downloading packaging-26.3-py3-none-any.whl (129 kB)
+
+15:27:52Downloading pygments-2.21.0-py3-none-any.whl (1.3 MB)
+
+15:27:53   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 13.4 MB/s  0:00:00
+
+15:27:53Installing collected packages: pygments, pluggy, packaging, iniconfig, pytest, pytest-json-ctrf
+
+15:27:53Successfully installed iniconfig-2.3.0 packaging-26.3 pluggy-1.6.0 pygments-2.21.0 pytest-9.1.1 pytest-json-ctrf-0.5.2
+
+15:27:53WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+
+15:27:53[notice] A new release of pip is available: 26.2.1 -> 26.3
+
+15:27:54[notice] To update, run: pip install --upgrade pip
+
+15:27:54packet queue is empty, aborting
+
+15:27:54#8 [5/6] COPY verifier/ /tests/
+
+15:27:54#9 [6/6] RUN mkdir -p /app /out
+
+15:27:54#10 exporting to image
+
+15:28:01dop: checking the files the prompt names, and that no answer is in the box…
+
+15:28:15dop: the prompt names /app/build, and the agent box has nothing there
+
+15:28:15dop: scoring gold…
+
+15:28:39  gold       reward 1.00  strict true
+
+15:28:39dop: scoring naive_a…
+
+15:29:03  naive_a    reward 0.10  strict false
+
+15:29:04dop: gold_in_other_notation (valid, made from gold) scores 1.000, n/a: no line of /app/firmware.c reads label: number
+
+15:29:04GRADER SOUND — the correct answer scores 1.0 and every wrong one scores less
+
+15:29:05dop: done
+
+Continue
+press Enter ↵
+

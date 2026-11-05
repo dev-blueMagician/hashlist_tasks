@@ -1,0 +1,117 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/fd343339-2a6c-4a57-bf7e-caf86870d0f2/steps
+title: Hashlist Data Operations Platform
+section: 5.1 Your steps
+open: Your steps
+captured: Tue Nov 03 2026 14:53:53 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+microSD bring-up on the EK-LM3S6965
+
+5.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+(on) (current) 5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] starter
+
+firmware.c
+
+link.ld
+
+run-sd.sh
+
+run.sh
+
+service-log.txt
+
+start.c
+
+uart.h
+
+[expanded=true] files
+
+lm3s6965-datasheet.pdf
+
+spmu029-ek-lm3s6965-users-manual.pdf
+
+spmz860-stellaris-errata.pdf
+
+(on) [selected=true]
+Your steps
+
+Hidden from the model
+[title: Full screen]
+
+How would a good engineer solve this problem, step by step?
+
+One step a line, up to twenty. They become your scored steps.
+
+references/steps.md written
+
+[textarea Your steps]
+1. Read the board manual first and you will see that the card select is PD0, and PA3 is the OLED's chip select on the same SPI bus, which means that PA3 must be set as GPIO high whene the card is active (check oled_cs_ok).
+2. Then calculate the silicon revision from the DID0 value in the service log (A2), look into the errata for that and increase the LDO to 2.75 V before turning on the PLL (check ldo_errata_ok)..
+3. Set up the 50 MHz clock according to the description in the datasheet noting that the oscillator is disabled after reset and thus has to be enabled in order for the PLL to use it (check clock_ok).
+4. Wait several cycles after clock enable of any peripheral according to the request in the datasheet (check rcgc_delay_ok).
+5. Run the card identification at frequencies from 100 to 400 kHz using even prescaler value since the hardware does not care about the lowest bit (check id_clock_ok).
+6. Turn the SPI port off before changing its clock settings and then enable it (check ssi_reconfig_ok).
+7. Distinguish between old version 1 cards, standard cards and high capacity cards, address all of them accordingly and make sure that UART and SPI rates do not exceed their maximum allowed values to ensure proper reading and writing on all cards (check card_io_ok).
+8. Begin each initialization from slow identification clock and detect the card again, so that the new card will work straight away (check reinit_ok).
+9. Refuse a block number beyond the end of the card that has an error for all types of cards. On a byte-addressed card, block 2^23 or higher would overflow the 32-bit address and reach a low block, so test for that before the command goes out (check range_ok).
+10. Test on a card of the same size as the ones in the service log, not only a small one. A write line with an eight-digit block number is longer than the prototype's line buffer, so those writes fail until the buffer is made big enough for a ten-digit block number (check large_card_ok).
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

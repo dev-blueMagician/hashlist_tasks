@@ -1,0 +1,6 @@
+# Generated files
+__pycache__/
+*.pyc
+
+# VM round bundles made by _kit/tools/vm_bundle.py (copies of tracked files)
+/*/vm/

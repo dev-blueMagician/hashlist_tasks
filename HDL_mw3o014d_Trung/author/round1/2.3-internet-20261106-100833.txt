@@ -1,0 +1,64 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/network
+title: Hashlist Data Operations Platform
+section: 2.3 Internet
+open: (no tab or panel marked open)
+captured: Fri Nov 06 2026 10:08:33 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+2.3
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+2.2 Limits
+
+(on) (current) 2.3 Internet
+
+2.4 Toolchain
+
+The shell the model works in, and how it is set up.
+
+2.2
+
+Limits
+
+CPU [select  = "4 cores"]
+
+Memory [select  = "8 GiB"]
+
+Disk [select  = "8 GiB"]
+
+Grader timeout [select  = "15 minutes"]
+
+Step limit model turns [select  = ""]
+
+Working time [select Working time = "60 minutes"]Set by the template.
+
+Continue
+press Enter ↵
+

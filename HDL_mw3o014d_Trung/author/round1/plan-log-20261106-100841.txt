@@ -1,0 +1,40 @@
+plan: author/builder-plan.json
+result: stopped
+
+Builder cd7e12b1-46a7-43c7-8ef7-80de157473d8 (task-mw3o014d), "task-mw3o014d": found.
+1. save every section (1 to 6)
+  saved 1.1-what-good-looks-like-20261106-100830.txt
+  saved 1.2-a-worked-example-20261106-100830.txt
+  saved 1.3-how-a-run-works-20261106-100831.txt
+  saved 2.1-shell-20261106-100832.txt
+  saved 2.2-limits-20261106-100832.txt
+  saved 2.3-internet-20261106-100833.txt
+  saved 2.4-toolchain-20261106-100833.txt
+  saved 3.1-files-20261106-100834.txt
+  saved 4.1-task-title-20261106-100834.txt
+  saved 4.2-context-20261106-100835.txt
+  saved 4.3-prompt-20261106-100835.txt
+  saved 5.1-your-steps-20261106-100836.txt
+  saved 5.2-correct-answer-20261106-100836.txt
+  saved 5.3-common-mistakes-20261106-100837.txt
+  saved 5.4-scored-steps-20261106-100837.txt
+  saved 6.1-verify-20261106-100838.txt
+2. open section 1.2
+3. click "2 The container" (optional)
+  SKIPPED (optional): clicking "2 The container": no "2 The container" on the page
+  saved 1.2-a-worked-example-20261106-100838.txt
+4. save this page (optional)
+  saved 1.2-a-worked-example-20261106-100839.txt
+5. click "3 The golden set" (optional)
+6. save this page (optional)
+  saved 1.2-a-worked-example-20261106-100839-2.txt
+7. click "4 The checks" (optional)
+8. save this page (optional)
+  saved 1.2-a-worked-example-20261106-100840.txt
+9. click "5 The result" (optional)
+10. save this page (optional)
+  saved 1.2-a-worked-example-20261106-100840-2.txt
+11. open section 2.4
+12. fill "Commands to run in the box" with author/probes/probe-1-toolchain.txt
+STOPPED: filling "Commands to run in the box": 0 boxes labelled "Commands to run in the box"
+  the page at the stop was saved too

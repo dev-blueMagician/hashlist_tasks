@@ -1,0 +1,84 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/steps
+title: Hashlist Data Operations Platform
+section: 5.1 Your steps
+open: Your steps
+captured: Fri Nov 06 2026 10:08:36 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+5.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+(on) (current) 5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+Nothing in the box yet.
+
+(on) [selected=true]
+Your steps
+
+Hidden from the model
+[title: Full screen]
+
+How would a good engineer solve this problem, step by step?
+
+One step a line, up to twenty. They become your scored steps.
+
+No AI-generated steps.
+
+references/steps.md empty
+
+[textarea Your steps]
+
+[/textarea]
+
+Upload files or a folder. A .zip is unpacked in the box.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

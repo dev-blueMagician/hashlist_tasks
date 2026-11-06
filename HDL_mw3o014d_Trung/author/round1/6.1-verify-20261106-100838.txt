@@ -1,0 +1,80 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/grade
+title: Hashlist Data Operations Platform
+section: 6.1 Verify
+open: (no tab or panel marked open)
+captured: Fri Nov 06 2026 10:08:38 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+6.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+(on) (current) 6 Verify
+
+7 Run
+
+Verify
+
+(on) (current) 6.1 Verify
+
+Checks the correct answer beats every common mistake.
+
+6.1
+
+Verify
+
+3 problems to fix
+
+Verify my task
+
+1
+The prompt is empty.
+Write it as the engineer would have received it.
+
+Why?
+
+The model is handed nothing, so every run answers from memory or not at all.
+
+Fix this in Prompt
+
+2
+There is no correct answer yet.
+Write it under Correct answer, as the answer itself or a script that writes /app/data/design.v.
+
+Why?
+
+Nothing defines a perfect answer, so no run can score 1.00 and the checks cannot be tested.
+
+Fix this in Correct answer
+
+3
+naive_a is empty.
+Write it, or remove it.
+
+Why?
+
+An empty answer fails every check at once, so beating it says nothing about whether any one check is sharp.
+
+Fix this in Common mistakes
+
+[disabled] Continue
+verify before you run it
+

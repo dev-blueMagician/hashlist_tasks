@@ -1,0 +1,82 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/files
+title: Hashlist Data Operations Platform
+section: 3.1 Files
+open: Use one of my environments
+captured: Fri Nov 06 2026 10:08:34 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+3.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+(on) (current) 3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Environment
+
+(on) (current) 3.1 Files
+
+The files in the box.
+
+Use one of my environments
+
+Use one you built
+
+Build a new one
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+Nothing in the box yet.
+
+[title: Full screen]
+
+Upload files or a folder. A .zip is unpacked in the box.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Scripts before and after the model optional, hidden from the model
+
+Run in the box as root, in the workdir: one before the model's first step, one after its last and before the answer file is read. The correct answer and each common mistake run with them too. Use them to set up the starting state, or to pack what the model changed into the answer file, so the model is not graded on packing it. A setup that fails stops the run as an error. A teardown that fails is no answer, a score of 0, as it fails on what the run left; Verify shows it on your correct answer first. What setup makes under the workdir is given to the model's user, so the model can edit it; anything it makes elsewhere stays root's. A teardown that writes the answer file replaces a correct answer typed as that file: write your answers as scripts that change what teardown packs.
+
+Before the model starts hooks/setup.sh
+[textarea hooks/setup.sh]
+
+[/textarea]
+
+After the model stops hooks/teardown.sh
+[textarea hooks/teardown.sh]
+
+[/textarea]
+
+Section done
+press Enter ↵
+

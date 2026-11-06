@@ -1,0 +1,27 @@
+HDL_mw3o014d_Trung (task-mw3o014d) - builder round 3, with the plan runner
+=========================================================================
+Round 2 ran an older copy of the extension, not the one in that zip, so its
+pages lagged one screen and the plan stopped. This round repeats it with 2.3.
+
+This zip holds:
+  HDL_mw3o014d_Trung/     the task folder, only the files this round needs
+  dop-builder-helper/     the extension, version 2.3
+
+1. Unzip into your fixed folder on the VM (for example C:\Hashlist), choosing
+   "overwrite" for files that already exist. Do not delete the old folder.
+2. Replace the extension:
+   a. chrome://extensions: on the old "DOP Builder Helper" card, press Remove.
+   b. "Load unpacked", and choose C:\Hashlist\dop-builder-helper (the folder
+      you just unzipped). Later rounds only need the reload arrow.
+   c. The new card must say 2.3. Pin it again from the puzzle-piece menu.
+3. In the extension popup, Choose folder: pick HDL_mw3o014d_Trung (the task
+   folder, not author). Removing the old card forgets the old choice.
+4. Open the task in the builder, in one tab only.
+5. Run a plan -> Preview. The first line must read "Extension 2.3". If it
+   does not, stop and tell me. Then press Run.
+   It sets the step limit to 500 in 2.2, runs Try the box in 2.4 (a few
+   minutes; it does not submit), then saves every section. Never open
+   section 7 or press Run in the builder.
+
+Bring back to the PC: the whole folder HDL_mw3o014d_Trung/author/round3/
+(pages and the plan log). Put it at the same place on the PC, then say "done".

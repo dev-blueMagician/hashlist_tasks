@@ -1,0 +1,191 @@
+"""Grade the RTL the agent saved against the withheld testbenches and write /out/reward.json.
+
+What runs comes from /tests/rtl.json:
+
+    {"module": "fifo", "dut": ["/app/data/fifo.v"],
+     "benches": [{"top": "tb", "files": ["tb_hidden.v"], "params": {"DEPTH": 4}, "tb_params": {"SEED": 1},
+                  "checks": ["fill_to_depth", "random_traffic"]}]}
+
+`dut` is the RTL the agent edits, the task's artifacts, and `module` its top. Each bench is compiled
+with it by Icarus Verilog and by Verilator, and run once on Icarus and on Verilator at SEEDS seeds,
+every flop and memory powering up random. `params` are the design's parameters: the bench gets them
+and passes them down, and the design is also elaborated alone with them. `tb_params` are the bench's own.
+
+Every run gets +nonce=<random> and +seed=<random>, the stimulus seed the bench should read, so no
+design can learn the traffic. A bench has to print, for each check, `CHECK <nonce> <name> PASS` or
+`CHECK <nonce> <name> FAIL <why>`, then `DONE <nonce>` before it ends. Only lines with the nonce,
+before DONE, count. A check passes when every run of every bench naming it printed PASS: one a run
+never reached, or a run that never printed DONE, has failed. So a design that reads its own power-up
+state, or adapts to what the bench does first, fails on the seeds where that guess is wrong.
+
+`must` names the checks the design as handed over already passes, what the change must not break: one
+failing scores 0, and they pay nothing, so the untouched design scores 0.
+
+A build or run that is killed, by a signal or the clock, fails its checks: nothing a design can cause
+counts as the grader's fault, or a design could crash its way out of a score.
+
+Before any bench, the RTL has to be synthesizable RTL that cannot touch a bench (`lint`): no compiler
+directive but `timescale and `default_nettype, so no macro hides what follows; no system task but
+$signed, $unsigned and $clog2, so it cannot print or end a run; no hierarchical name, escaped
+identifier, bind, defparam, import or export, so it names nothing outside itself and calls no C; no `initial`, no delay, no force, no wait, fork or unbounded loop, and every event control is @* or
+edges only.
+And it elaborates alone at each bench's `params` (`elaborates`). Failing either scores 0; otherwise
+the reward is the share of the benches' checks outside `must` that pass.
+
+The root of every path is argv[1] when given, so the grader runs outside its image too.
+"""
+import json
+import os
+import re
+import secrets
+import subprocess
+import sys
+import tempfile
+
+ROOT = sys.argv[1] if len(sys.argv) > 1 else "/"
+TESTS = os.path.join(ROOT, "tests")
+SPEC = json.load(open(os.path.join(TESTS, "rtl.json")))
+DUT = [os.path.join(ROOT, p.lstrip("/")) for p in SPEC["dut"]]
+OUT = os.path.join(ROOT, "out", "reward.json")
+RUN_S = 300
+SEEDS = 16
+MUST = SPEC.get("must", [])
+
+TASKS_OK = {"$signed", "$unsigned", "$clog2"}
+DIRECTIVES_OK = {"timescale", "default_nettype"}
+# the two places `#(` is a parameter list, not a delay: a module's header, and named overrides on an instance
+PARAM_LISTS = r"\bmodule\s+[A-Za-z_]\w*\s*#\s*\(|#\s*\(\s*\."
+EDGES = r"\(\s*(posedge|negedge)\s+[A-Za-z_]\w*(\s*(or|,)\s*(posedge|negedge)\s+[A-Za-z_]\w*)*\s*\)"
+BANNED = [
+    (r"\binitial\b", "an initial block"),
+    (r"\b(force|release|deassign)\b", "force or release"),
+    (r"\b(defparam|bind)\b", "a defparam or bind"),
+    (r"\b(import|export)\b", "an import or export, DPI or a package"),
+    (r"\b(wait|fork|forever|while|event)\b|->", "a wait, fork, unbounded loop or event"),
+    (r"\\", "an escaped identifier"),
+    (r"[\w$\]]\s*\.\s*[A-Za-z_$]", "a hierarchical name"),
+    (r"\bprimitive\b", "a user-defined primitive"),
+]
+
+
+def code(path):
+    """The source without its comments, strings blanked."""
+    text = open(path, errors="replace").read()
+    return re.sub(r'//[^\n]*|/\*.*?\*/|"(?:\\.|[^"\\])*"', " ", text, flags=re.S)
+
+
+def lint():
+    found = []
+    for path in DUT:
+        src, name = code(path), os.path.basename(path)
+        found += [f"{name} uses `{d}" for d in sorted(set(re.findall(r"`\s*(\w*)", src)) - DIRECTIVES_OK)]
+        found += [f"{name} calls {t}" for t in sorted(set(re.findall(r"\$[\w$]*", src)) - TASKS_OK)]
+        found += [f"{name} has {why}" for pat, why in BANNED if re.search(pat, src)]
+        if "#" in re.sub(PARAM_LISTS, " ", src):
+            found.append(f"{name} has a delay")
+        found += [f"{name} has @{' '.join(ev.split())}, not @* or a list of posedge and negedge" for ev in re.findall(r"@\s*(\([^)]*\)|\*|[A-Za-z_]\w*)", src)
+                  if re.sub(r"\s", "", ev) not in ("*", "(*)") and not re.fullmatch(EDGES, ev)]
+        found += [f"{name} has an event control that does not open an always block" for opener in re.findall(r"(\balways(?:_ff|_comb|_latch)?\s*)?@", src) if not opener]
+        decl = re.sub(r"\b(?:localparam|parameter)\b[^;)]*|\bfor\s*\([^;]*;", " ", src)
+        if re.search(r"\b(reg|logic|bit|integer|int|byte|shortint|longint|time|real|realtime|var)\b(?:[^;=\[{]|\[[^\]]*\])*=", decl):
+            found.append(f"{name} has a register given its power-up value where it is declared")
+        found += [f"{name} clocks on both edges of {sig}" for ev in re.findall(r"@\s*(\([^)]*\))", src)
+                  for e in [re.findall(r"edge\s+(\w+)", ev)] for sig in set(e) if e.count(sig) > 1]
+    return found
+
+
+def compile_(out, files, top, params):
+    argv = ["iverilog", "-g2012", "-o", out, "-s", top] + [f"-P{top}.{k}={v}" for k, v in params.items()]
+    r = subprocess.run(argv + files, capture_output=True, text=True)
+    return r.returncode == 0, (r.stdout + r.stderr).strip()
+
+
+def run(argv):
+    """{check: (passed, why)} for the checks one run printed, or why it has none."""
+    nonce, seed = secrets.token_hex(8), secrets.randbelow(2**31)
+    try:
+        r = subprocess.run(argv + [f"+nonce={nonce}", f"+seed={seed}"], capture_output=True, text=True, timeout=RUN_S)
+    except subprocess.TimeoutExpired:
+        return {}, f"+seed={seed} ran past {RUN_S} s"
+    if r.returncode < 0:
+        return {}, f"+seed={seed}: killed by signal {-r.returncode}"
+    # a string in a wide reg prints padded with spaces or NULs, depending on the format and Icarus's version
+    lines = [" ".join(line.replace("\0", " ").split()) for line in r.stdout.splitlines()]
+    if f"DONE {nonce}" not in lines:
+        return {}, f"+seed={seed}: the bench did not finish: it hung, or something ended it first"
+    got = {}
+    for line in lines[:lines.index(f"DONE {nonce}")]:
+        m = re.match(rf"CHECK {nonce} (\S+) (PASS|FAIL) ?(.*)$", line)
+        if m and got.get(m.group(1), (True,))[0]:
+            got[m.group(1)] = (m.group(2) == "PASS", f"+seed={seed}: {m.group(3).strip()}")
+    return got, None
+
+
+def bench(b, work):
+    """{check: (passed, why)} for each check this bench names, over every run of it."""
+    files, params, top = DUT + [os.path.join(TESTS, f) for f in b["files"]], {**b["params"], **b["tb_params"]}, b["top"]
+    obj = tempfile.mkdtemp(dir=work)
+    ok, said = compile_(os.path.join(obj, "sim.vvp"), files, top, params)
+    if not ok:
+        return {n: (False, f"does not compile with {top}: {said[-1500:]}") for n in b["checks"]}
+    r = subprocess.run(["verilator", "--binary", "--timing", "-j", "2", "-Wno-fatal", "-Wno-lint", "-Wno-style",
+                        "--timescale", "1ns/1ps", "--x-initial", "unique", "--x-assign", "unique", "--top-module", top, "-Mdir", obj, "-o", "vsim"]
+                       + [f"-G{k}={v}" for k, v in params.items()] + files, capture_output=True, text=True)
+    if r.returncode:
+        return {n: (False, f"does not build in Verilator with {top} (exit {r.returncode}): {(r.stdout + r.stderr)[-1500:]}") for n in b["checks"]}
+    runs = [("Icarus", ["vvp", "-n", os.path.join(obj, "sim.vvp")])] + [
+        (f"Verilator power-up seed {s}", [os.path.join(obj, "vsim"), f"+verilator+seed+{s}", "+verilator+rand+reset+2"])
+        for s in range(1, SEEDS + 1)]
+    got = {n: (True, "") for n in b["checks"]}
+    for label, argv in runs:
+        printed, broke = run(argv)
+        for n in b["checks"]:
+            passed, why = printed.get(n, (False, broke or "never reported"))
+            if not passed and got[n][0]:
+                got[n] = (False, f"{label}, {why}")
+    return got
+
+
+out = {"reward": 0.0, "strict_pass": False, "failure_category": "build_failed", "counters": {}, "info": {}}
+checks, missed = {}, {}
+work = tempfile.mkdtemp(prefix="rtl-")
+missing = [p for p in DUT if not os.path.isfile(p)]
+problems = lint() if not missing else [f"{p} is missing" for p in missing]
+checks["lint"] = not problems
+if problems:
+    missed["lint"] = "; ".join(problems)
+checks["elaborates"] = not missing
+if missing:
+    missed["elaborates"] = "not run: a design file is missing"
+for params in ([] if missing else list({json.dumps(b["params"], sort_keys=True): b["params"] for b in SPEC["benches"]}.values())):
+    ok, said = compile_(os.path.join(work, "dut.vvp"), DUT, SPEC["module"], params)
+    if not ok and checks["elaborates"]:
+        checks["elaborates"], missed["elaborates"] = False, f"at {json.dumps(params)}: {said[-1500:]}"
+
+names = list(dict.fromkeys(n for b in SPEC["benches"] for n in b["checks"]))
+for n in names:
+    checks[n] = True
+if checks["lint"] and checks["elaborates"]:
+    for b in SPEC["benches"]:
+        got = bench(b, work)
+        where = f"{b['top']} {json.dumps({**b['params'], **b['tb_params']})}"
+        for n in b["checks"]:
+            passed, why = got[n]
+            if not passed and checks[n]:
+                checks[n], missed[n] = False, f"{where}: {why}"
+    failed = sorted(k for k, v in checks.items() if not v)
+    paying = [n for n in names if n not in MUST]
+    reward = 0 if not all(checks[n] for n in MUST) else sum(checks[n] for n in paying) / len(paying)
+    out.update(reward=round(reward, 3), strict_pass=not failed,
+               failure_category=None if not failed else "tests_failed")
+else:
+    for n in names:
+        checks[n], missed[n] = False, "not run: the RTL failed lint or does not elaborate"
+    failed = sorted(k for k, v in checks.items() if not v)
+
+out["counters"] = {"checks_passed": sum(checks.values()), "checks": len(checks)}
+out["info"] = {"checks": sorted(checks), "failed": failed, "missed": {k: missed[k] for k in failed},
+               "must": ["lint", "elaborates", *MUST]}
+os.makedirs(os.path.dirname(OUT), exist_ok=True)
+json.dump(out, open(OUT, "w"), indent=2)
+print(json.dumps(out))

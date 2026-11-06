@@ -1,0 +1,87 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/gold
+title: Hashlist Data Operations Platform
+section: 5.2 Correct answer
+open: Correct answer
+captured: Fri Nov 06 2026 10:08:36 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+5.2
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+5.1 Your steps
+
+(on) (current) 5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+Nothing in the box yet.
+
+(on) [selected=true]
+Correct answer
+
+Hidden from the model
+[title: Full screen]
+
+Correct answer
+
+Answer what the grader gets: files, or folders ending in /, which go without their build output
+[input The answer file = "/app/data/design.v"]
+
+Add a file or folder
+
+references/gold.py empty
+Upload a file
+[file input ]
+
+[textarea Your correct answer]
+
+[/textarea]
+
+Upload files or a folder. A .zip is unpacked in the box.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

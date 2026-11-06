@@ -1,0 +1,13 @@
+{
+  "module": "txsched",
+  "dut": ["/app/data/txsched.v", "/app/data/txsched_timebase.v", "/app/data/txsched_fifo.v", "/app/data/txsched_rr.v"],
+  "must": ["reset_idle", "best_effort"],
+  "benches": [
+    {"top": "tb_txsched", "files": ["tb_txsched.v"], "params": {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}, "tb_params": {},
+     "checks": ["reset_idle", "best_effort", "launch_on_time", "edf_order", "class_priority", "late_drop", "wrap", "time_step", "pause_tick", "mixed"]},
+    {"top": "tb_txsched", "files": ["tb_txsched.v"], "params": {"NCH": 3, "DW": 8, "DEPTH": 3, "TS_W": 8, "PRESC": 3, "LATE_WIN": 20}, "tb_params": {},
+     "checks": ["reset_idle", "best_effort", "launch_on_time", "edf_order", "class_priority", "late_drop", "wrap", "time_step", "pause_tick", "mixed"]},
+    {"top": "tb_txsched", "files": ["tb_txsched.v"], "params": {"NCH": 8, "DW": 12, "DEPTH": 2, "TS_W": 10, "PRESC": 1, "LATE_WIN": 100}, "tb_params": {},
+     "checks": ["reset_idle", "best_effort", "launch_on_time", "edf_order", "class_priority", "late_drop", "wrap", "time_step", "pause_tick", "mixed"]}
+  ]
+}

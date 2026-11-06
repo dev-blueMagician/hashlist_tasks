@@ -1,0 +1,54 @@
+gold reward 1.0 failed []
+naive_a reward 0.0 failed ['class_priority', 'edf_order', 'late_drop', 'launch_on_time', 'mixed', 'pause_tick', 'time_step', 'wrap']
+    class_priority : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Verilator power-up seed 1, +seed=942421991: cycle 9058: out_ch/out_data 2/0
+    edf_order : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 6044: out_ch/out_data 3/bd5c, expected 2/69f
+    late_drop : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 12047: out_valid 0, expected 1
+    launch_on_time : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 3056: out_valid 0, expected 1
+    mixed : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 25929: late_mask 0000, expected 1000
+    pause_tick : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 23048: late_mask 0000, expected 1000
+    time_step : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 19870: out_valid 0, expected 1
+    wrap : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=904472205: cycle 15044: late_mask 0100, expected 0000
+naive_b reward 0.0 failed ['class_priority', 'edf_order', 'late_drop', 'launch_on_time', 'mixed', 'pause_tick', 'time_step', 'wrap']
+    class_priority : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 9054: out_ch/out_data 1/8b76, expected 2/fa
+    edf_order : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 6059: out_valid 0, expected 1
+    late_drop : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 12166: out_valid 0, expected 1
+    launch_on_time : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 3099: out_valid 0, expected 1
+    mixed : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 25774: out_valid 0, expected 1
+    pause_tick : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 22899: out_valid 0, expected 1
+    time_step : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 19713: out_valid 0, expected 1
+    wrap : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1377522486: cycle 15044: out_valid 0, expected 1
+naive_c reward 0.0 failed ['class_priority', 'edf_order', 'late_drop', 'launch_on_time', 'mixed', 'pause_tick', 'time_step', 'wrap']
+    class_priority : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Verilator power-up seed 10, +seed=24842624: cycle 9090: out_ch/out_data 3/a
+    edf_order : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=466820426: cycle 6087: out_ch/out_data 1/75cb, expected 2/e36
+    late_drop : tb_txsched {"NCH": 3, "DW": 8, "DEPTH": 3, "TS_W": 8, "PRESC": 3, "LATE_WIN": 20}: Icarus, +seed=1262352943: cycle 13678: out_ch/out_data 1/1d, expected 0/14
+    launch_on_time : tb_txsched {"NCH": 3, "DW": 8, "DEPTH": 3, "TS_W": 8, "PRESC": 3, "LATE_WIN": 20}: Verilator power-up seed 16, +seed=1477176863: cycle 4663: out_ch/out_data 2/5
+    mixed : tb_txsched {"NCH": 3, "DW": 8, "DEPTH": 3, "TS_W": 8, "PRESC": 3, "LATE_WIN": 20}: Verilator power-up seed 2, +seed=585461687: cycle 28173: out_ch/out_data 0/cc
+    pause_tick : tb_txsched {"NCH": 3, "DW": 8, "DEPTH": 3, "TS_W": 8, "PRESC": 3, "LATE_WIN": 20}: Verilator power-up seed 3, +seed=1976696173: cycle 22980: out_ch/out_data 0/3
+    time_step : tb_txsched {"NCH": 3, "DW": 8, "DEPTH": 3, "TS_W": 8, "PRESC": 3, "LATE_WIN": 20}: Icarus, +seed=1262352943: cycle 19340: out_ch/out_data 0/9a, expected 2/80
+    wrap : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Verilator power-up seed 3, +seed=1494874268: cycle 15591: out_ch/out_data 0
+naive_d reward 0.125 failed ['class_priority', 'edf_order', 'late_drop', 'mixed', 'pause_tick', 'time_step', 'wrap']
+    class_priority : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 9120: late_mask 0000, expected 0010
+    edf_order : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 6132: late_mask 0000, expected 0100
+    late_drop : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 12067: late_mask 0000, expected 0010
+    mixed : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 25831: late_mask 0000, expected 0001
+    pause_tick : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 23543: late_mask 0000, expected 1000
+    time_step : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 19823: late_mask 0000, expected 0011
+    wrap : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=1356129071: cycle 15153: late_mask 0000, expected 1000
+naive_e reward 0.0 failed ['class_priority', 'edf_order', 'late_drop', 'launch_on_time', 'mixed', 'pause_tick', 'time_step', 'wrap']
+    class_priority : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 9068: out_ch/out_data 3/142e, expected 1/9a4e
+    edf_order : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 6071: out_ch/out_data 2/78d7, expected 0/cadd
+    late_drop : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 12499: out_ch/out_data 2/10b5, expected 1/d73
+    launch_on_time : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Verilator power-up seed 1, +seed=909911040: cycle 4762: out_ch/out_data 3/f
+    mixed : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 25992: out_ch/out_data 2/8d86, expected 1/540
+    pause_tick : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 24955: out_ch/out_data 3/4af4, expected 1/7f3
+    time_step : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 20011: out_ch/out_data 1/f4b4, expected 0/d91
+    wrap : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=12750590: cycle 15809: out_ch/out_data 2/bb5e, expected 3/a40
+base reward 0.0 failed ['class_priority', 'edf_order', 'late_drop', 'launch_on_time', 'mixed', 'pause_tick', 'time_step', 'wrap']
+    class_priority : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 9043: out_valid 1, expected 0
+    edf_order : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 6043: out_valid 1, expected 0
+    late_drop : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 12045: out_valid 1, expected 0
+    launch_on_time : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 3049: out_valid 1, expected 0
+    mixed : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 25733: out_valid 1, expected 0
+    pause_tick : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 22737: out_valid 1, expected 0
+    time_step : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 19733: out_valid 1, expected 0
+    wrap : tb_txsched {"NCH": 4, "DW": 16, "DEPTH": 4, "TS_W": 32, "PRESC": 1, "LATE_WIN": 64}: Icarus, +seed=389778744: cycle 15046: out_valid 1, expected 0

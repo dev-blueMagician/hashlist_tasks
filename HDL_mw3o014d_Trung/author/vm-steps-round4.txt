@@ -1,0 +1,24 @@
+HDL_mw3o014d_Trung (task-mw3o014d) - builder round 4, with the plan runner
+=========================================================================
+Rounds 2 and 3 failed for one reason: the builder tab kept an old copy of
+the extension's page script, injected in round 1, because the builder page
+never reloads. Extension 2.4 replaces it itself and checks it.
+
+This zip holds:
+  HDL_mw3o014d_Trung/     the task folder, only the files this round needs
+  dop-builder-helper/     the extension, version 2.4
+
+1. Unzip into your fixed folder on the VM (C:\Hashlist), choosing
+   "overwrite" for files that already exist. Do not delete the old folder.
+2. chrome://extensions: press the reload arrow on the DOP Builder Helper
+   card (it points to C:\Hashlist\dop-builder-helper). The card must say 2.4.
+3. Reload the builder tab itself (F5), and keep the task open in that one
+   tab only.
+4. Run a plan -> Preview. The first line must read "Extension 2.4", and
+   Preview must not say "runs page.js". Then press Run.
+   It sets the step limit to 500 in 2.2, runs Try the box in 2.4 (a few
+   minutes; it does not submit), then saves every section. Never open
+   section 7 or press Run in the builder.
+
+Bring back to the PC: the whole folder HDL_mw3o014d_Trung/author/round4/
+(pages and the plan log). Put it at the same place on the PC, then say "done".

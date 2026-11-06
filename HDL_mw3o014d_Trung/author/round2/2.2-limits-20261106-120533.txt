@@ -1,0 +1,81 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/limits
+title: Hashlist Data Operations Platform
+section: 2.2 Limits
+open: (no tab or panel marked open)
+captured: Fri Nov 06 2026 12:05:33 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+2.2
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+(on) (current) 2.2 Limits
+
+2.3 Internet
+
+2.4 Toolchain
+
+The shell the model works in, and how it is set up.
+
+2.4
+
+Toolchain
+
+(on) Describe it
+
+My own Dockerfile (optional)
+
+Language [select  = "Python"]
+
+Base image [input  = "debian:forky-20261005-slim"]
+
+Packages apt names, or pip: prefixed, comma separated [input build-essential, pip:numpy = "iverilog verilator g++ make python3"]
+
+environment/Dockerfile written from the form
+
+[textarea The Dockerfile]
+FROM debian:forky-20261005-slim@sha256:3c80e257eff6274d593eb33a94bda5174ccd619836e6a728a73e11c97f2213e3
+RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+RUN apt-get update && apt-get install -y --no-install-recommends iverilog verilator g++ make python3 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+
+[/textarea]
+
+Try the box Template box, already checked
+Try the box
+
+Builds the box and runs these commands, one per line.
+
+[textarea Commands to run in the box]
+null
+[/textarea]
+
+Section done
+press Enter ↵
+

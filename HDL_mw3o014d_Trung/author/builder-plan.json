@@ -1,0 +1,17 @@
+{
+  "builder": "cd7e12b1-46a7-43c7-8ef7-80de157473d8",
+  "title": "task-mw3o014d",
+  "out": "round4",
+  "note": "round 4 (rounds 2-3 ran a stale page.js): step limit 500, Try-the-box toolchain probe, then save sections 1-6 again (extension 2.1 waits for each page body)",
+  "steps": [
+    { "do": "open", "section": "2.2" },
+    { "do": "select", "label": "Step limit", "option": "500", "optional": true },
+    { "do": "save" },
+    { "do": "open", "section": "2.4" },
+    { "do": "fill", "label": "Commands to run in the box", "from": "author/probes/probe-1-toolchain.txt" },
+    { "do": "click", "text": ["Try the box", "Try again", "Try the changed box"],
+      "wait": { "pattern": "(Worked|\\d+ failed|Some failed|Answer in the box|Script in the box|Didn't build|Cancelled) · \\d{1,2}:\\d\\d", "busy": "Trying", "timeout_s": 900 } },
+    { "do": "save" },
+    { "do": "save_all" }
+  ]
+}

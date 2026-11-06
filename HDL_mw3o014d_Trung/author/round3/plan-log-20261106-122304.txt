@@ -1,0 +1,15 @@
+plan: author/builder-plan.json
+extension: 2.3
+result: stopped
+
+Builder cd7e12b1-46a7-43c7-8ef7-80de157473d8 (task-mw3o014d), "task-mw3o014d": found.
+1. open section 2.2
+2. choose "500" in "Step limit" (optional)
+  SKIPPED (optional): choosing in "Step limit": 0 selects labelled "Step limit"
+  saved 2.2-limits-20261106-122303.txt
+3. save this page
+  saved 2.2-limits-20261106-122304.txt
+4. open section 2.4
+5. fill "Commands to run in the box" with author/probes/probe-1-toolchain.txt
+STOPPED: filling "Commands to run in the box": 0 boxes labelled "Commands to run in the box"
+  the page at the stop was saved too

@@ -1,0 +1,98 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/brief-text
+title: Hashlist Data Operations Platform
+section: 4.3 Prompt
+open: Prompt
+captured: Fri Nov 06 2026 10:08:35 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+4.3
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+(on) (current) 4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Prompt
+
+4.1 Task title
+
+4.2 Context
+
+(on) (current) 4.3 Prompt
+
+What the model is handed.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+Nothing in the box yet.
+
+(on) [selected=true]
+Prompt
+
+[title: Full screen]
+
+Task title [input Task title = ""]
+A task is a problem you give the model to solve. Name it in a few words.
+
+Context
+
+agent/CONTEXT.md
+Upload a file
+[file input ]
+
+[textarea Context for the model]
+
+[/textarea]
+
+(on) Prompt
+
+agent/PROMPT.md nothing written yet
+Upload a file
+[file input ]
+
+[textarea The prompt the model is handed]
+
+[/textarea]
+
+Put in
+The problem, how often it happens, and when.
+
+Leave out
+The cause, the answer, your method, and anything that hints at how it is graded.
+
+Upload files or a folder. A .zip is unpacked in the box.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Section done
+press Enter ↵
+

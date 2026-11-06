@@ -1,0 +1,108 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/checks
+title: Hashlist Data Operations Platform
+section: 5.4 Scored steps
+open: Scored steps
+captured: Fri Nov 06 2026 10:08:37 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+5.4
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+(on) (current) 5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+Nothing in the box yet.
+
+(on) [selected=true]
+Scored steps
+
+Hidden from the model
+[title: Full screen]
+
+Scored steps
+
+verifier/
+Add a file
+[file input ]
+
+Dockerfile
+Remove
+
+report.py
+Remove
+
+rtl.json
+Remove
+
+Hidden from the model. report.py scores the answer and writes /out/reward.json .
+
+Its checks are the steps
+Listed after Verify runs.
+
+1
+
+Prompt
+
+Nothing written yet.
+
++ Add a step
+
+Optional: 0 written. report.py sets the score.
+
+2
+
+End result
+
+Nothing written yet.
+
+Upload files or a folder. A .zip is unpacked in the box.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Section done
+press Enter ↵
+

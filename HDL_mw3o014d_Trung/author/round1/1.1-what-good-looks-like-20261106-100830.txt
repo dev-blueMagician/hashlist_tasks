@@ -1,0 +1,76 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/cd7e12b1-46a7-43c7-8ef7-80de157473d8/separation
+title: Hashlist Data Operations Platform
+section: 1.1 What good looks like
+open: (no tab or panel marked open)
+captured: Fri Nov 06 2026 10:08:30 GMT+0700 (Indochina Time)
+
+Save and exit
+task-mw3o014d
+
+[disabled]
+1.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+(on) (current) 1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Brief
+
+(on) (current) 1.1 What good looks like
+
+1.2 A worked example
+
+1.3 How a run works
+
+What makes a good task.
+
+1.1
+
+What good looks like
+
+Ten runs of one task. A good task spreads the scores.
+
+#1 0.20 answered without opening the capture
+
+#2 0.60 right cause, number off by a factor
+
+#3 0.00 never wrote an answer
+
+#4 1.00 read the capture, derived the number
+
+#5 0.60 right cause, number off by a factor
+
+#6 0.20 took the first value that fit
+
+#7 0.80 correct, missed one quantity
+
+#8 0.00 ran out of steps
+
+#9 0.40 right format, every number wrong
+
+#10 0.60 right cause, number off by a factor
+
+Strong models should score higher than weak ones, and the correct answer higher than any common mistake. A skilled person should be able to do it with what the model is given.
+
+Continue
+press Enter ↵
+Skip, I have done this before
+

@@ -15,9 +15,11 @@ const done = (text) => {
 async function savePending(dir) {
   const { page } = await chrome.storage.session.get("page");
   if (!page) return "";
-  await writeText(await pageDir(dir), page.name, page.text);
+  const to = await pageDir(dir);
+  await writeText(to, page.name, page.text);
+  if (page.html) await writeText(to, page.htmlName, page.html);
   await chrome.storage.session.remove("page");
-  return ` Saved ${page.name}.`;
+  return ` Saved ${page.name}${page.html ? " and its .html" : ""}.`;
 }
 
 (async () => {

@@ -4,7 +4,10 @@ const dest = document.getElementById("dest");
 const reset = document.getElementById("reset");
 const toggle = document.getElementById("toggle");
 const steps = document.getElementById("steps");
+const htmlBox = document.getElementById("html");
 const show = (text) => { out.textContent = text; };
+chrome.storage.local.get("html").then((v) => { htmlBox.checked = !!v.html; });
+htmlBox.addEventListener("change", () => chrome.storage.local.set({ html: htmlBox.checked }));
 const helper = (mode) => chrome.windows.create({ url: `folder.html?mode=${mode}`, type: "popup", width: 460, height: 200 });
 
 // Runs func in the active tab after loading page.js there (activeTab grants access on click).
@@ -25,9 +28,15 @@ async function showDest() {
 
 // No dialog: the file goes straight to Chrome's download folder.
 async function saveToDownloads(page) {
-  const url = URL.createObjectURL(new Blob([page.text], { type: "text/plain;charset=utf-8" }));
+  let said = await download(page.name, page.text, "text/plain");
+  if (page.html) said += " " + await download(page.htmlName, page.html, "text/html");
+  return said;
+}
+
+async function download(name, body, type) {
+  const url = URL.createObjectURL(new Blob([body], { type: `${type};charset=utf-8` }));
   try {
-    const id = await chrome.downloads.download({ url, filename: page.name, saveAs: false, conflictAction: "uniquify" });
+    const id = await chrome.downloads.download({ url, filename: name, saveAs: false, conflictAction: "uniquify" });
     for (let i = 0; i < 100; i++) {
       const [d] = await chrome.downloads.search({ id });
       if (d && d.state === "complete") return `Saved ${d.filename.split(/[\\/]/).pop()} in Downloads.`;
@@ -43,14 +52,19 @@ async function saveToDownloads(page) {
 document.getElementById("save").onclick = async () => {
   try {
     show("Reading the page...");
-    const page = await inTab(() => globalThis.dopHelper.capture());
+    const page = await inTab((html) => {
+      const p = globalThis.dopHelper.capture();
+      if (html) { p.html = globalThis.dopHelper.snapshot().html; p.htmlName = p.name.replace(/\.txt$/, ".html"); }
+      return p;
+    }, [htmlBox.checked]);
     const dir = await folderStore.get();
     if (!dir) {
       show(await saveToDownloads(page));
     } else if (await folderStore.allowed(dir, false)) {
       const to = await pageDir(dir);
       await writeText(to, page.name, page.text);
-      show(`Saved ${page.name} in ${to === dir ? dir.name : `${dir.name}/author`}.`);
+      if (page.html) await writeText(to, page.htmlName, page.html);
+      show(`Saved ${page.name}${page.html ? " and its .html" : ""} in ${to === dir ? dir.name : `${dir.name}/author`}.`);
     } else {
       await chrome.storage.session.set({ page });
       await helper("allow");

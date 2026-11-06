@@ -7,6 +7,9 @@
     "LABEL", "LI", "MAIN", "NAV", "OL", "OPTION", "P", "PRE", "SECTION", "SUMMARY", "TABLE", "TR", "UL"]);
   const MODES = ["a value between", "a line that contains", "the judge reads it"];
   const PAUSE = 80;   // ms for the page to re-render after each change
+  // Same as manifest.json's version; test.js checks they agree. Captures
+  // and info() report it, so a stale copy left in the page shows.
+  const VERSION = "2.4";
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const q = (s) => JSON.stringify(s);   // shows tabs, quotes and trailing spaces
@@ -116,9 +119,11 @@
     const sec = section();
     const head = [
       "# DOP builder page capture: live page text and field values",
+      `helper: page.js ${VERSION}`,
       `url: ${location.href}`,
       `title: ${document.title}`,
       `section: ${sec || "(not found)"}`,
+      `body: ${(() => { const b = bodyHeading(); return `${b.nums.join(", ") || "(no number heading)"} ${b.h1}`.trim(); })()}`,
       `open: ${openParts().join(" | ") || "(no tab or panel marked open)"}`,
       `captured: ${now.toString()}`,
       "",
@@ -126,6 +131,42 @@
     const rows = readSteps();
     if (rows.length) head.push(stepsTable(rows), "");
     return { name: fileName(sec, now), text: head.join("\n") + "\n" + pageText() + "\n" };
+  }
+
+  // The live page as HTML, so this file can be tested against a real screen
+  // (test/real.js). Field values are written into the markup, scripts and the
+  // CSP are removed, and the builder's stylesheets are inlined, so parts the
+  // builder hides (the section list at 960 px or less) stay hidden offline.
+  function snapshot() {
+    const now = new Date();
+    const clone = document.documentElement.cloneNode(true);
+    const live = document.querySelectorAll("input, textarea, select");
+    const copy = clone.querySelectorAll("input, textarea, select");
+    live.forEach((el, i) => {
+      const c = copy[i];
+      if (!c || c.tagName !== el.tagName) return;
+      if (el.tagName === "TEXTAREA") c.textContent = el.value;
+      else if (el.tagName === "SELECT") [...c.options].forEach((o, k) => o.toggleAttribute("selected", el.options[k] ? el.options[k].selected : false));
+      else if (/^(checkbox|radio)$/i.test(el.type)) c.toggleAttribute("checked", el.checked);
+      else if (el.type !== "file") c.setAttribute("value", el.value);
+    });
+    const liveLinks = [...document.querySelectorAll('link[rel~="stylesheet"]')];
+    clone.querySelectorAll('link[rel~="stylesheet"]').forEach((c, i) => {
+      try {
+        const css = [...liveLinks[i].sheet.cssRules].map((r) => r.cssText).join("\n");
+        const st = document.createElement("style");
+        st.setAttribute("data-from", liveLinks[i].href);
+        st.textContent = css;
+        c.replaceWith(st);
+      } catch { /* another origin (fonts): keep the link */ }
+    });
+    const adopted = (document.adoptedStyleSheets || []).map((s) => { try { return [...s.cssRules].map((r) => r.cssText).join("\n"); } catch { return ""; } }).join("\n");
+    const head = clone.querySelector("head");
+    if (adopted && head) { const st = document.createElement("style"); st.textContent = adopted; head.append(st); }
+    clone.querySelectorAll('script, meta[http-equiv="content-security-policy" i]').forEach((e) => e.remove());
+    const note = `DOP Builder Helper snapshot. url: ${location.href} | section: ${section() || "(not found)"} | captured: ${now.toString()} | window: ${innerWidth}x${innerHeight}`;
+    const html = `<!doctype html>\n<!-- ${note.replace(/--/g, "- -")} -->\n${clone.outerHTML}\n`;
+    return { name: fileName(section(), now).replace(/\.txt$/, ".html"), html };
   }
 
   // ------------------------------------------------------- 5.4 scored steps
@@ -311,11 +352,26 @@
 
   // Never clicked, whatever a plan says: section 7, Run, submitting, replacing
   // the environment, and regenerating the 5.4 checks.
-  const FORBIDDEN = /^(\(on\) )?(\(current\) )?(7\b|7\.\d|run\b|run the task|start (the )?run|submit|hand (it )?in|send (it )?(for|to) review|replace and copy|generate checks)/i;
+  const FORBIDDEN = /^(\(on\) )?(\(current\) )?(7\b|7\.\d|run\b|run the task|start (the )?run|submit|hand (it )?in|send (it )?(for|to) review|replace and copy|generate checks|save and exit|fix it)/i;
   const CLICKABLE = 'button, a, summary, [role="button"], [role="tab"], [role="treeitem"], [role="link"], [role="menuitem"], [tabindex]';
 
   const target = (el) => el.closest(CLICKABLE) || el;
   const visible = (el) => !!(el.offsetParent || el.getClientRects().length);
+  const isButton = (el) => el.tagName === "BUTTON" || el.getAttribute("role") === "button";
+
+  // What the page does offer, for an error when a lookup finds nothing, so a
+  // screen that differs from the plan can be fixed from the log alone.
+  function offered(kind) {
+    let xs = [];
+    if (kind === "box") xs = [...document.querySelectorAll("textarea, input:not([type]), input[type=text]")].filter(visible).map(nameOf);
+    if (kind === "select") xs = [...document.querySelectorAll("select")].map((s) => nameOf(s) || selectText(s));
+    if (kind === "button") xs = [...document.querySelectorAll('button, [role="button"], [role="tab"]')].filter(visible)
+      .map((b) => words(b) || b.getAttribute("aria-label") || b.getAttribute("title"));
+    if (kind === "nav") xs = navItems().map((n) => `${n.id} ${n.label}`);
+    const u = [...new Set(xs.filter(Boolean).map((x) => x.slice(0, 60)))];
+    const kinds = { box: "text boxes", select: "selects", button: "buttons", nav: "navigation entries" };
+    return `; ${kinds[kind]} on this page: ${u.length ? u.slice(0, 30).map(q).join(", ") + (u.length > 30 ? `, ... (${u.length} in all)` : "") : "none"}`;
+  }
 
   // Innermost visible elements whose text is exactly text (or starts with it).
   function byText(text, opts = {}) {
@@ -330,22 +386,49 @@
     return found.filter((e) => !found.some((o) => o !== e && e.contains(o)));
   }
 
+  // Visible clickable elements whose aria-label or title is exactly label.
+  function byLabel(label, within = document) {
+    return [...within.querySelectorAll(CLICKABLE)]
+      .filter((el) => (el.getAttribute("aria-label") === label || el.getAttribute("title") === label) && visible(el));
+  }
+
+  // What a click on text (or on label) would press. Several hits are narrowed
+  // to elements whose own text is the text, then to real buttons, so a heading
+  // with the same words as its button ("Try the box", "Verify") is skipped.
+  function resolve(text, opts = {}) {
+    let hits = (opts.label ? byLabel(text) : byText(text, opts)).map(target).filter((el, i, a) => a.indexOf(el) === i);
+    if (hits.length > 1 && !opts.label) {
+      const own = hits.filter((el) => (opts.prefix ? words(el).startsWith(text) : words(el) === text));
+      if (own.length) hits = own;
+    }
+    if (hits.length > 1) {
+      const btn = hits.filter(isButton);
+      if (btn.length) hits = btn;
+    }
+    return hits;
+  }
+
   function guardedClick(el) {
     const t = words(target(el));
-    if (FORBIDDEN.test(t)) throw new Error(`refused to click ${q(t)}`);
+    const l = target(el).getAttribute("aria-label") || "";
+    if (FORBIDDEN.test(t) || FORBIDDEN.test(l)) throw new Error(`refused to click ${q(t || l)}`);
     target(el).click();
   }
 
   function info() {
     const m = /\/app\/build\/([0-9a-f-]{36})(?:\/([^/?#]*))?/.exec(location.pathname);
+    const text = document.body ? document.body.innerText : "";
+    const id = /\btask-[a-z0-9]{6,}\b/.exec(text);
     return {
       ok: true,
       host: location.hostname,
       builder: m ? m[1] : "",
       slug: m ? m[2] || "" : "",
+      task: id ? id[0] : "",
       section: section(),
       saved: saveState(),
-      text: document.body ? document.body.innerText.slice(0, 4000) : "",
+      text: text.slice(0, 4000),
+      version: VERSION,
     };
   }
 
@@ -359,14 +442,28 @@
   }
 
   // Navigation entries: "5 Golden set" and "5.3 Common mistakes", in page order.
+  // The builder keeps them in <nav> elements (the step bar and "Screens in this
+  // section"); entries elsewhere, such as the numbered tabs on 1.2, are only
+  // used when no <nav> holds any. In a window 960 px wide or less the builder
+  // hides "Screens in this section" (display: none); its buttons are still in
+  // the page and still respond to a click, so entries in <nav> count even when
+  // hidden, with a visible one preferred.
   function navItems() {
-    const seen = new Map();
-    for (const el of document.querySelectorAll(CLICKABLE)) {
-      const t = words(el).replace(/^(\(on\) )?(\(current\) )?/, "");
-      const m = /^(\d(?:\.\d+)?) ([A-Z][A-Za-z ,]{1,40})$/.exec(t);
-      if (m && visible(el) && !seen.has(m[1])) seen.set(m[1], { id: m[1], label: m[2], el });
-    }
-    return [...seen.values()];
+    const scan = (els, needVisible) => {
+      const seen = new Map();
+      for (const el of els) {
+        const t = words(el).replace(/^(\(on\) )?(\(current\) )?/, "");
+        const m = /^(\d(?:\.\d+)?) (\S.{0,45})$/.exec(t);
+        if (!m || !/^[A-Z]/.test(m[2])) continue;
+        const vis = visible(el);
+        if (needVisible && !vis) continue;
+        const had = seen.get(m[1]);
+        if (!had || (vis && !had.vis)) seen.set(m[1], { id: m[1], label: m[2], el, vis });
+      }
+      return [...seen.values()].map(({ id, label, el }) => ({ id, label, el }));
+    };
+    const inNav = scan(document.querySelectorAll(`nav :is(${CLICKABLE})`), false);
+    return inNav.length ? inNav : scan(document.querySelectorAll(CLICKABLE), true);
   }
 
   async function open(id) {
@@ -375,37 +472,77 @@
     const find = (x) => navItems().find((n) => n.id === x);
     if (id.includes(".") && !find(id)) {
       const t = find(top);
-      if (!t) return { ok: false, error: `no navigation entry ${top}` };
+      if (!t) return { ok: false, error: `no navigation entry ${top}${offered("nav")}` };
       guardedClick(t.el);
       await sleep(PAUSE * 6);
     }
     const n = find(id);
-    if (!n) return { ok: false, error: `no navigation entry ${id}` };
+    if (!n) return { ok: false, error: `no navigation entry ${id}${offered("nav")}` };
     guardedClick(n.el);
     for (let i = 0; i < 50; i++) {
       await sleep(PAUSE * 2);
       const sec = section();
       // A top-level entry opens its first sub-section (1 -> 1.1).
-      if (sec === id || sec.startsWith(id + " ") || (!id.includes(".") && sec.startsWith(id + "."))) return { ok: true, section: sec };
+      if (sec === id || sec.startsWith(id + " ") || (!id.includes(".") && sec.startsWith(id + "."))) {
+        const s = await settled(sec.split(" ")[0]);
+        return s.ok ? { ok: true, section: sec } : { ok: false, error: `opened ${id}, but ${s.error}` };
+      }
     }
     return { ok: false, error: `opened ${id}, but the page shows ${q(section())}` };
+  }
+
+  // The number heading in the page body ("2.3" above "Internet"), outside the
+  // navigation and the header. The IDE screens (3 to 5) have none.
+  function bodyHeading() {
+    const main = document.querySelector(".main2") || document.querySelector("main") || document.body;
+    const nums = [...main.querySelectorAll("div, span, p, b")].filter((e) =>
+      !e.children.length && !e.closest("nav, header") && /^[1-7]\.[1-9]$/.test((e.textContent || "").trim()) && visible(e));
+    const h = main.querySelector("h1");
+    return { nums: [...new Set(nums.map((e) => e.textContent.trim()))], h1: h ? say(h) : "", len: (main.innerText || "").length };
+  }
+
+  // Seen live (2026-11-06): the step bar changes at once, but the body shows
+  // the previous screen for a moment. Wait until the body's number heading, if
+  // it has one, is this sub-section's and its text stops changing.
+  async function settled(sub) {
+    let last = null;
+    for (let i = 0; i < 40; i++) {
+      await sleep(PAUSE * 2);
+      const b = bodyHeading();
+      const right = !b.nums.length || (b.nums.length === 1 && b.nums[0] === sub);
+      const key = `${b.nums.join()}|${b.h1}|${b.len}`;
+      if (right && key === last) return { ok: true };
+      last = right ? key : null;
+    }
+    const b = bodyHeading();
+    return { ok: false, error: `the page body still shows ${q(b.nums.join(", ") + " " + b.h1)} after 6 s` };
   }
 
   function sections() {
     return { ok: true, items: navItems().map((n) => ({ id: n.id, label: n.label })) };
   }
 
+  // text is one text or a list of alternatives; the first one on the page is
+  // pressed ("Try the box", "Try again", "Try the changed box"). opts.label
+  // matches aria-label or title instead ("Remove verifier/rtl.json"). opts.dry
+  // only reports what would be pressed.
   async function click(text, opts = {}) {
-    const hits = byText(text, opts).map(target).filter((el, i, a) => a.indexOf(el) === i);
-    if (!hits.length) return { ok: false, error: `no ${q(text)} on the page` };
-    if (hits.length > 1 && !opts.first) return { ok: false, error: `${hits.length} elements read ${q(text)}; the plan must be more exact` };
-    try {
-      guardedClick(hits[0]);
-    } catch (e) {
-      return { ok: false, error: e.message };
+    const alts = Array.isArray(text) ? text : [text];
+    for (const alt of alts) {
+      const hits = resolve(alt, opts);
+      if (!hits.length) continue;
+      if (hits.length > 1 && !opts.first) return { ok: false, error: `${hits.length} elements read ${q(alt)}; the plan must be more exact` };
+      const said = words(hits[0]) || hits[0].getAttribute("aria-label") || "";
+      if (opts.dry) return { ok: true, pressed: alt, tag: hits[0].tagName, said };
+      try {
+        guardedClick(hits[0]);
+      } catch (e) {
+        return { ok: false, error: e.message };
+      }
+      await sleep(PAUSE * 3);
+      return { ok: true, pressed: alt };
     }
-    await sleep(PAUSE * 3);
-    return { ok: true };
+    return { ok: false, error: `no ${alts.map(q).join(" or ")} on the page${offered("button")}` };
   }
 
   function box(label) {
@@ -413,27 +550,114 @@
     return all.filter((el) => nameOf(el) === label && visible(el));
   }
 
-  async function fillBox(label, text) {
-    const hits = box(label);
-    if (hits.length !== 1) return { ok: false, error: `${hits.length} boxes labelled ${q(label)}` };
-    await setValue(hits[0], text);
+  // labels is one label or a list of alternatives; the first that names
+  // exactly one element on the page is used.
+  function pickLabel(labels, find, kind) {
+    const alts = Array.isArray(labels) ? labels : [labels];
+    for (const l of alts) if (find(l).length === 1) return { label: l };
+    const counts = alts.map((l) => `${find(l).length} labelled ${q(l)}`).join(", ");
+    return { error: `${counts}${offered(kind)}` };
+  }
+
+  // text null only checks that the box is there (Preview).
+  async function fillBox(labels, text) {
+    const p = pickLabel(labels, box, "box");
+    if (p.error) return { ok: false, error: p.error };
+    if (text === null) return { ok: true, label: p.label };
+    await setValue(box(p.label)[0], text);
     await sleep(PAUSE * 2);
-    const now = box(label)[0];
-    if (!now || now.value !== text) return { ok: false, error: `${q(label)} does not hold the new text after filling` };
-    return { ok: true, chars: text.length };
+    const now = box(p.label)[0];
+    if (!now || now.value !== text) return { ok: false, error: `${q(p.label)} does not hold the new text after filling` };
+    return { ok: true, chars: text.length, label: p.label };
+  }
+
+  // A <select> named by its aria-label, or by the text of the element around
+  // it with the options left out: 2.2 shows "CPU", "Step limit model turns"
+  // next to selects that have no label of their own.
+  function selectText(s) {
+    const own = (el) => {
+      let t = "";
+      const tw = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+      while (tw.nextNode()) if (!tw.currentNode.parentElement.closest("select")) t += " " + tw.currentNode.data;
+      return t.replace(/\s+/g, " ").trim();
+    };
+    for (let p = s.parentElement, k = 0; p && k < 3; p = p.parentElement, k++) {
+      if (p.querySelectorAll("select").length > 1) return "";
+      const t = own(p);
+      if (t) return t;
+    }
+    return "";
+  }
+
+  function selects(label) {
+    return [...document.querySelectorAll("select")].filter((s) => {
+      if (nameOf(s) === label) return true;
+      const t = selectText(s);
+      return !!t && (t === label || t.startsWith(label + " "));
+    });
+  }
+
+  // opts.dry only checks that the select and the option are there (Preview).
+  async function choose(labels, option, opts0 = {}) {
+    const p = pickLabel(labels, selects, "select");
+    if (p.error) return { ok: false, error: p.error };
+    const label = p.label;
+    const s = selects(label)[0];
+    const opts = [...s.options];
+    const o = opts.find((x) => say(x) === option) || opts.find((x) => x.value === option) ||
+      opts.find((x) => say(x).startsWith(option + " "));
+    if (!o) return { ok: false, error: `${q(label)} has no option ${q(option)}; it offers ${opts.map((x) => q(say(x))).join(", ")}` };
+    if (opts0.dry) return { ok: true, label, chose: say(o) };
+    s.focus();
+    Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value").set.call(s, o.value);
+    s.dispatchEvent(new Event("input", { bubbles: true }));
+    s.dispatchEvent(new Event("change", { bubbles: true }));
+    s.blur();
+    await sleep(PAUSE * 3);
+    const now = selects(label)[0];
+    const shown = now && now.selectedOptions[0] ? say(now.selectedOptions[0]) : "";
+    if (!now || now.value !== o.value) return { ok: false, error: `${q(label)} shows ${q(shown)} after choosing ${q(say(o))}` };
+    return { ok: true, chose: say(o), label };
   }
 
   function readBox(label) {
     const hits = box(label);
-    return hits.length === 1 ? { ok: true, text: hits[0].value } : { ok: false, error: `${hits.length} boxes labelled ${q(label)}` };
+    return hits.length === 1 ? { ok: true, text: hits[0].value } : { ok: false, error: `${hits.length} boxes labelled ${q(label)}${offered("box")}` };
+  }
+
+  // The file input that belongs to the button labelled near ("Add a file",
+  // "Upload a file", "Upload a folder"): in the smallest enclosing element
+  // that holds one, the first input after the button (the builder puts it
+  // right after), else the last one before it.
+  function inputNear(near, kind) {
+    const fits = (i) => (kind === "folder") === i.hasAttribute("webkitdirectory");
+    const anchors = [...byLabel(near), ...resolve(near)].filter((el, i, a) => a.indexOf(el) === i);
+    const found = [];
+    for (const a of anchors) {
+      for (let p = a.parentElement, k = 0; p && k < 4; p = p.parentElement, k++) {
+        const ins = [...p.querySelectorAll('input[type="file"]')].filter(fits);
+        if (!ins.length) continue;
+        const after = ins.filter((i) => a.compareDocumentPosition(i) & Node.DOCUMENT_POSITION_FOLLOWING);
+        found.push(after.length ? after[0] : ins[ins.length - 1]);
+        break;
+      }
+    }
+    return [...new Set(found)];
   }
 
   // files: [{ rel: "docs/x.md", b64 }]. kind "folder" uses the folder input,
   // as "Upload a folder" does; rel keeps the folder's own name first.
-  async function upload(files, kind) {
+  // near picks the input next to that button; without it, the first input of
+  // the kind (the file tree's) is used.
+  async function upload(files, kind, near) {
     const inputs = [...document.querySelectorAll('input[type="file"]')];
-    const pick = kind === "folder" ? inputs.filter((i) => i.hasAttribute("webkitdirectory")) : inputs.filter((i) => !i.hasAttribute("webkitdirectory"));
-    if (!pick.length) return { ok: false, error: `no ${kind} upload input on this page` };
+    let pick = kind === "folder" ? inputs.filter((i) => i.hasAttribute("webkitdirectory")) : inputs.filter((i) => !i.hasAttribute("webkitdirectory"));
+    if (near) {
+      pick = inputNear(near, kind);
+      if (pick.length !== 1) return { ok: false, error: `${pick.length} ${kind} upload inputs next to ${q(near)}${offered("button")}` };
+    }
+    if (!pick.length) return { ok: false, error: `no ${kind} upload input on this page${offered("button")}` };
+    if (files === null) return { ok: true, count: 0 };   // dry check from Preview
     const dt = new DataTransfer();
     for (const f of files) {
       const bin = atob(f.b64);
@@ -503,14 +727,18 @@
     return { ok: false, error: `${path} is still open after Delete` };
   }
 
-  // For waits: the first match of pattern in the page text, and whether busy matches.
+  // For waits: the first match of pattern in the page text, and whether busy
+  // matches. Runs of white space count as one space, because a badge next to
+  // its heading ("Try the box" + "Worked · 05:30 PM") can come out of
+  // innerText with a line break or with nothing between them.
   function probe(pattern, busy) {
-    const text = document.body ? document.body.innerText : "";
+    const text = document.body ? document.body.innerText.replace(/\s+/g, " ") : "";
     const m = new RegExp(pattern).exec(text);
     return { ok: true, match: m ? m[0] : null, busy: busy ? new RegExp(busy).test(text) : false, saved: saveState() };
   }
 
   globalThis.dopHelper = {
-    capture, fill, info, sections, open, click, fillBox, readBox, upload, openFile, deleteFile, probe,
+    version: VERSION,
+    capture, snapshot, fill, info, sections, open, click, fillBox, readBox, upload, openFile, deleteFile, probe, choose,
   };
 })();

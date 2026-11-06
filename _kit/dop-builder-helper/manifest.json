@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "DOP Builder Helper",
-  "version": "2.0",
+  "version": "2.4",
   "description": "Save Hashlist builder pages as plain text, fill the 5.4 scored steps, and run a plan of builder actions.",
   "action": {
     "default_popup": "popup.html",

@@ -1,0 +1,11 @@
+{
+  "module": "pktbuf",
+  "dut": ["/app/data/pktbuf.v", "/app/data/pktbuf_egress.v"],
+  "must": ["reset_idle", "drop_count"],
+  "benches": [
+    {"top": "tb_pktbuf", "files": ["tb_pktbuf.v"], "params": {"DW": 32, "AW": 10}, "tb_params": {},
+     "checks": ["reset_idle", "drop_count", "sf_long", "sf_short", "ct_stream", "line_rate", "backpressure", "mixed"]},
+    {"top": "tb_pktbuf", "files": ["tb_pktbuf.v"], "params": {"DW": 12, "AW": 6}, "tb_params": {},
+     "checks": ["reset_idle", "drop_count", "sf_long", "sf_short", "ct_stream", "line_rate", "backpressure", "mixed"]}
+  ]
+}

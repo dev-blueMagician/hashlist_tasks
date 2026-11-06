@@ -1,0 +1,1063 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/906acd3f-0656-4e14-9352-8879a8a38567/toolchain
+title: Hashlist Data Operations Platform
+section: 2.4 Toolchain
+open: (no tab or panel marked open)
+captured: Thu Nov 05 2026 17:35:50 GMT-0700 (Mountain Standard Time)
+
+Save and exit
+task-mw32jhhu
+
+2.4
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+2.2 Limits
+
+2.3 Internet
+
+(on) (current) 2.4 Toolchain [title: The box was tried and works]
+
+The shell the model works in, and how it is set up.
+
+2.4
+
+Toolchain
+
+(on) Describe it
+
+My own Dockerfile (optional)
+
+Language [select  = "Python"]
+
+Base image [input  = "debian:forky-20261005-slim"]
+
+Packages apt names, or pip: prefixed, comma separated [input build-essential, pip:numpy = "iverilog verilator g++ make python3"]
+
+environment/Dockerfile written from the form
+
+[textarea The Dockerfile]
+FROM debian:forky-20261005-slim@sha256:3c80e257eff6274d593eb33a94bda5174ccd619836e6a728a73e11c97f2213e3
+RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+RUN apt-get update && apt-get install -y --no-install-recommends iverilog verilator g++ make python3 && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY environment/data /app/data
+
+[/textarea]
+
+Try the box Worked · 05:06 PM
+Try again
+
+Builds the box and runs these commands, one per line.
+
+[textarea Commands to run in the box]
+id; ls -la /app /app/data /app/data/docs /app/data/tb
+cd /app/data && sha256sum pktbuf.v pktbuf_egress.v Makefile tb/tb_smoke.v docs/*
+su nobody -s /bin/sh -c 'touch /app/data/w.tmp && mkdir -p /app/data/build && echo model-user-can-write' ; rm -rf /app/data/w.tmp /app/data/build
+cp -r /app/data /tmp/s && make -s -C /tmp/s; echo make=$?
+make -s -C /tmp/s verilator | grep -E 'SMOKE|Error'; echo makevl=$?
+
+[/textarea]
+
+The box done 448 lines · 5 steps
+
+17:03:20dop: try_box started on b834a0240b0b:2
+
+17:03:24dop: building Daytona image dop-task-task-mw32jhhu-runtime:dev from environment/Dockerfile
+
+17:03:27#1 [internal] load remote build context
+
+17:03:27#2 copy /context /
+
+17:03:28#3 [internal] load metadata for docker.io/library/debian:forky-20261005-slim@sha256:3c80e257eff6274d593eb33a94bda5174ccd619836e6a728a73e11c97f2213e3
+
+17:03:28#4 [1/5] FROM docker.io/library/debian:forky-20261005-slim@sha256:3c80e257eff6274d593eb33a94bda5174ccd619836e6a728a73e11c97f2213e3
+
+17:03:28#5 [2/5] RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+
+17:03:28#6 [3/5] RUN apt-get update && apt-get install -y --no-install-recommends iverilog verilator g++ make python3 && rm -rf /var/lib/apt/lists/*
+
+17:03:28Get:1 http://snapshot.debian.org/archive/debian/20261006T000000Z forky InRelease [151 kB]
+
+17:03:29Get:2 http://snapshot.debian.org/archive/debian/20261006T000000Z forky-updates InRelease [45.1 kB]
+
+17:03:29Get:3 http://snapshot.debian.org/archive/debian-security/20261006T000000Z forky-security InRelease [48.0 kB]
+
+17:03:29Get:4 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 Packages [9999 kB]
+
+17:03:29Fetched 10.2 MB in 1s (14.1 MB/s)
+
+17:03:29Reading package lists...
+
+17:03:30Reading package lists...
+
+17:03:30Building dependency tree...
+
+17:03:30Solving dependencies...
+
+17:03:30Reading state information...
+
+17:03:30The following additional packages will be installed:
+
+17:03:31  cpp-16-x86-64-linux-gnu cpp-x86-64-linux-gnu fonts-font-awesome
+
+17:03:31  binutils binutils-common binutils-x86-64-linux-gnu ccache cpp cpp-16
+
+17:03:31  fonts-font-awesome-legacy fonts-lato fonts-roboto-slab g++-16
+
+17:03:31  g++-16-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-16
+
+17:03:31  gcc-16-x86-64-linux-gnu gcc-x86-64-linux-gnu libasan8 libatomic1 libbinutils
+
+17:03:32  libc-dev-bin libc6-dev libcc1-0 libctf-nobfd0 libctf0 libexpat1 libffi8
+
+17:03:32  libfmt10 libgcc-16-dev libgdbm-compat4t64 libgdbm6t64 libgomp1 libgprofng0
+
+17:03:32  libhiredis1.1.0 libhwasan0 libisl23 libitm1 libjansson4 libjs-sphinxdoc
+
+17:03:32  liblsan0 libmpc3 libmpfr6 libncursesw6 libperl5.42 libpython3-stdlib
+
+17:03:33  libpython3.14-minimal libpython3.14-stdlib libquadmath0 libreadline8t64
+
+17:03:33  libsframe3 libsqlite3-0 libstdc++-16-dev libtsan2 libubsan1 linux-libc-dev
+
+17:03:33  media-types netbase perl perl-modules-5.42 python3-minimal python3.14
+
+17:03:33  python3.14-minimal readline-common sphinx-rtd-theme-common
+
+17:03:33Suggested packages:
+
+17:03:34  binutils-doc gprofng-gui binutils-gold distcc | icecc cpp-doc gcc-16-locales
+
+17:03:34  cpp-16-doc node-fortawesome-fontawesome-free fonts-roboto g++-multilib
+
+17:03:34  g++-16-multilib gcc-16-doc gcc-multilib manpages-dev autoconf automake
+
+17:03:34  libtool flex bison gdb gcc-doc gcc-16-multilib gdb-x86-64-linux-gnu gtkwave
+
+17:03:34  libc-devtools glibc-doc gdbm-l10n sensible-utils libstdc++-16-doc make-doc
+
+17:03:35  perl-doc libterm-readline-gnu-perl | libterm-readline-perl-perl
+
+17:03:35  libtap-harness-archive-perl python3-doc python3-tk python3-venv
+
+17:03:35  python3.14-venv python3.14-doc binfmt-support readline-doc
+
+17:03:35Recommended packages:
+
+17:03:35  manpages manpages-dev libgpm2 ca-certificates libsystemc-dev
+
+17:03:36The following NEW packages will be installed:
+
+17:03:36  binutils binutils-common binutils-x86-64-linux-gnu ccache cpp cpp-16
+
+17:03:36  cpp-16-x86-64-linux-gnu cpp-x86-64-linux-gnu fonts-font-awesome
+
+17:03:36  fonts-font-awesome-legacy fonts-lato fonts-roboto-slab g++ g++-16
+
+17:03:36  g++-16-x86-64-linux-gnu g++-x86-64-linux-gnu gcc gcc-16
+
+17:03:37  gcc-16-x86-64-linux-gnu gcc-x86-64-linux-gnu iverilog libasan8 libatomic1
+
+17:03:37  libbinutils libc-dev-bin libc6-dev libcc1-0 libctf-nobfd0 libctf0 libexpat1
+
+17:03:37  libffi8 libfmt10 libgcc-16-dev libgdbm-compat4t64 libgdbm6t64 libgomp1
+
+17:03:37  libgprofng0 libhiredis1.1.0 libhwasan0 libisl23 libitm1 libjansson4
+
+17:03:37  libjs-sphinxdoc liblsan0 libmpc3 libmpfr6 libncursesw6 libperl5.42
+
+17:03:38  libpython3-stdlib libpython3.14-minimal libpython3.14-stdlib libquadmath0
+
+17:03:38  libreadline8t64 libsframe3 libsqlite3-0 libstdc++-16-dev libtsan2 libubsan1
+
+17:03:38  linux-libc-dev make media-types netbase perl perl-modules-5.42 python3
+
+17:03:38  python3-minimal python3.14 python3.14-minimal readline-common
+
+17:03:38  sphinx-rtd-theme-common verilator
+
+17:03:390 upgraded, 71 newly installed, 0 to remove and 11 not upgraded.
+
+17:03:40Need to get 119 MB of archives.
+
+17:03:40After this operation, 471 MB of additional disk space will be used.
+
+17:03:40Ign:39 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp-x86-64-linux-gnu amd64 4:16.1.0-3
+
+17:03:51Ign:39 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp-x86-64-linux-gnu amd64 4:16.1.0-3
+
+17:04:53Ign:39 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp-x86-64-linux-gnu amd64 4:16.1.0-3
+
+17:04:57Get:1 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 fonts-lato all 2.015-1 [2780 kB]
+
+17:04:57Get:2 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libexpat1 amd64 2.8.4-2 [130 kB]
+
+17:04:57Get:3 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libpython3.14-minimal amd64 3.14.7-4 [902 kB]
+
+17:04:57Get:4 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 python3.14-minimal amd64 3.14.7-4 [2713 kB]
+
+17:04:57Get:5 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 python3-minimal amd64 3.14.7-3 [25.3 kB]
+
+17:04:58Get:6 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 media-types all 14.0.0 [30.8 kB]
+
+17:04:58Get:7 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 netbase all 6.6 [10.3 kB]
+
+17:04:58Get:8 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libffi8 amd64 3.8.0-2 [32.5 kB]
+
+17:04:58Get:39 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp-x86-64-linux-gnu amd64 4:16.1.0-3 [4472 B]
+
+17:04:58Get:9 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libncursesw6 amd64 6.6+20260608-2 [137 kB]
+
+17:04:59Get:10 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 readline-common all 8.3-4 [74.8 kB]
+
+17:04:59Get:11 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libreadline8t64 amd64 8.3-4 [181 kB]
+
+17:04:59Get:12 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libsqlite3-0 amd64 3.53.4-2 [974 kB]
+
+17:04:59Get:13 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libpython3.14-stdlib amd64 3.14.7-4 [2362 kB]
+
+17:05:00Get:14 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 python3.14 amd64 3.14.7-4 [861 kB]
+
+17:05:00Get:15 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libpython3-stdlib amd64 3.14.7-3 [8252 B]
+
+17:05:00Get:16 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 python3 amd64 3.14.7-3 [26.0 kB]
+
+17:05:01Get:17 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 perl-modules-5.42 all 5.42.3-1 [3213 kB]
+
+17:05:01Get:18 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libgdbm6t64 amd64 1.26-1+b2 [77.7 kB]
+
+17:05:01Get:20 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libperl5.42 amd64 5.42.3-1 [4272 kB]
+
+17:05:01Get:19 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libgdbm-compat4t64 amd64 1.26-1+b2 [52.0 kB]
+
+17:05:01Get:21 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 perl amd64 5.42.3-1 [266 kB]
+
+17:05:02Get:22 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libsframe3 amd64 2.47-6 [86.2 kB]
+
+17:05:02Get:23 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 binutils-common amd64 2.47-6 [2686 kB]
+
+17:05:02Get:24 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libbinutils amd64 2.47-6 [562 kB]
+
+17:05:03Get:25 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libgprofng0 amd64 2.47-6 [846 kB]
+
+17:05:03Get:26 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libctf-nobfd0 amd64 2.47-6 [166 kB]
+
+17:05:03Get:27 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libctf0 amd64 2.47-6 [98.2 kB]
+
+17:05:03Get:28 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libjansson4 amd64 2.15.1-1 [65.6 kB]
+
+17:05:03Get:29 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 binutils-x86-64-linux-gnu amd64 2.47-6 [1132 kB]
+
+17:05:04Get:30 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 binutils amd64 2.47-6 [288 kB]
+
+17:05:04Get:33 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 ccache amd64 4.13.6-1 [849 kB]
+
+17:05:04Get:31 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libfmt10 amd64 10.1.1+ds1-4+b2 [126 kB]
+
+17:05:04Get:32 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libhiredis1.1.0 amd64 1.2.0-6+b4 [51.0 kB]
+
+17:05:04Get:34 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libisl23 amd64 0.28-1 [667 kB]
+
+17:05:05Get:35 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libmpfr6 amd64 4.2.2-3 [729 kB]
+
+17:05:05Get:36 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libmpc3 amd64 1.3.1-3 [52.2 kB]
+
+17:05:05Get:37 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp-16-x86-64-linux-gnu amd64 16.2.0-3 [13.7 MB]
+
+17:05:05Get:38 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp-16 amd64 16.2.0-3 [1272 B]
+
+17:05:06Get:40 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 cpp amd64 4:16.1.0-3 [1568 B]
+
+17:05:06Get:41 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 fonts-font-awesome-legacy all 6-3 [1547 kB]
+
+17:05:06Get:42 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 fonts-font-awesome all 7.3.0+dfsg-1 [677 kB]
+
+17:05:06Get:43 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 fonts-roboto-slab all 2.002+20231012+ds-1 [1159 kB]
+
+17:05:06Get:44 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libcc1-0 amd64 16.2.0-3 [46.1 kB]
+
+17:05:07Get:45 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libgomp1 amd64 16.2.0-3 [151 kB]
+
+17:05:07Get:46 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libitm1 amd64 16.2.0-3 [26.9 kB]
+
+17:05:07Get:47 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libatomic1 amd64 16.2.0-3 [10.4 kB]
+
+17:05:07Get:48 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libasan8 amd64 16.2.0-3 [2888 kB]
+
+17:05:07Get:49 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 liblsan0 amd64 16.2.0-3 [1281 kB]
+
+17:05:08Get:50 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libtsan2 amd64 16.2.0-3 [2574 kB]
+
+17:05:08Get:51 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libubsan1 amd64 16.2.0-3 [1136 kB]
+
+17:05:08Get:52 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libhwasan0 amd64 16.2.0-3 [1580 kB]
+
+17:05:08Get:53 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libquadmath0 amd64 16.2.0-3 [148 kB]
+
+17:05:09Get:54 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libgcc-16-dev amd64 16.2.0-3 [2782 kB]
+
+17:05:09Get:55 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 gcc-16-x86-64-linux-gnu amd64 16.2.0-3 [26.6 MB]
+
+17:05:09Get:56 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 gcc-16 amd64 16.2.0-3 [538 kB]
+
+17:05:09Get:57 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 gcc-x86-64-linux-gnu amd64 4:16.1.0-3 [1432 B]
+
+17:05:09Get:58 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 gcc amd64 4:16.1.0-3 [5148 B]
+
+17:05:10Get:59 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libc-dev-bin amd64 2.43-6 [39.5 kB]
+
+17:05:10Get:60 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 linux-libc-dev all 7.2.8-1 [2002 kB]
+
+17:05:10Get:61 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libc6-dev amd64 2.43-6 [2070 kB]
+
+17:05:10Get:62 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libstdc++-16-dev amd64 16.2.0-3 [2755 kB]
+
+17:05:10Get:63 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 g++-16-x86-64-linux-gnu amd64 16.2.0-3 [15.1 MB]
+
+17:05:11Get:64 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 g++-16 amd64 16.2.0-3 [35.4 kB]
+
+17:05:11Get:65 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 g++-x86-64-linux-gnu amd64 4:16.1.0-3 [1196 B]
+
+17:05:11Get:67 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 libjs-sphinxdoc all 9.1.0-8 [46.1 kB]
+
+17:05:11Get:66 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 g++ amd64 4:16.1.0-3 [1340 B]
+
+17:05:11Get:68 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 iverilog amd64 13.0-2 [2352 kB]
+
+17:05:12Get:69 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 make amd64 4.4.1-3 [463 kB]
+
+17:05:12Get:70 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 sphinx-rtd-theme-common all 3.1.0+dfsg-3 [916 kB]
+
+17:05:12Get:71 http://snapshot.debian.org/archive/debian/20261006T000000Z forky/main amd64 verilator amd64 5.048-1 [8743 kB]
+
+17:05:12debconf: unable to initialize frontend: Dialog
+
+17:05:12debconf: (TERM is not set, so the dialog frontend is not usable.)
+
+17:05:13debconf: falling back to frontend: Readline
+
+17:05:13debconf: unable to initialize frontend: Readline
+
+17:05:13debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC entries checked: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.42.3 /usr/local/share/perl/5.42.3 /usr/lib/x86_64-linux-gnu/perl5/5.42 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl-base /usr/lib/x86_64-linux-gnu/perl/5.42 /usr/share/perl/5.42 /usr/local/lib/site_perl) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 8, <STDIN> line 71.)
+
+17:05:13debconf: falling back to frontend: Teletype
+
+17:05:14debconf: unable to initialize frontend: Teletype
+
+17:05:14debconf: (This frontend requires a controlling tty.)
+
+17:05:14debconf: falling back to frontend: Noninteractive
+
+17:05:14Fetched 119 MB in 1min 28s (1344 kB/s)
+
+17:05:14Selecting previously unselected package fonts-lato.
+
+17:05:15(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 4959 files and directories currently installed.)
+
+17:05:15Preparing to unpack .../fonts-lato_2.015-1_all.deb ...
+
+17:05:15Unpacking fonts-lato (2.015-1) ...
+
+17:05:16Selecting previously unselected package libexpat1:amd64.
+
+17:05:16Preparing to unpack .../libexpat1_2.8.4-2_amd64.deb ...
+
+17:05:16Unpacking libexpat1:amd64 (2.8.4-2) ...
+
+17:05:16Selecting previously unselected package libpython3.14-minimal:amd64.
+
+17:05:16Preparing to unpack .../libpython3.14-minimal_3.14.7-4_amd64.deb ...
+
+17:05:17Unpacking libpython3.14-minimal:amd64 (3.14.7-4) ...
+
+17:05:17Selecting previously unselected package python3.14-minimal.
+
+17:05:17Preparing to unpack .../python3.14-minimal_3.14.7-4_amd64.deb ...
+
+17:05:17Unpacking python3.14-minimal (3.14.7-4) ...
+
+17:05:17Setting up libpython3.14-minimal:amd64 (3.14.7-4) ...
+
+17:05:18Setting up libexpat1:amd64 (2.8.4-2) ...
+
+17:05:18Setting up python3.14-minimal (3.14.7-4) ...
+
+17:05:18Selecting previously unselected package python3-minimal.
+
+17:05:18Preparing to unpack .../00-python3-minimal_3.14.7-3_amd64.deb ...
+
+17:05:18(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5341 files and directories currently installed.)
+
+17:05:19Unpacking python3-minimal (3.14.7-3) ...
+
+17:05:19Selecting previously unselected package media-types.
+
+17:05:19Preparing to unpack .../01-media-types_14.0.0_all.deb ...
+
+17:05:19Unpacking media-types (14.0.0) ...
+
+17:05:19Selecting previously unselected package netbase.
+
+17:05:20Preparing to unpack .../02-netbase_6.6_all.deb ...
+
+17:05:20Preparing to unpack .../03-libffi8_3.8.0-2_amd64.deb ...
+
+17:05:20Unpacking netbase (6.6) ...
+
+17:05:20Selecting previously unselected package libffi8:amd64.
+
+17:05:20Unpacking libffi8:amd64 (3.8.0-2) ...
+
+17:05:21Selecting previously unselected package libncursesw6:amd64.
+
+17:05:21Preparing to unpack .../04-libncursesw6_6.6+20260608-2_amd64.deb ...
+
+17:05:21Unpacking libncursesw6:amd64 (6.6+20260608-2) ...
+
+17:05:21Preparing to unpack .../05-readline-common_8.3-4_all.deb ...
+
+17:05:21Selecting previously unselected package readline-common.
+
+17:05:22Unpacking readline-common (8.3-4) ...
+
+17:05:22Selecting previously unselected package libreadline8t64:amd64.
+
+17:05:22Preparing to unpack .../06-libreadline8t64_8.3-4_amd64.deb ...
+
+17:05:22Adding 'diversion of /lib/x86_64-linux-gnu/libhistory.so.8 to /lib/x86_64-linux-gnu/libhistory.so.8.usr-is-merged by libreadline8t64'
+
+17:05:22Adding 'diversion of /lib/x86_64-linux-gnu/libhistory.so.8.2 to /lib/x86_64-linux-gnu/libhistory.so.8.2.usr-is-merged by libreadline8t64'
+
+17:05:23Adding 'diversion of /lib/x86_64-linux-gnu/libreadline.so.8 to /lib/x86_64-linux-gnu/libreadline.so.8.usr-is-merged by libreadline8t64'
+
+17:05:23Adding 'diversion of /lib/x86_64-linux-gnu/libreadline.so.8.2 to /lib/x86_64-linux-gnu/libreadline.so.8.2.usr-is-merged by libreadline8t64'
+
+17:05:23Unpacking libreadline8t64:amd64 (8.3-4) ...
+
+17:05:23Selecting previously unselected package libsqlite3-0:amd64.
+
+17:05:24Preparing to unpack .../07-libsqlite3-0_3.53.4-2_amd64.deb ...
+
+17:05:24Unpacking libsqlite3-0:amd64 (3.53.4-2) ...
+
+17:05:24Selecting previously unselected package libpython3.14-stdlib:amd64.
+
+17:05:24Preparing to unpack .../08-libpython3.14-stdlib_3.14.7-4_amd64.deb ...
+
+17:05:24Unpacking libpython3.14-stdlib:amd64 (3.14.7-4) ...
+
+17:05:25Selecting previously unselected package python3.14.
+
+17:05:25Preparing to unpack .../09-python3.14_3.14.7-4_amd64.deb ...
+
+17:05:25Unpacking python3.14 (3.14.7-4) ...
+
+17:05:25Selecting previously unselected package libpython3-stdlib:amd64.
+
+17:05:26Unpacking libpython3-stdlib:amd64 (3.14.7-3) ...
+
+17:05:25Preparing to unpack .../10-libpython3-stdlib_3.14.7-3_amd64.deb ...
+
+17:05:26Setting up python3-minimal (3.14.7-3) ...
+
+17:05:26Selecting previously unselected package python3.
+
+17:05:26(Reading database ... (Reading database ... 5%(Reading database ... 10%(Reading database ... 15%(Reading database ... 20%(Reading database ... 25%(Reading database ... 30%(Reading database ... 35%(Reading database ... 40%(Reading database ... 45%(Reading database ... 50%(Reading database ... 55%(Reading database ... 60%(Reading database ... 65%(Reading database ... 70%(Reading database ... 75%(Reading database ... 80%(Reading database ... 85%(Reading database ... 90%(Reading database ... 95%(Reading database ... 100%(Reading database ... 5871 files and directories currently installed.)
+
+17:05:26Preparing to unpack .../00-python3_3.14.7-3_amd64.deb ...
+
+17:05:27Unpacking python3 (3.14.7-3) ...
+
+17:05:27Selecting previously unselected package perl-modules-5.42.
+
+17:05:27Preparing to unpack .../01-perl-modules-5.42_5.42.3-1_all.deb ...
+
+17:05:27Unpacking perl-modules-5.42 (5.42.3-1) ...
+
+17:05:27Selecting previously unselected package libgdbm6t64:amd64.
+
+17:05:28Preparing to unpack .../02-libgdbm6t64_1.26-1+b2_amd64.deb ...
+
+17:05:28Selecting previously unselected package libgdbm-compat4t64:amd64.
+
+17:05:28Unpacking libgdbm6t64:amd64 (1.26-1+b2) ...
+
+17:05:28Preparing to unpack .../03-libgdbm-compat4t64_1.26-1+b2_amd64.deb ...
+
+17:05:28Unpacking libgdbm-compat4t64:amd64 (1.26-1+b2) ...
+
+17:05:29Selecting previously unselected package libperl5.42:amd64.
+
+17:05:29Preparing to unpack .../04-libperl5.42_5.42.3-1_amd64.deb ...
+
+17:05:29Unpacking libperl5.42:amd64 (5.42.3-1) ...
+
+17:05:29Selecting previously unselected package perl.
+
+17:05:30Unpacking perl (5.42.3-1) ...
+
+17:05:30Selecting previously unselected package libsframe3:amd64.
+
+17:05:29Preparing to unpack .../05-perl_5.42.3-1_amd64.deb ...
+
+17:05:30Preparing to unpack .../06-libsframe3_2.47-6_amd64.deb ...
+
+17:05:30Unpacking libsframe3:amd64 (2.47-6) ...
+
+17:05:30Selecting previously unselected package binutils-common:amd64.
+
+17:05:31Preparing to unpack .../07-binutils-common_2.47-6_amd64.deb ...
+
+17:05:31Unpacking binutils-common:amd64 (2.47-6) ...
+
+17:05:31Selecting previously unselected package libbinutils:amd64.
+
+17:05:31Preparing to unpack .../08-libbinutils_2.47-6_amd64.deb ...
+
+17:05:31Unpacking libbinutils:amd64 (2.47-6) ...
+
+17:05:32Selecting previously unselected package libgprofng0:amd64.
+
+17:05:32Preparing to unpack .../09-libgprofng0_2.47-6_amd64.deb ...
+
+17:05:32Unpacking libgprofng0:amd64 (2.47-6) ...
+
+17:05:32Selecting previously unselected package libctf-nobfd0:amd64.
+
+17:05:32Preparing to unpack .../10-libctf-nobfd0_2.47-6_amd64.deb ...
+
+17:05:33Unpacking libctf-nobfd0:amd64 (2.47-6) ...
+
+17:05:33Selecting previously unselected package libctf0:amd64.
+
+17:05:33Preparing to unpack .../11-libctf0_2.47-6_amd64.deb ...
+
+17:05:33Unpacking libctf0:amd64 (2.47-6) ...
+
+17:05:33Selecting previously unselected package libjansson4:amd64.
+
+17:05:34Preparing to unpack .../12-libjansson4_2.15.1-1_amd64.deb ...
+
+17:05:34Unpacking libjansson4:amd64 (2.15.1-1) ...
+
+17:05:34Selecting previously unselected package binutils-x86-64-linux-gnu.
+
+17:05:34Preparing to unpack .../13-binutils-x86-64-linux-gnu_2.47-6_amd64.deb ...
+
+17:05:35Selecting previously unselected package binutils.
+
+17:05:34Unpacking binutils-x86-64-linux-gnu (2.47-6) ...
+
+17:05:35Preparing to unpack .../14-binutils_2.47-6_amd64.deb ...
+
+17:05:35Unpacking binutils (2.47-6) ...
+
+17:05:35Selecting previously unselected package libfmt10:amd64.
+
+17:05:35Preparing to unpack .../15-libfmt10_10.1.1+ds1-4+b2_amd64.deb ...
+
+17:05:36Unpacking libfmt10:amd64 (10.1.1+ds1-4+b2) ...
+
+17:05:36Selecting previously unselected package libhiredis1.1.0:amd64.
+
+17:05:36Preparing to unpack .../16-libhiredis1.1.0_1.2.0-6+b4_amd64.deb ...
+
+17:05:36Unpacking libhiredis1.1.0:amd64 (1.2.0-6+b4) ...
+
+17:05:36Selecting previously unselected package ccache.
+
+17:05:37Preparing to unpack .../17-ccache_4.13.6-1_amd64.deb ...
+
+17:05:37Unpacking ccache (4.13.6-1) ...
+
+17:05:37Selecting previously unselected package libisl23:amd64.
+
+17:05:37Preparing to unpack .../18-libisl23_0.28-1_amd64.deb ...
+
+17:05:37Unpacking libisl23:amd64 (0.28-1) ...
+
+17:05:38Selecting previously unselected package libmpfr6:amd64.
+
+17:05:38Preparing to unpack .../19-libmpfr6_4.2.2-3_amd64.deb ...
+
+17:05:38Unpacking libmpfr6:amd64 (4.2.2-3) ...
+
+17:05:38Selecting previously unselected package libmpc3:amd64.
+
+17:05:38Preparing to unpack .../20-libmpc3_1.3.1-3_amd64.deb ...
+
+17:05:39Unpacking libmpc3:amd64 (1.3.1-3) ...
+
+17:05:39Selecting previously unselected package cpp-16-x86-64-linux-gnu.
+
+17:05:39Preparing to unpack .../21-cpp-16-x86-64-linux-gnu_16.2.0-3_amd64.deb ...
+
+17:05:39Unpacking cpp-16-x86-64-linux-gnu (16.2.0-3) ...
+
+17:05:39Selecting previously unselected package cpp-16.
+
+17:05:40Preparing to unpack .../22-cpp-16_16.2.0-3_amd64.deb ...
+
+17:05:40Unpacking cpp-16 (16.2.0-3) ...
+
+17:05:40Selecting previously unselected package cpp-x86-64-linux-gnu.
+
+17:05:40Preparing to unpack .../23-cpp-x86-64-linux-gnu_4%3a16.1.0-3_amd64.deb ...
+
+17:05:40Unpacking cpp-x86-64-linux-gnu (4:16.1.0-3) ...
+
+17:05:41Selecting previously unselected package cpp.
+
+17:05:41Preparing to unpack .../24-cpp_4%3a16.1.0-3_amd64.deb ...
+
+17:05:41Unpacking cpp (4:16.1.0-3) ...
+
+17:05:41Selecting previously unselected package fonts-font-awesome-legacy.
+
+17:05:41Preparing to unpack .../25-fonts-font-awesome-legacy_6-3_all.deb ...
+
+17:05:42Unpacking fonts-font-awesome-legacy (6-3) ...
+
+17:05:42Selecting previously unselected package fonts-font-awesome.
+
+17:05:42Preparing to unpack .../26-fonts-font-awesome_7.3.0+dfsg-1_all.deb ...
+
+17:05:42Unpacking fonts-font-awesome (7.3.0+dfsg-1) ...
+
+17:05:43Selecting previously unselected package fonts-roboto-slab.
+
+17:05:43Preparing to unpack .../27-fonts-roboto-slab_2.002+20231012+ds-1_all.deb ...
+
+17:05:43Unpacking fonts-roboto-slab (2.002+20231012+ds-1) ...
+
+17:05:43Selecting previously unselected package libcc1-0:amd64.
+
+17:05:43Preparing to unpack .../28-libcc1-0_16.2.0-3_amd64.deb ...
+
+17:05:44Unpacking libcc1-0:amd64 (16.2.0-3) ...
+
+17:05:44Selecting previously unselected package libgomp1:amd64.
+
+17:05:44Preparing to unpack .../29-libgomp1_16.2.0-3_amd64.deb ...
+
+17:05:44Unpacking libgomp1:amd64 (16.2.0-3) ...
+
+17:05:44Selecting previously unselected package libitm1:amd64.
+
+17:05:45Preparing to unpack .../30-libitm1_16.2.0-3_amd64.deb ...
+
+17:05:45Unpacking libitm1:amd64 (16.2.0-3) ...
+
+17:05:45Selecting previously unselected package libatomic1:amd64.
+
+17:05:45Preparing to unpack .../31-libatomic1_16.2.0-3_amd64.deb ...
+
+17:05:46Selecting previously unselected package libasan8:amd64.
+
+17:05:45Unpacking libatomic1:amd64 (16.2.0-3) ...
+
+17:05:46Preparing to unpack .../32-libasan8_16.2.0-3_amd64.deb ...
+
+17:05:46Unpacking libasan8:amd64 (16.2.0-3) ...
+
+17:05:46Selecting previously unselected package liblsan0:amd64.
+
+17:05:46Preparing to unpack .../33-liblsan0_16.2.0-3_amd64.deb ...
+
+17:05:47Unpacking liblsan0:amd64 (16.2.0-3) ...
+
+17:05:47Selecting previously unselected package libtsan2:amd64.
+
+17:05:47Preparing to unpack .../34-libtsan2_16.2.0-3_amd64.deb ...
+
+17:05:47Selecting previously unselected package libubsan1:amd64.
+
+17:05:47Unpacking libtsan2:amd64 (16.2.0-3) ...
+
+17:05:48Preparing to unpack .../35-libubsan1_16.2.0-3_amd64.deb ...
+
+17:05:48Unpacking libubsan1:amd64 (16.2.0-3) ...
+
+17:05:48Selecting previously unselected package libhwasan0:amd64.
+
+17:05:48Preparing to unpack .../36-libhwasan0_16.2.0-3_amd64.deb ...
+
+17:05:48Unpacking libhwasan0:amd64 (16.2.0-3) ...
+
+17:05:49Preparing to unpack .../37-libquadmath0_16.2.0-3_amd64.deb ...
+
+17:05:49Selecting previously unselected package libquadmath0:amd64.
+
+17:05:49Unpacking libquadmath0:amd64 (16.2.0-3) ...
+
+17:05:49Selecting previously unselected package libgcc-16-dev:amd64.
+
+17:05:49Preparing to unpack .../38-libgcc-16-dev_16.2.0-3_amd64.deb ...
+
+17:05:50Unpacking libgcc-16-dev:amd64 (16.2.0-3) ...
+
+17:05:50Selecting previously unselected package gcc-16-x86-64-linux-gnu.
+
+17:05:50Preparing to unpack .../39-gcc-16-x86-64-linux-gnu_16.2.0-3_amd64.deb ...
+
+17:05:50Unpacking gcc-16-x86-64-linux-gnu (16.2.0-3) ...
+
+17:05:51Preparing to unpack .../40-gcc-16_16.2.0-3_amd64.deb ...
+
+17:05:50Selecting previously unselected package gcc-16.
+
+17:05:51Unpacking gcc-16 (16.2.0-3) ...
+
+17:05:51Selecting previously unselected package gcc-x86-64-linux-gnu.
+
+17:05:51Preparing to unpack .../41-gcc-x86-64-linux-gnu_4%3a16.1.0-3_amd64.deb ...
+
+17:05:51Unpacking gcc-x86-64-linux-gnu (4:16.1.0-3) ...
+
+17:05:51Selecting previously unselected package gcc.
+
+17:05:52Preparing to unpack .../42-gcc_4%3a16.1.0-3_amd64.deb ...
+
+17:05:52Unpacking gcc (4:16.1.0-3) ...
+
+17:05:52Selecting previously unselected package libc-dev-bin.
+
+17:05:52Preparing to unpack .../43-libc-dev-bin_2.43-6_amd64.deb ...
+
+17:05:52Unpacking libc-dev-bin (2.43-6) ...
+
+17:05:53Selecting previously unselected package linux-libc-dev.
+
+17:05:53Preparing to unpack .../44-linux-libc-dev_7.2.8-1_all.deb ...
+
+17:05:53Unpacking linux-libc-dev (7.2.8-1) ...
+
+17:05:53Selecting previously unselected package libc6-dev:amd64.
+
+17:05:53Preparing to unpack .../45-libc6-dev_2.43-6_amd64.deb ...
+
+17:05:54Unpacking libc6-dev:amd64 (2.43-6) ...
+
+17:05:54Selecting previously unselected package libstdc++-16-dev:amd64.
+
+17:05:54Preparing to unpack .../46-libstdc++-16-dev_16.2.0-3_amd64.deb ...
+
+17:05:54Unpacking libstdc++-16-dev:amd64 (16.2.0-3) ...
+
+17:05:55Selecting previously unselected package g++-16-x86-64-linux-gnu.
+
+17:05:55Preparing to unpack .../47-g++-16-x86-64-linux-gnu_16.2.0-3_amd64.deb ...
+
+17:05:55Unpacking g++-16-x86-64-linux-gnu (16.2.0-3) ...
+
+17:05:55Selecting previously unselected package g++-16.
+
+17:05:56Unpacking g++-16 (16.2.0-3) ...
+
+17:05:55Preparing to unpack .../48-g++-16_16.2.0-3_amd64.deb ...
+
+17:05:56Selecting previously unselected package g++-x86-64-linux-gnu.
+
+17:05:56Preparing to unpack .../49-g++-x86-64-linux-gnu_4%3a16.1.0-3_amd64.deb ...
+
+17:05:56Unpacking g++-x86-64-linux-gnu (4:16.1.0-3) ...
+
+17:05:56Selecting previously unselected package g++.
+
+17:05:57Preparing to unpack .../50-g++_4%3a16.1.0-3_amd64.deb ...
+
+17:05:57Unpacking g++ (4:16.1.0-3) ...
+
+17:05:57Selecting previously unselected package libjs-sphinxdoc.
+
+17:05:57Preparing to unpack .../51-libjs-sphinxdoc_9.1.0-8_all.deb ...
+
+17:05:57Unpacking libjs-sphinxdoc (9.1.0-8) ...
+
+17:05:58Selecting previously unselected package iverilog.
+
+17:05:58Preparing to unpack .../52-iverilog_13.0-2_amd64.deb ...
+
+17:05:58Unpacking iverilog (13.0-2) ...
+
+17:05:58Selecting previously unselected package make.
+
+17:05:59Preparing to unpack .../53-make_4.4.1-3_amd64.deb ...
+
+17:05:59Unpacking make (4.4.1-3) ...
+
+17:05:59Selecting previously unselected package sphinx-rtd-theme-common.
+
+17:05:59Preparing to unpack .../54-sphinx-rtd-theme-common_3.1.0+dfsg-3_all.deb ...
+
+17:05:59Unpacking sphinx-rtd-theme-common (3.1.0+dfsg-3) ...
+
+17:06:00Selecting previously unselected package verilator.
+
+17:06:00Preparing to unpack .../55-verilator_5.048-1_amd64.deb ...
+
+17:06:00Unpacking verilator (5.048-1) ...
+
+17:06:00Setting up media-types (14.0.0) ...
+
+17:06:00Setting up fonts-font-awesome-legacy (6-3) ...
+
+17:06:01Setting up fonts-lato (2.015-1) ...
+
+17:06:01Setting up libgdbm6t64:amd64 (1.26-1+b2) ...
+
+17:06:01Setting up libgdbm-compat4t64:amd64 (1.26-1+b2) ...
+
+17:06:01Setting up libsqlite3-0:amd64 (3.53.4-2) ...
+
+17:06:01Setting up binutils-common:amd64 (2.47-6) ...
+
+17:06:02Setting up libsframe3:amd64 (2.47-6) ...
+
+17:06:02Setting up fonts-roboto-slab (2.002+20231012+ds-1) ...
+
+17:06:02Setting up linux-libc-dev (7.2.8-1) ...
+
+17:06:02Setting up libctf-nobfd0:amd64 (2.47-6) ...
+
+17:06:02Setting up libgomp1:amd64 (16.2.0-3) ...
+
+17:06:03Setting up libjansson4:amd64 (2.15.1-1) ...
+
+17:06:03Setting up make (4.4.1-3) ...
+
+17:06:03Setting up libmpfr6:amd64 (4.2.2-3) ...
+
+17:06:03Setting up libquadmath0:amd64 (16.2.0-3) ...
+
+17:06:04Setting up libmpc3:amd64 (1.3.1-3) ...
+
+17:06:04Setting up libatomic1:amd64 (16.2.0-3) ...
+
+17:06:04Setting up libncursesw6:amd64 (6.6+20260608-2) ...
+
+17:06:04Setting up libjs-sphinxdoc (9.1.0-8) ...
+
+17:06:04Setting up libubsan1:amd64 (16.2.0-3) ...
+
+17:06:05Setting up libffi8:amd64 (3.8.0-2) ...
+
+17:06:05Setting up libhwasan0:amd64 (16.2.0-3) ...
+
+17:06:05Setting up libasan8:amd64 (16.2.0-3) ...
+
+17:06:05Setting up netbase (6.6) ...
+
+17:06:05Setting up libtsan2:amd64 (16.2.0-3) ...
+
+17:06:06Setting up libbinutils:amd64 (2.47-6) ...
+
+17:06:06Setting up libisl23:amd64 (0.28-1) ...
+
+17:06:06Setting up perl-modules-5.42 (5.42.3-1) ...
+
+17:06:06Setting up libc-dev-bin (2.43-6) ...
+
+17:06:06Setting up libhiredis1.1.0:amd64 (1.2.0-6+b4) ...
+
+17:06:07Setting up readline-common (8.3-4) ...
+
+17:06:07Setting up fonts-font-awesome (7.3.0+dfsg-1) ...
+
+17:06:07Setting up sphinx-rtd-theme-common (3.1.0+dfsg-3) ...
+
+17:06:07Setting up libcc1-0:amd64 (16.2.0-3) ...
+
+17:06:07Setting up libfmt10:amd64 (10.1.1+ds1-4+b2) ...
+
+17:06:08Setting up liblsan0:amd64 (16.2.0-3) ...
+
+17:06:08Setting up libitm1:amd64 (16.2.0-3) ...
+
+17:06:08Setting up libctf0:amd64 (2.47-6) ...
+
+17:06:08Setting up libgcc-16-dev:amd64 (16.2.0-3) ...
+
+17:06:08Setting up ccache (4.13.6-1) ...
+
+17:06:09Setting up libperl5.42:amd64 (5.42.3-1) ...
+
+17:06:09Updating symlinks in /usr/lib/ccache ...
+
+17:06:09Setting up perl (5.42.3-1) ...
+
+17:06:09Setting up libgprofng0:amd64 (2.47-6) ...
+
+17:06:09Setting up libreadline8t64:amd64 (8.3-4) ...
+
+17:06:10Setting up libc6-dev:amd64 (2.43-6) ...
+
+17:06:10Setting up cpp-16-x86-64-linux-gnu (16.2.0-3) ...
+
+17:06:10Setting up binutils-x86-64-linux-gnu (2.47-6) ...
+
+17:06:10Setting up cpp-x86-64-linux-gnu (4:16.1.0-3) ...
+
+17:06:10Setting up libpython3.14-stdlib:amd64 (3.14.7-4) ...
+
+17:06:11Setting up binutils (2.47-6) ...
+
+17:06:11Setting up gcc-16-x86-64-linux-gnu (16.2.0-3) ...
+
+17:06:11Setting up iverilog (13.0-2) ...
+
+17:06:11Setting up libstdc++-16-dev:amd64 (16.2.0-3) ...
+
+17:06:11Setting up g++-16-x86-64-linux-gnu (16.2.0-3) ...
+
+17:06:12Setting up cpp-16 (16.2.0-3) ...
+
+17:06:12Setting up python3.14 (3.14.7-4) ...
+
+17:06:12Setting up libpython3-stdlib:amd64 (3.14.7-3) ...
+
+17:06:12Setting up gcc-x86-64-linux-gnu (4:16.1.0-3) ...
+
+17:06:12Setting up gcc-16 (16.2.0-3) ...
+
+17:06:13Setting up python3 (3.14.7-3) ...
+
+17:06:13running python rtupdate hooks for python3.14...
+
+17:06:13running python post-rtupdate hooks for python3.14...
+
+17:06:13Setting up g++-16 (16.2.0-3) ...
+
+17:06:13Setting up cpp (4:16.1.0-3) ...
+
+17:06:14Setting up g++-x86-64-linux-gnu (4:16.1.0-3) ...
+
+17:06:14Setting up gcc (4:16.1.0-3) ...
+
+17:06:14Setting up g++ (4:16.1.0-3) ...
+
+17:06:14update-alternatives: using /usr/bin/g++ to provide /usr/bin/c++ (c++) in auto mode
+
+17:06:14Setting up verilator (5.048-1) ...
+
+17:06:15Processing triggers for libc-bin (2.43-6) ...
+
+17:06:15#8 [5/5] COPY environment/data /app/data
+
+17:06:15#7 [4/5] WORKDIR /app
+
+17:06:15#9 exporting to image
+
+17:06:21dop: building Daytona image dop-task-task-mw32jhhu-verifier:dev from verifier/Dockerfile
+
+17:06:25dop: opening the box on daytona…
+
+17:06:43ran 5 commands
+
+17:06:43dop: done
+
+#1 0:00 bash: id; ls -la /app /app/data /app/data/docs /app/data/tb · bash: cd /app/data && sha256sum pktbuf.v pktbuf_egress.v Makefile… · bash: su nobody -s /bin/sh -c 'touch /app/data/w.tmp && mkdir -p … · bash: cp -r /app/data /tmp/s && make -s -C /tmp/s; echo make=$? · bash: make -s -C /tmp/s verilator | grep -E 'SMOKE|Error'; echo m…
+
+→ bash exit 0 0.9s
+
+id; ls -la /app /app/data /app/data/docs /app/data/tb
+
+uid=0(root) gid=0(root) groups=0(root)
+/app:
+total 0
+drwxr-xr-x 1 root root  26 Nov  6 00:05 .
+drwxr-xr-x 1 root root  86 Nov  6 00:06 ..
+drwxrwxrwx 1 root root 107 Nov  6 00:03 data
+
+/app/data:
+total 24
+drwxrwxrwx 1 root root  107 Nov  6 00:03 .
+drwxr-xr-x 1 root root   26 Nov  6 00:05 ..
+-rw-rw-rw- 1 root root  986 Jan  1  1970 Makefile
+drwxrwxrwx 1 root root  171 Nov  6 00:03 docs
+-rw-rw-rw- 1 root root 8445 Jan  1  1970 pktbuf.v
+-rw-rw-rw- 1 root root 4303 Jan  1  1970 pktbuf_egress.v
+drwxrwxrwx 1 root root   24 Nov  6 00:03 tb
+
+/app/data/docs:
+total 32
+drwxrwxrwx 1 root root  171 Nov  6 00:03 .
+drwxrwxrwx 1 root root  107 Nov  6 00:03 ..
+-rw-rw-rw- 1 root root 1792 Jan  1  1970 ECR-0412_pktbuf_rev_c.md
+-rw-rw-rw- 1 root root 1625 Jan  1  1970 NW61F1024_excerpt.md
+-rw-rw-rw- 1 root root 2390 Jan  1  1970 NW61P1024_excerpt.md
+-rw-rw-rw- 1 root root 2217 Jan  1  1970 board_rev_c_notes.md
+-rw-rw-rw- 1 root root 6668 Jan  1  1970 ila_sram_sn0007.csv
+-rw-rw-rw- 1 root root 6909 Jan  1  1970 pktbuf_spec.md
+
+/app/data/tb:
+total 8
+drwxrwxrwx 1 root root   24 Nov  6 00:03 .
+drwxrwxrwx 1 root root  107 Nov  6 00:03 ..
+-rw-rw-rw- 1 root root 4724 Jan  1  1970 tb_smoke.v
+
+→ bash exit 0 0.9s
+
+cd /app/data && sha256sum pktbuf.v pktbuf_egress.v Makefile tb/tb_smoke.v docs/*
+
+a6b9dae28b411d8844bd5f48550620c6e89cb1537e1e2e34f9b8c83704555e3b  pktbuf.v
+5b6ae4b4dafb3e30fbb3eac5c5778d0b5739728524f58d66b166765dc059f8da  pktbuf_egress.v
+ac93241f08b5d05213a62f736b6609bd8b81a99470c84c4b6daab4cc36d90670  Makefile
+4407338f01833fd8db89f2c7b2ba86b60bbfb3de7b180f9b6be213bf66c060cc  tb/tb_smoke.v
+276a312774ee8b0705ee0c6eeb0636a3a36c577ecc5a64636178e6e891c393c5  docs/ECR-0412_pktbuf_rev_c.md
+b72840ca8378361802118a533807193b6cdf255bd9faa37653eba765980bf891  docs/NW61F1024_excerpt.md
+688470d9a75a20c31176f817710ea1500e60e6497425df9628430a8678529ce8  docs/NW61P1024_excerpt.md
+b57f2ea04939974a4e571dfcf2ff7de2a29231bd13ecfda5ff70bc04d7a38163  docs/board_rev_c_notes.md
+080a1f2491a42dd8d23075caeeccd312f28db256d4a1cc0a1dab86d5b47f53e4  docs/ila_sram_sn0007.csv
+1de15daf922181da335d8e0615030a5ffce22b805bf4c5e3f406f81655fac73b  docs/pktbuf_spec.md
+
+→ bash exit 0 0.9s
+
+su nobody -s /bin/sh -c 'touch /app/data/w.tmp && mkdir -p /app/data/build && echo model-user-can-write' ; rm -rf /app/data/w.tmp /app/data/build
+
+model-user-can-write
+
+→ bash exit 0 0.9s
+
+cp -r /app/data /tmp/s && make -s -C /tmp/s; echo make=$?
+
+SMOKE PASS: 12 packets, 96 beats
+tb/tb_smoke.v:138: $finish called at 2380000 (1ps)
+make=0
+
+→ bash exit 0 7.4s
+
+make -s -C /tmp/s verilator | grep -E 'SMOKE|Error'; echo makevl=$?
+
+SMOKE PASS: 12 packets, 96 beats
+makevl=0
+
+The box works: all 5 commands ran cleanly.
+
+Section done
+press Enter ↵
+

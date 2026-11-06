@@ -1,0 +1,116 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/906acd3f-0656-4e14-9352-8879a8a38567/steps
+title: Hashlist Data Operations Platform
+section: 5.1 Your steps
+open: Your steps
+captured: Thu Nov 05 2026 17:45:54 GMT-0700 (Mountain Standard Time)
+
+Save and exit
+pktbuf: port the packet buffer to the rev C SRAM
+
+5.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+(on) (current) 5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app/data
+
+[expanded=true] docs
+
+board_rev_c_notes.md
+
+ECR-0412_pktbuf_rev_c.md
+
+ila_sram_sn0007.csv
+
+NW61F1024_excerpt.md
+
+NW61P1024_excerpt.md
+
+pktbuf_spec.md
+
+[expanded=true] tb
+
+tb_smoke.v
+
+Makefile
+
+pktbuf_egress.v
+
+pktbuf.v
+
+(on) [selected=true]
+Your steps
+
+Hidden from the model
+[title: Full screen]
+
+How would a good engineer solve this problem, step by step?
+
+One step a line, up to twenty. They become your scored steps.
+
+references/steps.md written
+
+[textarea Your steps]
+Read the ECR, the spec and both SRAM excerpts, and list what's different on the NW61P compared with the NW61F. There are three changes. Write data now arrives one cycle after the command. Read latency is set by the LAT pin. Read data is valid for one cycle only.
+Work out the read latency on the boards as they were actually built. The schematic straps LAT low, but ECO-117 in the bring-up log refits every rev C board to LAT high. Even without that, 125 MHz is above the LAT-low limit. So the latency is 3.
+Look at step 4 of the bring-up capture. A read issued one or two cycles after a write to the same address returns the old word. Only a read three or more cycles later gets the new one.
+Delay the write data by one cycle, so that it reaches the SRAM pins one cycle after its write command.
+Lengthen the read pipeline so the returned data is captured three cycles after the SRAM samples the read. Each read's last and error tags need to travel along with it.
+Make the output queue deeper and count every read that's in flight. That way stored packets still stream at one beat per cycle, with no gaps.
+In both modes, hold back any read of a word written in the last two cycles, so that no read lands in the stale window.
+Check the 5-cycle budget for the first cut-through beat. Going through the SRAM now takes at least 8 cycles. To fix this, add a bypass that puts an ingress beat straight into the output queue when nothing earlier is still waiting or in flight.
+Keep the bypass consistent with everything else. Advance the read pointer for bypassed words, and don't create a descriptor for a bypassed last beat. SRAM reads must never get ahead of words that aren't yet safe to read.
+Extend the retry flush to cover every new read-pipeline stage. Reads still in flight get thrown away, and the packet is read again from its first word.
+Write a rev C SRAM model based on the datasheet and the capture. Test it with random traffic, backpressure, retries, dropped packets, mode changes and several DW/AW settings, on both Icarus and Verilator with random power-up.
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

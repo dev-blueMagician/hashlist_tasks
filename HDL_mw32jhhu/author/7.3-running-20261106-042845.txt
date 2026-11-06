@@ -1,0 +1,90 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/906acd3f-0656-4e14-9352-8879a8a38567/leave
+title: Hashlist Data Operations Platform
+section: 7.3 Running
+open: (no tab or panel marked open)
+captured: Fri Nov 06 2026 04:28:45 GMT-0700 (Mountain Standard Time)
+
+Save and exit
+pktbuf: port the packet buffer to the rev C SRAM
+
+7.3
+[disabled]
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+(on) (current) 7 Run
+
+Run
+
+7.1 Model runs
+
+7.2 Run
+
+(on) (current) 7.3 Running
+
+Which models try it, and handing it in.
+
+7.3
+
+Running
+
+Running, and sent for review
+You can leave this page.
+
+Models done 9 runs · 3 done · 6 failed
+
+▸ Setup 17 lines
+
+kimi-k3 2 done
+
+▸ ✓ #1 0.80 · 33 steps · 1h 00m
+
+▸ ✓ #2 0.00 · 31 steps · 1h 00m
+
+claude-opus-5.5 1 done
+
+▸ ✓ #7 1.00 · 16 steps · 12m 11s
+
+qwen3.8-max-0902 6 failed
+
+▸ ✕ #13 failed · harness_error
+
+▸ ✕ #14 failed · harness_error
+
+▸ ✕ #15 failed · transport_invalid
+
+▸ ✕ #16 failed · transport_invalid
+
+▸ ✕ #17 failed · transport_invalid
+
+▸ ✕ #18 failed · transport_invalid
+
+Title pktbuf: port the packet buffer to the rev C SRAM
+
+Runs 9 done
+
+Grader separates
+
+Payment $450
+
+Back to the dashboard
+press Enter ↵
+

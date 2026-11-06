@@ -1,0 +1,129 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/906acd3f-0656-4e14-9352-8879a8a38567/template
+title: Hashlist Data Operations Platform
+section: 2.1 Shell
+open: What the RTL · terminal shell sets up
+captured: Thu Nov 05 2026 11:46:56 GMT-0700 (Mountain Standard Time)
+
+Save and exit
+task-mw32jhhu
+
+2.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+(on) (current) 2.1 Shell
+
+2.2 Limits
+
+2.3 Internet
+
+2.4 Toolchain
+
+The shell the model works in, and how it is set up.
+
+2.1
+
+Shell
+
+Most popular
+
+Python Requires Python
+
+C harness with budgets Requires C
+
+All shells, by domain
+
+Software
+Python Requires Python
+
+C harness with budgets Requires C
+
+Firmware and automotive
+Firmware on QEMU or Renode Requires C and Python
+
+Eclipse software Requires Python
+
+Hardware design
+KiCad Requires Python (pcbnew)
+
+KiCad · GUI Requires Python (pcbnew), for your answers
+
+Blender Requires Python (Blender's)
+
+Blender · GUI Requires Python (Blender's), for your answers
+
+FreeCAD · GUI Requires Python (FreeCAD's), for your answers
+
+(on) RTL · terminal Requires Verilog, for the design and the testbenches
+
+RTL · GUI Requires Verilog, for the design and the testbenches
+
+Other
+Desktop · GUI app No code needed
+
+What the RTL · terminal shell sets up
+
+A change to a Verilog block, made the way an RTL engineer makes it: a shell in a Debian box with Icarus Verilog 13, Verilator 5.048 and make, your design, its smoke testbench and spec. The agent edits the design files and submits. The grader, already written, checks they are synthesizable RTL that names nothing outside themselves and cannot print a check or end a run, then runs each of your withheld testbenches in verifier/rtl.json, at the parameters you name, on Icarus Verilog and on Verilator at 16 random power-up states, each run with a fresh stimulus seed: a check passes only if it passes on every run. Checks the design already passed as handed over go in `must`: failing one scores 0, and they pay nothing.
+
+Tools
+
+bash(command), view_image(path), submit(notes)
+
+Scoring
+
+your withheld testbenches, check by check, on the design it saved; reward 0.00 to 1.00, the design as handed over 0.00
+
+Needs
+
+a working design and a change request, or a design with a bug, and the design changed
+
+The files this task is made of
+
+agent/PROMPT.md you write it The change request, the spec, and what is graded
+
+environment/Dockerfile written for you Debian with Icarus Verilog 13 and Verilator 5.048, and your files under /app/data
+
+environment/data/design.v you write it The design as handed over
+
+environment/data/Makefile you write it Runs the smoke testbench
+
+references/gold.py you write it [title: Never copied into the container the agent works in] withheld Writes the changed design. It has to score 1.00
+
+references/naive_base.py you write it [title: Never copied into the container the agent works in] withheld Writes the design as handed over. It has to score 0.00
+
+references/naive_a.py you write it [title: Never copied into the container the agent works in] withheld The most likely wrong change
+
+verifier/rtl.json you write it [title: Never copied into the container the agent works in] withheld The design files, `must`, and each testbench with its parameters and the checks it prints
+
+verifier/report.py written for you [title: Never copied into the container the agent works in] withheld The grader: writes the reward and each check
+
+/app/data/design.v the agent writes it The design the agent changes
+
+Default settings debian:forky-20261005-slim · 4 CPU · 8 GiB memory · 8 GiB disk · 300 steps · internet off Tested for this shell. Most tasks need nothing else.
+
+Use default settings
+press Enter ↵
+Edit settings
+

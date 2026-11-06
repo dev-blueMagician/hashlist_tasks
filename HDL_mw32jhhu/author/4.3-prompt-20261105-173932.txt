@@ -1,0 +1,148 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/906acd3f-0656-4e14-9352-8879a8a38567/brief-text
+title: Hashlist Data Operations Platform
+section: 4.3 Prompt
+open: Prompt
+captured: Thu Nov 05 2026 17:39:32 GMT-0700 (Mountain Standard Time)
+
+Save and exit
+pktbuf: port the packet buffer to the rev C SRAM
+
+4.3
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+(on) (current) 4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Prompt
+
+4.1 Task title
+
+4.2 Context
+
+(on) (current) 4.3 Prompt
+
+What the model is handed.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app/data
+
+[expanded=true] docs
+
+board_rev_c_notes.md
+
+ECR-0412_pktbuf_rev_c.md
+
+ila_sram_sn0007.csv
+
+NW61F1024_excerpt.md
+
+NW61P1024_excerpt.md
+
+pktbuf_spec.md
+
+[expanded=true] tb
+
+tb_smoke.v
+
+Makefile
+
+pktbuf_egress.v
+
+pktbuf.v
+
+(on) [selected=true]
+Prompt
+
+[title: Full screen]
+
+Task title [input Task title = "pktbuf: port the packet buffer to the rev C SRAM"]
+A task is a problem you give the model to solve. Name it in a few words.
+
+Context
+
+agent/CONTEXT.md
+Upload a file
+[file input ]
+
+[textarea Context for the model]
+
+[/textarea]
+
+(on) Prompt
+
+agent/PROMPT.md 2556 characters
+Upload a file
+[file input ]
+
+[textarea The prompt the model is handed]
+The line card's packet buffer, `pktbuf`, has to move to board rev C. Rev C replaces the buffer SRAM, NW61F1024, with the NW61P1024 on the same footprint and pins. ECR-0412 is approved: make the RTL change so that `pktbuf` works on rev C boards as they are built.
+
+Everything is in `/app/data`:
+
+- `pktbuf.v`, `pktbuf_egress.v`: the design as it runs on rev B today.
+- `docs/pktbuf_spec.md`: the block specification.
+- `docs/ECR-0412_pktbuf_rev_c.md`: the change request.
+- `docs/NW61F1024_excerpt.md`, `docs/NW61P1024_excerpt.md`: the old and the new SRAM.
+- `docs/board_rev_c_notes.md`: rev C board notes.
+- `docs/ila_sram_sn0007.csv`: a capture of the SRAM ports from rev C bring-up, described in the board notes.
+- `tb/tb_smoke.v` and `Makefile`: a smoke test with a model of the rev B SRAM. `make -s -C /app/data` runs it on Icarus Verilog, `make -s -C /app/data verilator` on Verilator. It passes on the design as handed over. It is not graded and you may change it.
+
+What is graded is `/app/data/pktbuf.v` and `/app/data/pktbuf_egress.v` as you leave them. Only these two files are compiled, so every module the design uses must be in them. Keep the top module `pktbuf` with its name, ports and parameters unchanged; the modules under it are yours to change.
+
+The grader runs withheld testbenches against a model of the rev C SRAM, with random traffic and backpressure, at several `DW`/`AW` settings. It checks the behaviour and performance in the specification as amended by the ECR. Each testbench runs once on Icarus Verilog 13 (`iverilog -g2012`) and 16 times on Verilator 5.048 (`--binary --timing --x-initial unique --x-assign unique`, `+verilator+rand+reset+2`), each time with a new stimulus seed and new random power-up values for every flop and memory. A check passes only if it passes in every run.
+
+Before any testbench runs, the two files must pass these rules, or the score is 0:
+
+- synthesizable RTL that elaborates on its own at every graded `DW`/`AW`;
+- no `initial` blocks, delays, `force`/`release`, `defparam`, `bind`, `import`/`export`, `wait`, `fork`, `forever`, `while`, `event` or `->`, escaped identifiers, hierarchical names or user-defined primitives;
+- no system tasks or functions except `$clog2`, `$signed` and `$unsigned`, and no compiler directives except `` `timescale `` and `` `default_nettype ``;
+- every event control is `@*` or a list of `posedge`/`negedge` edges, and opens an `always` block;
+- no register given a value where it is declared;
+- parameter overrides on instances by name only, as in `#(.DW(DW))`.
+
+[/textarea]
+
+In /app/data : Makefile, pktbuf.v, pktbuf_egress.v, docs/board_rev_c_notes.md, docs/ECR-0412_pktbuf_rev_c.md, docs/ila_sram_sn0007.csv, docs/NW61F1024_excerpt.md, docs/NW61P1024_excerpt.md, docs/pktbuf_spec.md, tb/tb_smoke.v . Name the ones the model needs .
+
+Put in
+The problem, how often it happens, and when.
+
+Leave out
+The cause, the answer, your method, and anything that hints at how it is graded.
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Section done
+press Enter ↵
+

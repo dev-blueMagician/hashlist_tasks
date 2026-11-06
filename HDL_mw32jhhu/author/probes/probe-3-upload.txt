@@ -1,0 +1,5 @@
+id; ls -la /app /app/data /app/data/docs /app/data/tb
+cd /app/data && sha256sum pktbuf.v pktbuf_egress.v Makefile tb/tb_smoke.v docs/*
+su nobody -s /bin/sh -c 'touch /app/data/w.tmp && mkdir -p /app/data/build && echo model-user-can-write' ; rm -rf /app/data/w.tmp /app/data/build
+cp -r /app/data /tmp/s && make -s -C /tmp/s; echo make=$?
+make -s -C /tmp/s verilator | grep -E 'SMOKE|Error'; echo makevl=$?

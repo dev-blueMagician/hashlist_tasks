@@ -1,0 +1,834 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/checks
+title: Hashlist Data Operations Platform
+section: 5.4 Scored steps
+open: Scored steps
+captured: Thu Nov 05 2026 18:55:46 GMT-0500 (Eastern Standard Time)
+
+## Scored steps as the page shows them
+
+| Row | Step text | Checked by | Field | Lowest | Highest | Worth | Gets it wrong | Not marked |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | "The SpeedCtrl budget covers the largest time TMON can measure for a fault-free SpeedCtrl job and is at most 25 % above it." | a value between | "budget_speedctrl_ratio" | 1 | 1.25 | 3 | naive_a, naive_c | naive_b, naive_d |
+| 2 | "The CanComm budget covers the largest time TMON can measure for a fault-free CanComm job and is at most 25 % above it." | a value between | "budget_cancomm_ratio" | 1 | 1.25 | 3 | naive_a, naive_c, naive_d | naive_b |
+| 3 | "The Monitor budget covers the largest time TMON can measure for a fault-free Monitor job and is at most 25 % above it." | a value between | "budget_monitor_ratio" | 1 | 1.25 | 3 | naive_a, naive_c | naive_b, naive_d |
+| 4 | "The Supervisor budget covers the largest time TMON can measure for a fault-free Supervisor job and is at most 25 % above it." | a value between | "budget_supervisor_ratio" | 1 | 1.25 | 3 | naive_a, naive_c, naive_d | naive_b |
+| 5 | "The NvM budget covers the largest time TMON can measure for a fault-free NvM job and is at most 25 % above it." | a value between | "budget_nvm_ratio" | 1 | 1.25 | 3 | naive_a, naive_c, naive_d | naive_b |
+| 6 | "Every task meets its deadline when each task may run up to its full budget." | a value between | "deadlines_met" | 5 | 5 | 1 | none | naive_a, naive_b, naive_c, naive_d |
+| 7 | "The watchdog does not expire in fault-free operation, even on a unit whose LSI runs at the 47 kHz maximum." | a value between | "wdg_margin_us" | 1 | 1000000 | 2 | naive_b, naive_d | naive_a, naive_c |
+| 8 | "If the Supervisor stops, the watchdog resets the controller within 80 ms, even on a unit whose LSI runs at the 17 kHz minimum." | a value between | "wdg_max_timeout_ms" | 0 | 80 | 1 | none | naive_a, naive_b, naive_c, naive_d |
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+5.4
+
+Saving
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+(on) (current) 5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+[expanded=true] app
+
+Cal_Data.c
+
+Cal_Data.h
+
+speed_ctrl.c
+
+[expanded=true] bsw
+
+Dem_Cfg.c
+
+NvM_Cfg.c
+
+[expanded=true] mcal
+
+Adc_Cfg.c
+
+Adc_Cfg.h
+
+Gpt_Cfg.c
+
+Mcal_Types.h
+
+Port_Cfg.c
+
+Pwm_Cfg.c
+
+Pwm_Cfg.h
+
+Pwm.c
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+(on) [selected=true]
+Scored steps
+
+Hidden from the model
+[title: Full screen]
+
+Scored steps
+
+verifier/harness.c written
+Upload a file
+[file input ]
+
+[textarea The harness]
+/* harness.c - withheld grader for the ECP-300 timing configuration task.
+ *
+ * Built by the platform as
+ *   gcc -O2 -std=c11 -I/tests -o /tmp/prog /tests/harness.c /app/solution.c -lm
+ * It reads the configuration that solution.c defines (os_cfg.h), recomputes
+ * the TAG-01 analysis with the true worst-case loads of software 3.2.0, and
+ * prints one metric=value line per scored quantity, then some info lines.
+ *
+ * True loads (us): task WCETs are the largest net execution times in the
+ * three reference traces; ISR WCETs are the largest handler times there.
+ * CAN1_RX0 is not bracketed by TMON in 3.2.0 (can_if_glue.c), its filter
+ * accepts 0x700-0x7FF, and VN-07 allows back-to-back 8-byte frames at
+ * 500 kbit/s: one frame per 111 bit times = 222 us. ADC runs every 25 us
+ * below 900 rpm: speed_ctrl.c selects PwmConf_PwmMode_LowRipple there, whose
+ * table in mcal/Pwm_Cfg.c writes 0 to 0x40010030 (TIM1_RCR); in center-aligned mode
+ * that gives an update event (TRGO) at each overflow and underflow of the
+ * 20 kHz carrier (RM0090 17.3.3). No trace runs that slowly; the SRS speed
+ * range includes it. LSI 17-47 kHz (STM32F405 datasheet, LSI oscillator
+ * characteristics).
+ */
+#define _POSIX_C_SOURCE 200809L
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "os_cfg.h"
+
+#define N_ISR 3
+
+static const char *const LABEL[TASK_COUNT] = {
+    "speedctrl", "cancomm", "monitor", "supervisor", "nvm"
+};
+/* SRS-ECP300 SR-TIM-01: periods and deadlines are fixed; solution values are ignored */
+static const double PERIOD_US[TASK_COUNT]   = { 1000.0, 5000.0, 10000.0, 20000.0, 100000.0 };
+static const double DEADLINE_US[TASK_COUNT] = { 1000.0, 5000.0, 10000.0, 20000.0, 100000.0 };
+static const double WCET_US[TASK_COUNT]     = { 150.0, 380.0, 780.0, 240.0, 3900.0 };
+
+/* ADC_IRQHandler (FOC), CAN1_RX0_IRQHandler, SysTick_Handler */
+static const double ISR_T_US[N_ISR]   = { 25.0, 222.0, 1000.0 };
+static const double ISR_C_US[N_ISR]   = { 9.0, 52.0, 3.0 };
+static const int    ISR_CHARGED[N_ISR] = { 0, 1, 1 };
+
+static const double LSI_MIN_HZ = 17000.0;
+static const double LSI_MAX_HZ = 47000.0;
+static const int MAX_PRIORITY = 7;      /* configMAX_PRIORITIES - 1 */
+
+/* Largest monitored time of a fault-free job, TAG-01 section 3. */
+static double monitored_us(double c)
+{
+    double w = c;
+    for (int it = 0; it < 100000; it++) {
+        double all = c, charged = c;
+        for (int k = 0; k < N_ISR; k++) {
+            double n = ceil(w / ISR_T_US[k]);
+            all += n * ISR_C_US[k];
+            if (ISR_CHARGED[k])
+                charged += n * ISR_C_US[k];
+        }
+        if (all == w)
+            return charged;
+        w = all;
+    }
+    return INFINITY;
+}
+
+/* Response time with every job at its budget, TAG-01 section 4.
+ * Returns INFINITY when it exceeds the limit. */
+static double response_us(int i, const double *budget, const int *prio, double limit)
+{
+    double r = budget[i];
+    for (int it = 0; it < 100000; it++) {
+        double next = budget[i];
+        for (int j = 0; j < TASK_COUNT; j++)
+            if (j != i && prio[j] >= prio[i])
+                next += ceil(r / PERIOD_US[j]) * budget[j];
+        for (int k = 0; k < N_ISR; k++)
+            if (!ISR_CHARGED[k])
+                next += ceil(r / ISR_T_US[k]) * ISR_C_US[k];
+        if (next == r)
+            return r;
+        if (next > limit)
+            return INFINITY;
+        r = next;
+    }
+    return INFINITY;
+}
+
+/* The answer is a configuration file. Reject code that could run before or
+ * instead of this harness: main, attributes, asm, pragmas. Comments and
+ * string literals are ignored. Returns a short reason, or NULL. */
+static const char *tamper_reason(const char *path)
+{
+    FILE *f = fopen(path, "rb");
+    if (!f)
+        return NULL;            /* nothing to scan; the build already used it */
+    static char buf[1 << 20];
+    size_t n = fread(buf, 1, sizeof buf - 1, f);
+    fclose(f);
+    buf[n] = '\0';
+    /* blank out comments and literals */
+    for (size_t i = 0; i < n; i++) {
+        if (buf[i] == '/' && buf[i + 1] == '*') {
+            size_t j = i;
+            while (j < n && !(buf[j] == '*' && buf[j + 1] == '/'))
+                buf[j++] = ' ';
+            if (j < n) { buf[j] = ' '; buf[j + 1] = ' '; }
+            i = j + 1;
+        } else if (buf[i] == '/' && buf[i + 1] == '/') {
+            while (i < n && buf[i] != '\n')
+                buf[i++] = ' ';
+        } else if (buf[i] == '"' || buf[i] == '\'') {
+            char q = buf[i];
+            size_t j = i + 1;
+            while (j < n && buf[j] != q) {
+                if (buf[j] == '\\' && j + 1 < n)
+                    buf[j++] = ' ';
+                buf[j++] = ' ';
+            }
+            i = j;
+        }
+    }
+    static const char *const banned[] = {
+        "main", "__attribute__", "__attribute", "asm", "__asm", "__asm__", "_Pragma", NULL
+    };
+    for (size_t i = 0; i < n; ) {
+        if (isalpha((unsigned char)buf[i]) || buf[i] == '_') {
+            size_t j = i;
+            while (j < n && (isalnum((unsigned char)buf[j]) || buf[j] == '_'))
+                j++;
+            for (int b = 0; banned[b]; b++)
+                if (strlen(banned[b]) == j - i && memcmp(buf + i, banned[b], j - i) == 0)
+                    return banned[b];
+            i = j;
+        } else if (buf[i] == '#') {
+            size_t j = i + 1;
+            while (j < n && (buf[j] == ' ' || buf[j] == '\t'))
+                j++;
+            if (strncmp(buf + j, "pragma", 6) == 0)
+                return "#pragma";
+            i = j;
+        } else {
+            i++;
+        }
+    }
+    return NULL;
+}
+
+static void print_failing(const char *why)
+{
+    printf("config_ok=0\n");
+    for (int i = 0; i < TASK_COUNT; i++)
+        printf("budget_%s_ratio=0\n", LABEL[i]);
+    printf("deadlines_met=0\n");
+    printf("wdg_margin_us=-1000000000\n");
+    printf("wdg_max_timeout_ms=1000000000\n");
+    printf("info_reason=%s\n", why);
+}
+
+int main(void)
+{
+    const char *why = tamper_reason("/app/solution.c");
+    if (why) {
+        print_failing(why);
+        return 0;
+    }
+
+    double budget[TASK_COUNT];
+    int prio[TASK_COUNT];
+    for (int i = 0; i < TASK_COUNT; i++) {
+        budget[i] = (double)os_task_cfg[i].budget_us;
+        prio[i] = (int)os_task_cfg[i].priority;
+        if (prio[i] < 1 || prio[i] > MAX_PRIORITY) {
+            print_failing("priority out of range");
+            return 0;
+        }
+    }
+    unsigned pr = os_iwdg_cfg.prescaler, rl = os_iwdg_cfg.reload;
+    if (pr > 7u || rl > 4095u) {
+        print_failing("IWDG register value out of range");
+        return 0;
+    }
+    printf("config_ok=1\n");
+
+    double m[TASK_COUNT];
+    for (int i = 0; i < TASK_COUNT; i++) {
+        m[i] = monitored_us(WCET_US[i]);
+        printf("budget_%s_ratio=%.4f\n", LABEL[i], budget[i] > 0.0 ? budget[i] / m[i] : 0.0);
+    }
+
+    /* every budget must be positive for the analysis to mean anything */
+    int all_monitored = 1;
+    for (int i = 0; i < TASK_COUNT; i++)
+        if (budget[i] <= 0.0)
+            all_monitored = 0;
+
+    double r[TASK_COUNT];
+    int met = 0;
+    for (int i = 0; i < TASK_COUNT; i++) {
+        r[i] = all_monitored ? response_us(i, budget, prio, 4.0 * PERIOD_US[TASK_NVM]) : INFINITY;
+        if (r[i] <= DEADLINE_US[i])
+            met++;
+    }
+    printf("deadlines_met=%d\n", met);
+
+    double ticks = (double)(4u << (pr > 6u ? 6u : pr)) * (double)(rl + 1u);
+    double t_fast_us = ticks / LSI_MAX_HZ * 1e6;
+    double t_slow_ms = ticks / LSI_MIN_HZ * 1e3;
+    double kick_us = PERIOD_US[TASK_SUPERVISOR] + r[TASK_SUPERVISOR];
+    double margin = isfinite(kick_us) ? t_fast_us - kick_us : -1e9;
+    printf("wdg_margin_us=%.1f\n", margin);
+    printf("wdg_max_timeout_ms=%.2f\n", t_slow_ms);
+
+    for (int i = 0; i < TASK_COUNT; i++)
+        printf("info_m_%s_us=%.1f\n", LABEL[i], m[i]);
+    for (int i = 0; i < TASK_COUNT; i++) {
+        if (isfinite(r[i]))
+            printf("info_r_%s_us=%.1f\n", LABEL[i], r[i]);
+        else
+            printf("info_r_%s_us=inf\n", LABEL[i]);
+    }
+    printf("info_kick_max_us=%.1f\n", kick_us);
+    printf("info_iwdg_ticks=%.0f\n", ticks);
+    return 0;
+}
+
+[/textarea]
+
+Hidden from the model. Built with /app/solution.c and run once. Each metric=value line it prints can be checked below.
+
+verifier/
+Add a file
+[file input ]
+
+Headers the harness builds with. Hidden from the model, so give it a copy under Environment too.
+
+Generate checks from your steps
+Check each range against your correct answer.
+
+1
+
+Prompt
+
+Since software 3.2.0 went out to the fleet in July, ECP-300 coolant pumps reset now and then: the pump stops for about 300 ms and starts again. The pumps report two kinds of reset, TMON budget overruns and independent watchdog (IWDG) resets. No such reset was reported on 3.1.0.
+
+The material is in `/app/data`:
+
+- `field/`: the fleet reset log and a description of its columns
+- `traces/`: the three reference traces of 3.2.0 (bench at nominal speed, bench at maximum speed, a workshop visit with ECM reprogramming); `tools/tracestat.py` summarises a trace
+- `src/`: the timing-related sources of 3.2.0
+- `docs/`: TAG-01 timing analysis guideline, SRS-ECP300 timing requirements, VN-07 network specification excerpt, release notes, trace format
+
+The STM32F405 datasheet and the RM0090 reference manual are in `/app/files`.
+
+The code is frozen for the 3.2.1 maintenance release. Only the timing configuration `src/os_cfg.c` may change: task budgets, task priorities, and the IWDG prescaler and reload. Periods and deadlines are fixed by the SRS. Write the corrected file to `/app/solution.c`, which starts as a copy of the 3.2.0 `os_cfg.c`. It has to meet the timing and watchdog requirements of SRS-ECP300.
+
+Keep `/app/solution.c` a configuration file like the original, with `os_cfg.h` as its only project header. It must compile with:
+
+```
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c
+```
+
+2
+
+Step [input Step 2 = "The SpeedCtrl budget covers the largest time TMON can measure for a fault-free SpeedCtrl job and is at most 25 % above it."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 2: the field it reads = "budget_speedctrl_ratio"][input Step 2: lowest accepted = "1"]and [input Step 2: highest accepted = "1.25"]
+
+Worth
+−
+3
++
+points, 16% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+(on) [pressed=true] [title: naive_c] naive_c
+
+[pressed=false] [title: naive_d] naive_d
+
+×
+
+3
+
+Step [input Step 3 = "The CanComm budget covers the largest time TMON can measure for a fault-free CanComm job and is at most 25 % above it."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 3: the field it reads = "budget_cancomm_ratio"][input Step 3: lowest accepted = "1"]and [input Step 3: highest accepted = "1.25"]
+
+Worth
+−
+3
++
+points, 16% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+(on) [pressed=true] [title: naive_c] naive_c
+
+(on) [pressed=true] [title: naive_d] naive_d
+
+×
+
+4
+
+Step [input Step 4 = "The Monitor budget covers the largest time TMON can measure for a fault-free Monitor job and is at most 25 % above it."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 4: the field it reads = "budget_monitor_ratio"][input Step 4: lowest accepted = "1"]and [input Step 4: highest accepted = "1.25"]
+
+Worth
+−
+3
++
+points, 16% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+(on) [pressed=true] [title: naive_c] naive_c
+
+[pressed=false] [title: naive_d] naive_d
+
+×
+
+5
+
+Step [input Step 5 = "The Supervisor budget covers the largest time TMON can measure for a fault-free Supervisor job and is at most 25 % above it."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 5: the field it reads = "budget_supervisor_ratio"][input Step 5: lowest accepted = "1"]and [input Step 5: highest accepted = "1.25"]
+
+Worth
+−
+3
++
+points, 16% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+(on) [pressed=true] [title: naive_c] naive_c
+
+(on) [pressed=true] [title: naive_d] naive_d
+
+×
+
+6
+
+Step [input Step 6 = "The NvM budget covers the largest time TMON can measure for a fault-free NvM job and is at most 25 % above it."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 6: the field it reads = "budget_nvm_ratio"][input Step 6: lowest accepted = "1"]and [input Step 6: highest accepted = "1.25"]
+
+Worth
+−
+3
++
+points, 16% of the score
+
+Mistakes that get it wrong
+(on) [pressed=true] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+(on) [pressed=true] [title: naive_c] naive_c
+
+(on) [pressed=true] [title: naive_d] naive_d
+
+×
+
+7
+
+Step [input Step 7 = "Every task meets its deadline when each task may run up to its full budget."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 7: the field it reads = "deadlines_met"][input Step 7: lowest accepted = "5"]and [input Step 7: highest accepted = "5"]
+
+Worth
+[disabled] −
+1
++
+point, 5% of the score
+
+Mistakes that get it wrong
+[pressed=false] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+[pressed=false] [title: naive_c] naive_c
+
+[pressed=false] [title: naive_d] naive_d
+
+×
+
+8
+
+Step [input Step 8 = "The watchdog does not expire in fault-free operation, even on a unit whose LSI runs at the 47 kHz maximum."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 8: the field it reads = "wdg_margin_us"][input Step 8: lowest accepted = "1"]and [input Step 8: highest accepted = "1000000"]
+
+Worth
+−
+2
++
+points, 11% of the score
+
+Mistakes that get it wrong
+[pressed=false] [title: naive_a] naive_a
+
+(on) [pressed=true] [title: naive_b] naive_b
+
+[pressed=false] [title: naive_c] naive_c
+
+(on) [pressed=true] [title: naive_d] naive_d
+
+×
+
+9
+
+Step [input Step 9 = "If the Supervisor stops, the watchdog resets the controller within 80 ms, even on a unit whose LSI runs at the 17 kHz minimum."]
+Checked by
+
+(on) a value between
+
+a line that contains
+
+the judge reads it
+
+[input Step 9: the field it reads = "wdg_max_timeout_ms"][input Step 9: lowest accepted = "0"]and [input Step 9: highest accepted = "80"]
+
+Worth
+[disabled] −
+1
++
+point, 5% of the score
+
+Mistakes that get it wrong
+[pressed=false] [title: naive_a] naive_a
+
+[pressed=false] [title: naive_b] naive_b
+
+[pressed=false] [title: naive_c] naive_c
+
+[pressed=false] [title: naive_d] naive_d
+
+×
+
++ Add a step
+
+3 to 20 steps: 8 written, 19 points.
+
+10
+
+End result
+
+what the checks accept
+budget_speedctrl_ratio: 1 to 1.25
+budget_cancomm_ratio: 1 to 1.25
+budget_monitor_ratio: 1 to 1.25
+budget_supervisor_ratio: 1 to 1.25
+budget_nvm_ratio: 1 to 1.25
+deadlines_met: 5
+wdg_margin_us: 1 to 1000000
+wdg_max_timeout_ms: 0 to 80
+
+See the checks file this writes verifier/test_outputs.py
+
+[textarea The generated checks file]
+# generated from the criteria in task.json. Edits here are overwritten.
+"""The withheld suite. One test per thing you are checking."""
+import subprocess
+from functools import cache
+from pathlib import Path
+
+SOLUTION = Path("/app/solution.c")
+HARNESS = Path("/tests/harness.c")
+
+@cache
+def _run() -> tuple[bool, str]:
+    """Build the solution against the harness and run it, once for every check."""
+    build = subprocess.run(
+        ["gcc", "-O2", "-std=c11", "-I/tests", "-o", "/tmp/prog", str(HARNESS), str(SOLUTION), "-lm"],
+        capture_output=True, text=True, timeout=180)
+    if build.returncode != 0:
+        return False, build.stdout + build.stderr
+    run = subprocess.run(["/tmp/prog"], capture_output=True, text=True, timeout=300)
+    return True, run.stdout
+
+# label -> (low, high): the band you would accept from a colleague.
+EXPECTED = {
+    "budget_speedctrl_ratio": (1, 1.25),
+    "budget_cancomm_ratio": (1, 1.25),
+    "budget_monitor_ratio": (1, 1.25),
+    "budget_supervisor_ratio": (1, 1.25),
+    "budget_nvm_ratio": (1, 1.25),
+    "deadlines_met": (5, 5),
+    "wdg_margin_us": (1, 1000000),
+    "wdg_max_timeout_ms": (0, 80),
+}
+
+def _lines() -> dict[str, str]:
+    """Parse `metric=value` or `metric: value` lines. Nothing here judges the answer."""
+    built, text = _run()
+    out = {}
+    for line in (text if built else "").splitlines():
+        sep = "=" if "=" in line else ":" if ":" in line else None
+        if sep is None:
+            continue
+        label, _, value = line.partition(sep)
+        out.setdefault(label.strip(), value.strip())    # the first value wins, as ConstraintBench reads it
+    return out
+
+def _reported() -> dict[str, float]:
+    out = {}
+    for label, value in _lines().items():
+        # a number is a number: 256, 256.0 and 1.25e-3 as float reads them, 0x100 as int(x, 0) does
+        for read in (float, lambda v: int(v, 0)):
+            try:
+                out[label] = read(value)
+                break
+            except ValueError:
+                continue
+    return out
+
+# --- format: did it follow instructions ---------------------------------- #
+
+def test_it_builds():
+    built, text = _run()
+    assert built, f"solution.c does not build against the harness:\n{text[-2000:]}"
+
+# --- substance: did it get the engineering right ------------------------- #
+
+def test_budget_speedctrl_ratio():
+    """The SpeedCtrl budget covers the largest time TMON can measure for a fault-free SpeedCtrl job and is at most 25 % above it."""
+    lo, hi = EXPECTED["budget_speedctrl_ratio"]
+    got = _reported().get("budget_speedctrl_ratio")
+    assert got is not None, "budget_speedctrl_ratio was not reported"
+    assert lo <= got <= hi
+
+def test_budget_cancomm_ratio():
+    """The CanComm budget covers the largest time TMON can measure for a fault-free CanComm job and is at most 25 % above it."""
+    lo, hi = EXPECTED["budget_cancomm_ratio"]
+    got = _reported().get("budget_cancomm_ratio")
+    assert got is not None, "budget_cancomm_ratio was not reported"
+    assert lo <= got <= hi
+
+def test_budget_monitor_ratio():
+    """The Monitor budget covers the largest time TMON can measure for a fault-free Monitor job and is at most 25 % above it."""
+    lo, hi = EXPECTED["budget_monitor_ratio"]
+    got = _reported().get("budget_monitor_ratio")
+    assert got is not None, "budget_monitor_ratio was not reported"
+    assert lo <= got <= hi
+
+def test_budget_supervisor_ratio():
+    """The Supervisor budget covers the largest time TMON can measure for a fault-free Supervisor job and is at most 25 % above it."""
+    lo, hi = EXPECTED["budget_supervisor_ratio"]
+    got = _reported().get("budget_supervisor_ratio")
+    assert got is not None, "budget_supervisor_ratio was not reported"
+    assert lo <= got <= hi
+
+def test_budget_nvm_ratio():
+    """The NvM budget covers the largest time TMON can measure for a fault-free NvM job and is at most 25 % above it."""
+    lo, hi = EXPECTED["budget_nvm_ratio"]
+    got = _reported().get("budget_nvm_ratio")
+    assert got is not None, "budget_nvm_ratio was not reported"
+    assert lo <= got <= hi
+
+def test_deadlines_met():
+    """Every task meets its deadline when each task may run up to its full budget."""
+    lo, hi = EXPECTED["deadlines_met"]
+    got = _reported().get("deadlines_met")
+    assert got is not None, "deadlines_met was not reported"
+    assert lo <= got <= hi
+
+def test_wdg_margin_us():
+    """The watchdog does not expire in fault-free operation, even on a unit whose LSI runs at the 47 kHz maximum."""
+    lo, hi = EXPECTED["wdg_margin_us"]
+    got = _reported().get("wdg_margin_us")
+    assert got is not None, "wdg_margin_us was not reported"
+    assert lo <= got <= hi
+
+def test_wdg_max_timeout_ms():
+    """If the Supervisor stops, the watchdog resets the controller within 80 ms, even on a unit whose LSI runs at the 17 kHz minimum."""
+    lo, hi = EXPECTED["wdg_max_timeout_ms"]
+    got = _reported().get("wdg_max_timeout_ms")
+    assert got is not None, "wdg_max_timeout_ms was not reported"
+    assert lo <= got <= hi
+
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Section done
+press Enter ↵
+

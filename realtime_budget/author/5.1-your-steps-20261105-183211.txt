@@ -1,0 +1,190 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/steps
+title: Hashlist Data Operations Platform
+section: 5.1 Your steps
+open: Your steps
+captured: Thu Nov 05 2026 18:32:11 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+5.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+(on) (current) 5.1 Your steps
+
+5.2 Correct answer
+
+5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+[expanded=true] app
+
+Cal_Data.c
+
+Cal_Data.h
+
+speed_ctrl.c
+
+[expanded=true] bsw
+
+Dem_Cfg.c
+
+NvM_Cfg.c
+
+[expanded=true] mcal
+
+Adc_Cfg.c
+
+Adc_Cfg.h
+
+Gpt_Cfg.c
+
+Mcal_Types.h
+
+Port_Cfg.c
+
+Pwm_Cfg.c
+
+Pwm_Cfg.h
+
+Pwm.c
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+(on) [selected=true]
+Your steps
+
+Hidden from the model
+[title: Full screen]
+
+How would a good engineer solve this problem, step by step?
+
+One step a line, up to twenty. They become your scored steps.
+
+references/steps.md written
+
+[textarea Your steps]
+Start with the reset log. Every task shows TMON overruns, and there are four IWDG resets. Each reset happened during heavy CAN reception, with 246 to 371 frames in the 100 ms before it.
+
+Take each task's WCET as its largest net execution time across the three reference traces. That gives SpeedCtrl 150 µs, CanComm 380 µs, Monitor 780 µs, Supervisor 240 µs and NvM 3900 µs. For the interrupts, the WCETs are 9.0 µs for ADC, 52.0 µs for CAN1_RX0 and 3.0 µs for SysTick.
+
+When CAN frames arrive, TMON measures more than the task's own time. The new CAN1_RX0_IRQHandler in can_if_glue.c has no TMON brackets, so its time gets charged to whatever job happens to be running. TAG-01 appendix A doesn't cover this yet, so it's out of date.
+
+Work out how fast the CAN receive interrupt can fire from the bus rules, not from the traces (TAG-01 section 2.3). The bank 1 filter (0x7DF, mask 0x700) accepts every ID from 0x700 to 0x7FF. While any ECU is being reprogrammed, VN-07 section 4.5 allows those frames to fill the bus back to back with STmin 0. Without stuff bits, the shortest 8-byte frame is 111 bit times (VN-07 section 5.1), which is 222 µs at 500 kbit/s. The 1 ms STmin and the roughly 600 µs shortest gap in the workshop trace are both slower than what the bus allows.
+
+Work out the fastest ADC interrupt rate from the timer configuration. Don't read it off the traces. The PWM mode tables in src/mcal/Pwm_Cfg.c are just raw register writes. In LowRipple mode, 0 goes to 0x40010030, which is TIM1_RCR. Run mode writes 1 to the same register. TIM1 counts center-aligned (CR1 = 0xA1) and uses its update event as TRGO (CR2 = 0x20). ADC1 starts its injected conversions on TIM1_TRGO (ADC1_CR2 = 0x00110001). In center-aligned mode, the repetition counter counts both the overflow and the underflow (RM0090, section 17.3.3). So with RCR = 0, the ADC fires twice in every 20 kHz period, which is once every 25 µs. speed_ctrl.c switches to LowRipple below 900 rpm (Cal.PwmModeLowEnter_rpm), and that's inside the SRS speed range of 600 to 5200 rpm. None of the traces run that slowly, so all three show 50 µs.
+
+Next, use TAG-01 section 3 to get each task's largest monitored time. That gives SpeedCtrl 257 µs, CanComm 646 µs, Monitor 1254 µs, Supervisor 399 µs and NvM 6218 µs. Set each budget somewhere between that value and 25 % above it, then check every deadline with TAG-01 section 4. There's a catch with the 3.2.0 priorities: once the budgets go about 8 % above the monitored times, NvM misses its deadline. That leaves two options. You can keep the budgets tight, say 2 % above, or you can raise the Supervisor's priority.
+
+Last, find the longest gap between two watchdog refreshes. It's the 20 ms Supervisor period plus the Supervisor's response time under the new budgets (TAG-01 section 5). With 2 % budgets that comes to about 28.0 ms. Then pick the IWDG prescaler and reload. At the datasheet's LSI maximum of 47 kHz, the timeout has to be longer than that gap. At the LSI minimum of 17 kHz, it can't go over 80 ms. That leaves a window of roughly 1316 to 1360 LSI periods. Prescaler 0 with reload 335 gives 1344 periods, which is 28.6 ms at 47 kHz and 79.1 ms at 17 kHz.
+[/textarea]
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

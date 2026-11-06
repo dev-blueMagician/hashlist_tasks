@@ -16,6 +16,6 @@ Version 4.1. Sections relevant to receiving nodes.
 
 ## 5 Timing
 
-5.1 An 8-byte standard data frame is 108 bits plus 3 bits intermission, 111 bit times, without stuff bits, and up to 135 bit times with worst-case bit stuffing. At 500 kbit/s that is 222 us to 270 us from the start of one frame to the start of the next.
+5.1 An 8-byte standard data frame is 108 bits plus 3 bits intermission, 111 bit times, without stuff bits, and up to 135 bit times with worst-case bit stuffing.
 
 5.3 Receivers shall not rely on the transmission period of a message for their own timing.

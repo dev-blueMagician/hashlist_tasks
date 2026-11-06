@@ -7,7 +7,6 @@
 #include "stm32f4xx.h"
 
 uint32_t SystemCoreClock = 168000000u;
-uint32_t g_lsi_hz;                       /* measured at start-up, stored in the freeze frames */
 
 void system_clock_init(void)
 {
@@ -30,24 +29,4 @@ void system_clock_init(void)
 
     RCC->CSR |= RCC_CSR_LSION;                           /* IWDG clock */
     while ((RCC->CSR & RCC_CSR_LSIRDY) == 0u) { }
-}
-
-/* LSI frequency for the diagnostic freeze frame: TIM5 channel 4 captures
- * the LSI (TIM5_OR TI4_RMP = 01) with the timer on 2 x PCLK1 = 84 MHz;
- * eight LSI periods are averaged. Diagnostic only, not used for timing. */
-void lsi_measure(void)
-{
-    RCC->APB1ENR |= RCC_APB1ENR_TIM5EN;
-    TIM5->OR = (1u << 6);                                /* TI4_RMP: LSI */
-    TIM5->CCMR2 = (1u << 8) | (3u << 10);                /* CC4 input TI4, prescaler /8 */
-    TIM5->CCER = TIM_CCER_CC4E;
-    TIM5->CR1 = TIM_CR1_CEN;
-    uint32_t a, b;
-    while ((TIM5->SR & TIM_SR_CC4IF) == 0u) { }
-    a = TIM5->CCR4;
-    while ((TIM5->SR & TIM_SR_CC4IF) == 0u) { }
-    b = TIM5->CCR4;
-    g_lsi_hz = (uint32_t)((8ull * 84000000ull) / (uint32_t)(b - a));
-    TIM5->CR1 = 0u;
-    RCC->APB1ENR &= ~RCC_APB1ENR_TIM5EN;
 }

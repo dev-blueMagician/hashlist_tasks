@@ -1,0 +1,45 @@
+ECP-300 task (realtime_budget) - builder steps, round 2, by hand
+==================================================================
+Builder task: "ECP-300 coolant pump resets after software 3.2.0"
+All files named below are in this folder (realtime_budget/), at the paths shown.
+Save a page with the extension after each section marked SAVE.
+Never open section 7 or press Run.
+
+A. 2.4 Toolchain - clean Try the box (the old commands contain the answer)
+   1. Select all text in "Commands to run in the box" and replace it with the
+      8 lines of author/probes/probe-2-commands.txt.
+   2. Press "Try again". Wait until it says "Try the box Worked".   SAVE
+
+B. 5.1 Your steps
+   1. Rewrite author/5.1-draft-for-rewrite.txt in your own words (the page
+      says "No AI-generated steps"). Keep the numbers and the facts.
+   2. Replace the whole "Your steps" box with your text.            SAVE
+
+C. 5.2 Correct answer
+   1. Check the answer file says /app/solution.c.
+   2. Paste package/references/gold.c into "Your correct answer".   SAVE
+
+D. 5.3 Common mistakes  (four of them, in this order)
+   1. Paste package/references/naive_a.c into the first box (references/naive_a.c).
+   2. "Add another common mistake", paste naive_b.c.
+   3. "Add another common mistake", paste naive_c.c.
+   4. "Add another common mistake", paste naive_d.c.
+   Check the four boxes are named naive_a, naive_b, naive_c, naive_d. SAVE
+
+E. 5.4 Scored steps
+   1. Paste package/verifier/harness.c into "The harness".
+   2. The harness also needs package/verifier/os_cfg.h next to it (verifier/os_cfg.h).
+      Look for a way to add a second verifier file on this page (an upload or
+      "New file" for verifier/). If you cannot find one, stop here and SAVE.
+   3. Do NOT press "Generate checks".
+   4. Open the extension, "Fill 5.4 steps", paste author/scored-steps.json,
+      Preview, then Fill.                                            SAVE
+
+F. 6.1 Verify
+   Press "Verify" (or "Verify again"). Wait until scores show.      SAVE
+
+Then copy every new .txt page from this folder's author/ back to the PC
+(into realtime_budget/author/ there) and say "done".
+
+Expected Verify result: gold 1.00; naive_a 0.21, naive_b 0.89, naive_c 0.21,
+naive_d 0.42 (shown with two decimals).

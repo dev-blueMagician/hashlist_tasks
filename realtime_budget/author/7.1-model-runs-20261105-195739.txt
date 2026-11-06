@@ -1,0 +1,59 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/models
+title: Hashlist Data Operations Platform
+section: 7.1 Model runs
+open: (no tab or panel marked open)
+captured: Thu Nov 05 2026 19:57:39 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+7.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+(on) (current) 7 Run
+
+Run
+
+(on) (current) 7.1 Model runs
+
+7.2 Run
+
+7.3 Running
+
+Which models try it, and handing it in.
+
+7.1
+
+Model runs
+
+(on)
+
+Default run
+Optimised run: Kimi ×2 → Opus → Qwen ×6 on every task, then any model whose scores vary is topped up to 6 runs.
+
+MoonshotAI: Kimi K3 Anthropic: Claude Opus 5.5 Qwen: Qwen3.8 Max (0902) in stages, up to 6 each
+
+Runs in stages: 2 to 18 runs, as the scores decide.
+
+Continue
+press Enter ↵
+

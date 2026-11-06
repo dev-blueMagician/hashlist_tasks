@@ -16,7 +16,7 @@ from collections import deque
 F_CPU = 168_000_000
 US = 168                       # cycles per microsecond
 TICK = 168_000                 # SysTick period, 1 ms
-FOC_PERIOD = 8_400             # 20 kHz PWM / ADC trigger
+FOC_PERIOD = 8_400             # ADC trigger at 20 kHz; every capture is above 900 rpm, so RCR = 1
 FOC_PHASE = 2_100
 
 # name, FreeRTOS priority, period in ticks

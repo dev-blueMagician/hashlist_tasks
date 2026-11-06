@@ -1,10 +1,9 @@
-/* foc_isr.c - field-oriented current control, 20 kHz
+/* foc_isr.c - field-oriented current control
  *
- * TIM1 runs center-aligned at 20 kHz and triggers the injected ADC1/ADC2
- * conversions of the phase currents at the PWM center. The injected
- * end-of-conversion interrupt runs the current loop and writes the new duty
- * cycles. NVIC priority 1 (above configMAX_SYSCALL_INTERRUPT_PRIORITY):
- * no FreeRTOS calls in here.
+ * TIM1 (Pwm driver, mcal/) triggers the injected ADC1/ADC2 conversions of the phase
+ * currents. The injected end-of-conversion interrupt runs the current loop
+ * and writes the new duty cycles. NVIC priority 1 (above
+ * configMAX_SYSCALL_INTERRUPT_PRIORITY): no FreeRTOS calls in here.
  */
 #include "stm32f4xx.h"
 #include "tmon.h"

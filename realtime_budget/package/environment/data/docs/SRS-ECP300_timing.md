@@ -5,6 +5,7 @@ ECP-300 electric coolant pump controller, 12 V, 300 W. Revision F, 2025-01-20.
 ## Operating conditions
 
 - Ambient temperature -40 to +105 °C (STM32F405RGT7, temperature range 7), supply 9 to 16 V.
+- Pump speed 600 to 5200 rpm.
 - The controller is connected to the vehicle bus and shall meet every requirement of VN-07 (vehicle network specification) under all bus conditions VN-07 allows.
 - Requirements apply to every unit produced, over the full tolerance of its components.
 

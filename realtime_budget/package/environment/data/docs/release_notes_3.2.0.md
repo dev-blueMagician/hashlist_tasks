@@ -12,6 +12,7 @@ Released 2026-07-06 to production and fleet over-the-air update.
 - CAN: `can_legacy.c` replaced by `can_if_glue.c` and the supplier CanIf 4.2 stack. Reception in interrupt mode.
 - Monitor: derating table extended up to 5200 rpm.
 - SpeedCtrl: observer rewritten, shorter execution time.
+- MCAL configuration regenerated with configurator 4.1 (PWM modes reworked for lower torque ripple).
 
 ## Timing (TAG-01 review, 2026-06-18)
 

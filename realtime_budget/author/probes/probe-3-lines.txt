@@ -1,0 +1,6 @@
+cd /app/data && find . -type f | LC_ALL=C sort | xargs sha256sum
+find /app/data -type f | wc -l; find /app/data -name '* *' -o -name '*(*' | head; sha256sum /app/files/*
+cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-copied
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp/s.o && echo prompt-compile-ok
+python3 /app/data/tools/tracestat.py /app/data/traces/service_bay_ecm_reflash.csv | tail -5
+cd /tmp/t && for f in starter gold naive_a naive_b naive_c naive_d; do cp $f.c /app/solution.c; gcc -O2 -std=c11 -Wall -Wextra -I/tmp/t -o /tmp/prog /tmp/t/harness.c /app/solution.c -lm && /tmp/prog | tr '\n' ' ' | sed "s/^/$f: /"; echo; done; cp /app/data/src/os_cfg.c /app/solution.c && cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-restored

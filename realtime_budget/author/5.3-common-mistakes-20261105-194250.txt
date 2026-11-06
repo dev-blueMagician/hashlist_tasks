@@ -1,0 +1,312 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/near
+title: Hashlist Data Operations Platform
+section: 5.3 Common mistakes
+open: Common mistakes
+captured: Thu Nov 05 2026 19:42:50 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+5.3
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+3 Environment
+
+4 Prompt
+
+(on) (current) 5 Golden set
+
+6 Verify
+
+7 Run
+
+Golden set
+
+5.1 Your steps
+
+5.2 Correct answer
+
+(on) (current) 5.3 Common mistakes
+
+5.4 Scored steps
+
+Your steps, the correct answer, common mistakes and scored steps.
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+[expanded=true] app
+
+Cal_Data.c
+
+Cal_Data.h
+
+speed_ctrl.c
+
+[expanded=true] bsw
+
+Dem_Cfg.c
+
+NvM_Cfg.c
+
+[expanded=true] mcal
+
+Adc_Cfg.c
+
+Adc_Cfg.h
+
+Gpt_Cfg.c
+
+Mcal_Types.h
+
+Port_Cfg.c
+
+Pwm_Cfg.c
+
+Pwm_Cfg.h
+
+Pwm.c
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+(on) [selected=true]
+Common mistakes
+
+Hidden from the model
+[title: Full screen]
+
+Common mistakes
+
+A full answer with one common mistake in it. One mistake per answer.
+
+references/naive_a.c written
+Upload a file
+[file input ]
+Remove
+
+[textarea references/naive_a.c]
+/* os_cfg.c - ECP-300 task table and independent watchdog setting
+ *
+ * 3.2.1 (near miss: worst case taken from the captures).
+ *
+ * Budgets are 15 % above the largest TMON measurement in the three
+ * reference traces: SpeedCtrl 178.4, CanComm 431.0, Monitor 782.5,
+ * Supervisor 268.2, NvM 4113.6 us. The service-bay capture already contains
+ * a full ECM reprogramming, so it is taken as the worst bus traffic.
+ * IWDG checked over the LSI range: K with these budgets is about 22.8 ms;
+ * 1240 LSI periods give 26.4 ms at 47 kHz and 72.9 ms at 17 kHz.
+ */
+#include "os_cfg.h"
+
+const os_task_cfg_t os_task_cfg[TASK_COUNT] = {
+    /*                   name          prio  period_us  deadline_us  budget_us  stack */
+    [TASK_SPEEDCTRL]  = { "SpeedCtrl",  5,      1000,       1000,         206,    384 },
+    [TASK_CANCOMM]    = { "CanComm",    4,      5000,       5000,         496,    512 },
+    [TASK_MONITOR]    = { "Monitor",    3,     10000,      10000,         900,    512 },
+    [TASK_SUPERVISOR] = { "Supervisor", 2,     20000,      20000,         309,    256 },
+    [TASK_NVM]        = { "NvM",        1,    100000,     100000,        4731,    768 },
+};
+
+const os_iwdg_cfg_t os_iwdg_cfg = {
+    .prescaler = 0u,
+    .reload    = 309u,
+};
+
+[/textarea]
+
+references/naive_b.c written
+Upload a file
+[file input ]
+Remove
+
+[textarea references/naive_b.c]
+/* os_cfg.c - ECP-300 task table and independent watchdog setting
+ *
+ * 3.2.1 (near miss: watchdog sized for the nominal LSI only).
+ *
+ * Budgets as in the correct answer: CAN1_RX0 charged at 222 us, ADC at 25 us
+ * below 900 rpm, B_i = ceil(1.02 M_i).
+ * IWDG: K = 27.99 ms. At the LSI's 32 kHz, 4 * (279 + 1) = 1120 periods
+ * = 35.0 ms, 25 % above K, and well below the 80 ms of SR-WDG-02.
+ */
+#include "os_cfg.h"
+
+const os_task_cfg_t os_task_cfg[TASK_COUNT] = {
+    /*                   name          prio  period_us  deadline_us  budget_us  stack */
+    [TASK_SPEEDCTRL]  = { "SpeedCtrl",  5,      1000,       1000,         263,    384 },
+    [TASK_CANCOMM]    = { "CanComm",    4,      5000,       5000,         659,    512 },
+    [TASK_MONITOR]    = { "Monitor",    3,     10000,      10000,        1280,    512 },
+    [TASK_SUPERVISOR] = { "Supervisor", 2,     20000,      20000,         407,    256 },
+    [TASK_NVM]        = { "NvM",        1,    100000,     100000,        6343,    768 },
+};
+
+const os_iwdg_cfg_t os_iwdg_cfg = {
+    .prescaler = 0u,
+    .reload    = 279u,
+};
+
+[/textarea]
+
+references/naive_c.c written
+Upload a file
+[file input ]
+Remove
+
+[textarea references/naive_c.c]
+/* os_cfg.c - ECP-300 task table and independent watchdog setting
+ *
+ * 3.2.1 (near miss: TAG-01 appendix A inventory taken as still valid).
+ *
+ * CAN1_RX0 treated as bracketed, as in TAG-01 appendix A, so only SysTick
+ * is charged to the jobs. C_i from the 3.2 traces: 150, 380, 780, 240,
+ * 3900 us; M_i = 153, 383, 783, 243, 3915 us; B_i = 1.25 M_i, the most
+ * SR-TIM-04 allows, to give the field the largest margin.
+ * IWDG checked over the LSI range: 1280 LSI periods give 27.2 ms at
+ * 47 kHz and 75.3 ms at 17 kHz.
+ */
+#include "os_cfg.h"
+
+const os_task_cfg_t os_task_cfg[TASK_COUNT] = {
+    /*                   name          prio  period_us  deadline_us  budget_us  stack */
+    [TASK_SPEEDCTRL]  = { "SpeedCtrl",  5,      1000,       1000,         191,    384 },
+    [TASK_CANCOMM]    = { "CanComm",    4,      5000,       5000,         478,    512 },
+    [TASK_MONITOR]    = { "Monitor",    3,     10000,      10000,         978,    512 },
+    [TASK_SUPERVISOR] = { "Supervisor", 2,     20000,      20000,         303,    256 },
+    [TASK_NVM]        = { "NvM",        1,    100000,     100000,        4893,    768 },
+};
+
+const os_iwdg_cfg_t os_iwdg_cfg = {
+    .prescaler = 0u,
+    .reload    = 319u,
+};
+
+[/textarea]
+
+references/naive_d.c written
+Upload a file
+[file input ]
+Remove
+
+[textarea references/naive_d.c]
+/* os_cfg.c - ECP-300 task table and independent watchdog setting
+ *
+ * 3.2.1 (near miss: ADC interrupt taken at the 20 kHz carrier in every mode).
+ *
+ * CAN1_RX0 charged at T = 222 us from VN-07, LSI 17..47 kHz, as in the correct
+ * answer. ADC_IRQHandler taken as T = 50 us from the 20 kHz carrier and the
+ * traces (the Run table in mcal/Pwm_Cfg.c), so the LowRipple mode is missed.
+ * M_i = 257, 539, 1150, 347, 5533 us; B_i = ceil(1.10 M_i).
+ * K = 20 ms + 4.47 ms = 24.47 ms; 1280 LSI periods give 27.2 ms at 47 kHz and
+ * 75.3 ms at 17 kHz.
+ */
+#include "os_cfg.h"
+
+const os_task_cfg_t os_task_cfg[TASK_COUNT] = {
+    /*                   name          prio  period_us  deadline_us  budget_us  stack */
+    [TASK_SPEEDCTRL]  = { "SpeedCtrl",  5,      1000,       1000,         283,    384 },
+    [TASK_CANCOMM]    = { "CanComm",    4,      5000,       5000,         593,    512 },
+    [TASK_MONITOR]    = { "Monitor",    3,     10000,      10000,        1265,    512 },
+    [TASK_SUPERVISOR] = { "Supervisor", 2,     20000,      20000,         382,    256 },
+    [TASK_NVM]        = { "NvM",        1,    100000,     100000,        6087,    768 },
+};
+
+const os_iwdg_cfg_t os_iwdg_cfg = {
+    .prescaler = 0u,
+    .reload    = 319u,
+};
+
+[/textarea]
+
+Add another common mistake
+
+Click a file to open it.
+
+Upload files
+
+Upload a folder
+
+New file
+
+Continue
+press Enter ↵
+

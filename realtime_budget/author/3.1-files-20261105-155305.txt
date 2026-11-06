@@ -1,0 +1,288 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/files
+title: Hashlist Data Operations Platform
+section: 3.1 Files
+open: Use one of my environments | service_bay_ecm_reflash.csv × | Scripts before and after the model optional, hidden from the
+captured: Thu Nov 05 2026 15:53:05 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+3.1
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+2 Build settings
+
+(on) (current) 3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Environment
+
+(on) (current) 3.1 Files
+
+The files in the box.
+
+Use one of my environments
+
+(on) Use one you built
+
+Build a new one
+
+EK-LM3S6965 microSD bring-up Firmware on QEMU or Renode · 10 files · 1 task · edited 11/3/2026
+
+This task gets its own copy. Change the saved one under My environments .
+
+Files
+[title: New file]
+
+[title: Upload files]
+
+[title: Upload a folder]
+[file input ][file input ]
+
+[expanded=true] /app
+
+[expanded=true] data
+
+[expanded=true] docs
+
+release_notes_3.2.0.md
+
+SRS-ECP300_timing.md
+
+TAG-01_timing_analysis_guideline.md
+
+trace_format.md
+
+VN-07_vehicle_network_excerpt.md
+
+[expanded=true] field
+
+README.md
+
+reset_log_3.2.0.csv
+
+[expanded=true] src
+
+[expanded=true] app
+
+Cal_Data.c
+
+Cal_Data.h
+
+speed_ctrl.c
+
+[expanded=true] bsw
+
+Dem_Cfg.c
+
+NvM_Cfg.c
+
+[expanded=true] mcal
+
+Adc_Cfg.c
+
+Adc_Cfg.h
+
+Gpt_Cfg.c
+
+Mcal_Types.h
+
+Port_Cfg.c
+
+Pwm_Cfg.c
+
+Pwm_Cfg.h
+
+Pwm.c
+
+can_if_glue.c
+
+CanIf_Cfg.h
+
+foc_isr.c
+
+FreeRTOSConfig.h
+
+iwdg.c
+
+os_cfg.c
+
+os_cfg.h
+
+system_clock.c
+
+tasks.c
+
+tmon.c
+
+tmon.h
+
+trace_hooks.c
+
+[expanded=true] tools
+
+tracestat.py
+
+[expanded=true] traces
+
+bench_maxspeed_5200rpm.csv
+
+bench_nominal_2400rpm.csv
+
+(on) service_bay_ecm_reflash.csv
+
+[expanded=true] files
+
+DS_stm32f405rg.pdf
+
+rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+[selected=false]
+[title: /app/data/src/iwdg.c] iwdg.c
+
+×
+
+[selected=false]
+[title: /app/data/docs/release_notes_3.2.0.md] release_notes_3.2.0.md
+
+×
+
+[selected=false]
+[title: /app/data/field/README.md] README.md
+
+×
+
+[selected=false]
+[title: /app/data/src/foc_isr.c] foc_isr.c
+
+×
+
+(on) [selected=true]
+[title: /app/data/traces/service_bay_ecm_reflash.csv] service_bay_ecm_reflash.csv
+
+×
+
+[title: Full screen]
+
+[title: /app/data/traces/service_bay_ecm_reflash.csv] /app/data/traces/service_bay_ecm_reflash.csv
+[title: Copy the path]
+1.5 MB
+Delete
+
+[textarea ]
+
+[/textarea]
+
+1
+
+2
+
+3
+
+4
+
+5
+
+6
+
+7
+
+8
+
+9
+
+10
+
+11
+
+12
+
+13
+
+14
+
+15
+
+16
+
+17
+
+18
+
+19
+
+# ECP-300 coolant pump controller - TMON/trace rec order export
+
+# software 3.2.0 (build 3.2.0+417), target STM32F4 05RG, FreeRTOS 10.5.1
+
+# scenario: workshop, ECM reprogramming over the v ehicle bus, pump after-run 1800 rpm, 13.9 V
+
+# capture length: 800 ms, recorder buffer in CCM R AM, exported with trace_export 1.4
+
+# timestamp: DWT_CYCCNT of the CPU (core clock cyc les), as read by the recorder
+
+# event,object,value: see docs/trace_format.md
+
+timestamp,event,object,value
+
+1293397220,TASK_SWITCH_IN,IDLE,
+
+1293397220,ISR_ENTER,SysTick_Handler,
+
+1293397681,TASK_READY,SpeedCtrl,
+
+1293397681,TASK_READY,CanComm,
+
+1293397681,TASK_READY,Monitor,
+
+1293397681,TASK_READY,Supervisor,
+
+1293397681,TASK_READY,NvM,
+
+1293397681,ISR_EXIT,SysTick_Handler,
+
+1293397681,TASK_SWITCH_OUT,IDLE,
+
+1293397681,TASK_SWITCH_IN,SpeedCtrl,
+
+1293397681,JOB_START,SpeedCtrl,
+
+1293399320,ISR_ENTER,ADC_IRQHandler,
+
+Scripts before and after the model optional, hidden from the model
+
+Run in the box as root, in the workdir: one before the model's first step, one after its last and before the answer file is read. The correct answer and each common mistake run with them too. Use them to set up the starting state, or to pack what the model changed into the answer file, so the model is not graded on packing it. A setup that fails stops the run as an error. A teardown that fails is no answer, a score of 0, as it fails on what the run left; Verify shows it on your correct answer first. What setup makes under the workdir is given to the model's user, so the model can edit it; anything it makes elsewhere stays root's. A teardown that writes the answer file replaces a correct answer typed as that file: write your answers as scripts that change what teardown packs.
+
+Before the model starts hooks/setup.sh
+[textarea hooks/setup.sh]
+#!/bin/sh
+# Before the model starts: the 3.2.0 configuration is the starting point.
+set -e
+cp /app/data/src/os_cfg.c /app/solution.c
+
+[/textarea]
+
+After the model stops hooks/teardown.sh
+[textarea hooks/teardown.sh]
+
+[/textarea]
+
+Section done
+press Enter ↵
+

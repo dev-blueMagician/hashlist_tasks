@@ -1,0 +1,230 @@
+# DOP builder page capture: live page text and field values
+url: https://dop.hashlist.com/app/build/aa703c22-37b5-4f2f-a2fd-58b91e767638/toolchain
+title: Hashlist Data Operations Platform
+section: 2.4 Toolchain
+open: (no tab or panel marked open)
+captured: Thu Nov 05 2026 18:20:15 GMT-0500 (Eastern Standard Time)
+
+Save and exit
+ECP-300 coolant pump resets after software 3.2.0
+
+2.4
+
+Saved
+Brief
+
+Ask
+
+[title: Switch to the dark theme]
+
+1 Brief
+
+(on) (current) 2 Build settings
+
+3 Environment
+
+4 Prompt
+
+5 Golden set
+
+6 Verify
+
+7 Run
+
+Build settings
+
+2.1 Shell
+
+2.2 Limits
+
+2.3 Internet
+
+(on) (current) 2.4 Toolchain [title: The box was tried and works]
+
+The shell the model works in, and how it is set up.
+
+2.4
+
+Toolchain
+
+(on) Describe it
+
+My own Dockerfile (optional)
+
+Language [select  = "Python"]
+
+Base image [input  = "gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263"]
+
+Packages apt names, or pip: prefixed, comma separated [input build-essential, pip:numpy = "python3, python3-pandas, poppler-utils"]
+
+environment/Dockerfile written from the form
+
+[textarea The Dockerfile]
+FROM gcc@sha256:fa11eac694e287a37cac7f5078fadf9288b919c9ccbc06dc4df24f7482d2b263
+RUN . /etc/os-release && [ "$ID" = debian ] && [ -f /etc/apt/sources.list.d/debian.sources ] && printf 'Types: deb\nURIs: http://snapshot.debian.org/archive/debian/20261006T000000Z\nSuites: %s %s-updates\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n\nTypes: deb\nURIs: http://snapshot.debian.org/archive/debian-security/20261006T000000Z\nSuites: %s-security\nComponents: main\nSigned-By: /usr/share/keyrings/debian-archive-keyring.gpg\nCheck-Valid-Until: no\n' "$VERSION_CODENAME" "$VERSION_CODENAME" "$VERSION_CODENAME" > /etc/apt/sources.list.d/debian.sources; true
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pandas poppler-utils && rm -rf /var/lib/apt/lists/*
+WORKDIR /app
+COPY environment/data /app/data
+
+[/textarea]
+
+Try the box Worked · 05:50 PM
+Try again
+
+Builds the box and runs these commands, one per line.
+
+[textarea Commands to run in the box]
+id; ls -la /app /app/files
+stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/src /app/data/src/os_cfg.c
+cd /app/data && find . -type f | LC_ALL=C sort | xargs sha256sum
+sha256sum /app/files/*
+cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-copied
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp/s.o && echo prompt-compile-ok
+python3 /app/data/tools/tracestat.py /app/data/traces/service_bay_ecm_reflash.csv
+pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | grep -A4 "Table 35"
+
+[/textarea]
+
+The box done 6 lines · 8 steps
+
+17:50:13dop: try_box started on b6b542961092:2
+
+17:50:17dop: building Daytona image dop-task-task-mvr6ixva-runtime:dev from environment/Dockerfile
+
+17:50:20dop: building Daytona image dop-task-task-mvr6ixva-verifier:dev from verifier/Dockerfile
+
+17:50:23dop: opening the box on daytona…
+
+17:50:46ran 8 commands
+
+17:50:46dop: done
+
+#1 0:00 bash: id; ls -la /app /app/files · bash: stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/s… · bash: cd /app/data && find . -type f | LC_ALL=C sort | xargs sha2… · bash: sha256sum /app/files/* · bash: cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-… · bash: gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp… · bash: python3 /app/data/tools/tracestat.py /app/data/traces/servi… · bash: pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | g…
+
+→ bash exit 0 0.9s
+
+id; ls -la /app /app/files
+
+uid=0(root) gid=0(root) groups=0(root)
+/app:
+total 4
+drwxr-xr-x 1 root root   49 Nov  5 22:50 .
+drwxr-xr-x 1 root root   86 Nov  5 22:50 ..
+drwxr-xr-x 7 root root   93 Nov  5 20:54 data
+drwxr-xr-x 2 root root  154 Nov  5 22:50 files
+-rw-r--r-- 1 root root 1105 Nov  5 22:50 solution.c
+
+/app/files:
+total 23616
+drwxr-xr-x 2 root root      154 Nov  5 22:50 .
+drwxr-xr-x 1 root root       49 Nov  5 22:50 ..
+-r--r--r-- 1 root root  2792056 Nov  5 22:50 DS_stm32f405rg.pdf
+-r--r--r-- 1 root root 21385881 Nov  5 22:50 rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+→ bash exit 0 0.9s
+
+stat -c "%U:%G %a %n" /app/solution.c /app/data /app/data/src /app/data/src/os_cfg.c
+
+root:root 644 /app/solution.c
+root:root 755 /app/data
+root:root 755 /app/data/src
+root:root 644 /app/data/src/os_cfg.c
+
+→ bash exit 0 0.9s
+
+cd /app/data && find . -type f | LC_ALL=C sort | xargs sha256sum
+
+6eae970231fb42339d6b3ff048c76c472c6768224c3329cc674702dea9f9c56a  ./docs/SRS-ECP300_timing.md
+d1f0c05b716450f04f225cc31a3f2c053cdbf6391eb9c0153b650b186d94dbf6  ./docs/TAG-01_timing_analysis_guideline.md
+9e2fd4b623e4cc54fd23efcb7e86879c23dc6c8a159b2f2e596c992b399d2d2c  ./docs/VN-07_vehicle_network_excerpt.md
+1720e2feee8dcfa491f96513de305d2c201b28341b8d2108f22615b57ed8281b  ./docs/release_notes_3.2.0.md
+e8ca0fa77183d293c8a642030376f2b81c10db9983653f7d2920cf7a2c9d2235  ./docs/trace_format.md
+d8c9294d12aee7219657695de5e390b440e44103a4bc01c2ac71c91fb13d572f  ./field/README.md
+5ed46ced098dc96d250ea6cf3d79ae9928d8f9ad00563ebe53a5be26e1a48cc7  ./field/reset_log_3.2.0.csv
+921d1695204082d18f271addd085e746d11143caf85befde1ce093b5b19dfab9  ./src/CanIf_Cfg.h
+d655dceaa6abc5f4f3f405b10e1333dc1d9cd8d7a955c11b500f884c89506b75  ./src/FreeRTOSConfig.h
+86467f2f1674918014c97c5838734f36821923b27cf0d898239dcf161c1bbe57  ./src/app/Cal_Data.c
+451621d31972937e1b522b5b76307ba4b9fda0c7a8eae7c7c85607edde8f6364  ./src/app/Cal_Data.h
+04fbeccdc1a6a06cb04211d5c4f8567d53467f230dd843bdd786dc50ce83f768  ./src/app/speed_ctrl.c
+62b42a342d870d049c074341ed25d337061ff873dd7a8acdab1b7f9dfcaf631f  ./src/bsw/Dem_Cfg.c
+815def58cd6540a7e072c66e54087612d964ac26bd550bb07b735579ccb4a5fd  ./src/bsw/NvM_Cfg.c
+62e76f554b2fb6bc70d16cf63b2dd4d0670026062cc9c75daa2c67e3cf8c636c  ./src/can_if_glue.c
+c62053ac5c09ed0d92de2d4c81b2fd478623e4286ca122464936d68ccd590988  ./src/foc_isr.c
+6eed3166fb662d42821c98fd7d558a6b73ce9a935be5c82c0593d75e8d2eb0ef  ./src/iwdg.c
+d8d4dee232de47764688a93c324efc9b2c4392d2cf3ac21210c057e482f42796  ./src/mcal/Adc_Cfg.c
+d10a82bcf6dea0852a7df021fed62623457f0dd4f833e27c5ffc110b56527e40  ./src/mcal/Adc_Cfg.h
+165351272c17cc9c40f1fdccfff35c0ccae42d269248295ac74d8cbbd6e8c5e0  ./src/mcal/Gpt_Cfg.c
+fb0af007789445add578675b17ec62f4bc38dd6af91c31fa99d37b8f2fb4c279  ./src/mcal/Mcal_Types.h
+064df1871cd6ced36d3baffc5d53246ae2fed90dbb0a8c4ab5bd861cc081fd7b  ./src/mcal/Port_Cfg.c
+75e6c5cccd5b4b925ec40783310ca52fb6ea679620cae1ac46bb046228ffeb95  ./src/mcal/Pwm.c
+07a1ede859fcde55adab737e7deeb0f7ae6bba63d34462f9a8bd473ece4ddeb6  ./src/mcal/Pwm_Cfg.c
+05a55e3ebf2261cd87eb8b0a99aa2ce8e6927de640051e3c9d527fd0e68dee55  ./src/mcal/Pwm_Cfg.h
+c3a8d6a81c175ea6942f6203bc9428854a4f4c06c928056139b4dc7bac6f15f1  ./src/os_cfg.c
+5b767c48c7571722965c539f122b2c210d478aad8f4d5c0091b8628559d370b1  ./src/os_cfg.h
+159b3c768cb700ff3822c69836516d39b19a57b8f3cdee0fbeca290fb3a17072  ./src/system_clock.c
+8ca2d60f5926706e4d7ecb7b72912b368e8ad8966927c9187d3604c54940abf5  ./src/tasks.c
+8bd1faf0a683cc3934598c273a3daf0da45d4a9dd3ec80364971b771d26e44ed  ./src/tmon.c
+066f4e476453aedc96fa26c4f652491e7f0afd5fc40ff14cd504ae02e1083f88  ./src/tmon.h
+e8a840e80d4a12f2e02c2606ae1e9d7208801834b1d493ce3ad9cf2657522047  ./src/trace_hooks.c
+ef50fe622e374eac40eb13cef12d3183ffa7874d9fddb3774596a01de60d8873  ./tools/tracestat.py
+284788d470c24b743e635f222c950cf74c0141197b23761bc812765b8b799e76  ./traces/bench_maxspeed_5200rpm.csv
+e297017d990eab68faf0abdc977644da9a1f0c249928d0ff0569d09d837d7489  ./traces/bench_nominal_2400rpm.csv
+2f26027d294db2c565e60aec7911befa9d98513fc88a1ba9dcfab2ed01e2d00c  ./traces/service_bay_ecm_reflash.csv
+
+→ bash exit 0 0.9s
+
+sha256sum /app/files/*
+
+1f41b4fa49a9960215ebb76cd0a75f20241db82eed60d308345a80463caeed22  /app/files/DS_stm32f405rg.pdf
+f3ff2322eec21f4e49081f68481b764506eee81dba6031bc767e2f8955b27cca  /app/files/rm0090-stm32f405415-stm32f407417-stm32f427437-and-stm32f429439-advanced-armbased-32bit-mcus-stmicroelectronics.pdf
+
+→ bash exit 0 0.9s
+
+cmp /app/solution.c /app/data/src/os_cfg.c && echo starter-copied
+
+starter-copied
+
+→ bash exit 0 0.9s
+
+gcc -O2 -std=c11 -I/app/data/src -c /app/solution.c -o /tmp/s.o && echo prompt-compile-ok
+
+prompt-compile-ok
+
+→ bash exit 0 0.9s
+
+python3 /app/data/tools/tracestat.py /app/data/traces/service_bay_ecm_reflash.csv
+
+task         jobs    net max   net mean   TMON max   resp max
+SpeedCtrl     800    128.0us    119.0us    178.4us    209.9us
+CanComm       160    380.0us    307.4us    431.0us    656.0us
+Monitor        80    689.9us    640.0us    740.5us   1585.7us
+Supervisor     40    240.0us    209.8us    268.2us   1834.7us
+NvM             8   3900.0us   2760.4us   4113.6us   7843.7us
+
+interrupt             count   exec max  exec mean   min gap seen
+SysTick_Handler         800     3.00us     2.55us        946.7us
+ADC_IRQHandler        16000     8.10us     7.65us         50.0us
+CAN1_RX0_IRQHandler     700    52.00us    43.49us        599.4us
+
+IWDG refresh interval: max 20134.6 us, min 19827.5 us (40 refreshes)
+
+→ bash exit 0 0.9s
+
+pdftotext -f 105 -l 105 /app/files/DS_stm32f405rg.pdf - | grep -A4 "Table 35"
+
+The parameters given in Table 34 and Table 35 are derived from tests performed under
+ambient temperature and VDD supply voltage conditions summarized in Table 14.
+
+High-speed internal (HSI) RC oscillator
+Table 34. HSI oscillator characteristics (1)
+--
+Table 35. LSI oscillator characteristics (1)
+Symbol
+
+Parameter
+
+The box works: all 8 commands ran cleanly.
+
+Section done
+press Enter ↵
+

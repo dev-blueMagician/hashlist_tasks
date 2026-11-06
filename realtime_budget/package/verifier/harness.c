@@ -10,8 +10,13 @@
  * three reference traces; ISR WCETs are the largest handler times there.
  * CAN1_RX0 is not bracketed by TMON in 3.2.0 (can_if_glue.c), its filter
  * accepts 0x700-0x7FF, and VN-07 allows back-to-back 8-byte frames at
- * 500 kbit/s: one frame per 111 bit times = 222 us. LSI 17-47 kHz
- * (STM32F405 datasheet, LSI oscillator characteristics).
+ * 500 kbit/s: one frame per 111 bit times = 222 us. ADC runs every 25 us
+ * below 900 rpm: speed_ctrl.c selects PwmConf_PwmMode_LowRipple there, whose
+ * table in mcal/Pwm_Cfg.c writes 0 to 0x40010030 (TIM1_RCR); in center-aligned mode
+ * that gives an update event (TRGO) at each overflow and underflow of the
+ * 20 kHz carrier (RM0090 17.3.3). No trace runs that slowly; the SRS speed
+ * range includes it. LSI 17-47 kHz (STM32F405 datasheet, LSI oscillator
+ * characteristics).
  */
 #define _POSIX_C_SOURCE 200809L
 #include <math.h>
@@ -33,7 +38,7 @@ static const double DEADLINE_US[TASK_COUNT] = { 1000.0, 5000.0, 10000.0, 20000.0
 static const double WCET_US[TASK_COUNT]     = { 150.0, 380.0, 780.0, 240.0, 3900.0 };
 
 /* ADC_IRQHandler (FOC), CAN1_RX0_IRQHandler, SysTick_Handler */
-static const double ISR_T_US[N_ISR]   = { 50.0, 222.0, 1000.0 };
+static const double ISR_T_US[N_ISR]   = { 25.0, 222.0, 1000.0 };
 static const double ISR_C_US[N_ISR]   = { 9.0, 52.0, 3.0 };
 static const int    ISR_CHARGED[N_ISR] = { 0, 1, 1 };
 

@@ -1,0 +1,31 @@
+{
+  "builder": "any",
+  "title": "task-mw3wykh1",
+  "out": "round1",
+  "note": "round 1: every screen as text and HTML, the five 1.2 panels, step limit 500, Try-the-box toolchain probe",
+  "steps": [
+    { "do": "save_all", "html": true },
+
+    { "do": "open", "section": "1.2" },
+    { "do": "click", "text": "2 The container", "optional": true },
+    { "do": "save" },
+    { "do": "click", "text": "3 The golden set", "optional": true },
+    { "do": "save" },
+    { "do": "click", "text": "4 The checks", "optional": true },
+    { "do": "save" },
+    { "do": "click", "text": "5 The result", "optional": true },
+    { "do": "save" },
+    { "do": "click", "text": "1 The prompt", "optional": true },
+    { "do": "save" },
+
+    { "do": "open", "section": "2.2" },
+    { "do": "select", "label": ["Step limit", "Steps"], "option": "500", "optional": true },
+    { "do": "save", "html": true },
+
+    { "do": "open", "section": "2.4" },
+    { "do": "fill", "label": "Commands to run in the box", "from": "author/probes/probe-1-toolchain.txt" },
+    { "do": "click", "text": ["Try the box", "Try again", "Try the changed box"],
+      "wait": { "pattern": "(Worked|\\d+ failed|Some failed|Answer in the box|Script in the box|Didn't build|Cancelled) · \\d{1,2}:\\d\\d", "busy": "Trying", "timeout_s": 900 } },
+    { "do": "save", "html": true }
+  ]
+}

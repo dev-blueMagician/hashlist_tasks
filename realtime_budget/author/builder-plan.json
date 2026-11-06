@@ -3,10 +3,33 @@
   "title": "ECP-300 coolant pump resets after software 3.2.0",
   "note": "round 1: clean Try the box (the probe 3 commands hold gold), then save every section",
   "steps": [
-    { "do": "open", "section": "2.4" },
-    { "do": "fill", "label": "Commands to run in the box", "from": "author/probes/probe-2-commands.txt" },
-    { "do": "click", "text": "Try again", "wait": { "pattern": "Try the box \\w+ · [0-9:]+ [AP]M", "busy": "Try the box (running|Running|building|Building|queued|Queued)", "timeout_s": 900 } },
-    { "do": "save" },
-    { "do": "save_all" }
+    {
+      "do": "open",
+      "section": "2.4"
+    },
+    {
+      "do": "fill",
+      "label": "Commands to run in the box",
+      "from": "author/probes/probe-2-commands.txt"
+    },
+    {
+      "do": "click",
+      "text": [
+        "Try the box",
+        "Try again",
+        "Try the changed box"
+      ],
+      "wait": {
+        "pattern": "(Worked|\\d+ failed|Some failed|Answer in the box|Script in the box|Didn't build|Cancelled) · \\d{1,2}:\\d\\d",
+        "busy": "Trying",
+        "timeout_s": 900
+      }
+    },
+    {
+      "do": "save"
+    },
+    {
+      "do": "save_all"
+    }
   ]
 }

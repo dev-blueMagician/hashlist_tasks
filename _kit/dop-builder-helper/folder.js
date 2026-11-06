@@ -15,7 +15,7 @@ const done = (text) => {
 async function savePending(dir) {
   const { page } = await chrome.storage.session.get("page");
   if (!page) return "";
-  await writeText(dir, page.name, page.text);
+  await writeText(await pageDir(dir), page.name, page.text);
   await chrome.storage.session.remove("page");
   return ` Saved ${page.name}.`;
 }
@@ -39,8 +39,8 @@ async function savePending(dir) {
   } else {
     await chrome.storage.session.remove("page");
     say(dir
-      ? `Pages are saved in "${dir.name}". Choose another folder, usually the task's author folder.`
-      : "Choose the folder for saved pages, usually the task's author folder.");
+      ? `The folder is "${dir.name}". Choose another one: the task folder (it holds author/ and package/). Pages are saved in its author folder.`
+      : "Choose the task folder (it holds author/ and package/). Pages are saved in its author folder, and plans read their files from it.");
     go.textContent = "Choose folder";
     go.onclick = async () => {
       let picked;

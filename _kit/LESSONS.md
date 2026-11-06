@@ -9,6 +9,8 @@ Keep only lessons that change what is done next time. One or two lines each, wit
 - Before Run, use Try the box to check that the model's box holds the current starter and every tool the prompt relies on. In `Zephyr build test`, four runs scored 0 for two reasons: the box still had an old multi-file starter, while the grader compiles one file, and it had no Python. (Zephyr build test)
 - Use Verify for every grader or prompt change. It is cheap, and it is the only real end-to-end route when the author has no hardware or local toolchain. Run only when the package is final, because Run submits. (driver_peripheral)
 - Before reinstalling Windows or moving to another PC, copy `%USERPROFILE%\.claude` along with the task folders. Sessions and auto-memory live there, not in the repo; after the 2026-11-01 reinstall none were left on any drive. (realtime_budget)
+- On Windows, VS Code's C/C++ extension (cpptools) holds open handles on MSYS2 programs, so they fail with "Device or resource busy". It grabs them again after a restart; Restart Manager names the holder. Disable the extension for the workspace before using an MSYS2 toolchain. (HDL_mw32jhhu)
+- Don't name a Verilog module `design`, even though the RTL shell's template does: it is a reserved word. Test probe code locally before spending a Try the box on it. (HDL_mw32jhhu)
 - Commit a task folder before scripts rewrite its data, and have scripts write to a new file first. A crashed edit emptied an untracked `reset_log_3.2.0.csv`, leaving the builder's upload as the only copy. (realtime_budget)
 - Before Run, grade a second valid solution written differently from gold: other register orders and idioms the documents allow, or blind-test firmware. Gold passing shows one route works. Gold set DIR before PA3's level, so Verify stayed clean while the strongest model's six runs all lost `oled_cs_ok`. (driver_peripheral)
 
@@ -38,7 +40,14 @@ Keep only lessons that change what is done next time. One or two lines each, wit
 
 ## Model behaviour seen in runs
 
-- Before filling section 5, blind-test the public files with fresh Opus subagents, scored locally. It takes minutes and has no platform side effects. Three of three solved `realtime_budget` at 1.000 in under 4 minutes, so a hidden load that any document states outright is not hidden. (realtime_budget)
+- Before filling section 5, blind-test the public files with fresh Opus subagents, scored locally. It takes minutes and has no platform side effects. (realtime_budget)
+- A task answered by calculation from supplied files is hard to make hard. `realtime_budget` went through three designs: a stated load, a register-only mode, then raw-address tables. Opus scored 1.000 in 9 of 9 runs, under 5 minutes each: it reads every source and document and checks its own script against the traces. Hiding a fact better in the same files did not help. Judge difficulty against the brief's own rule, which can differ per brief, and blind-test weaker models too. (realtime_budget)
+- An RTL change with complete documents is solved by careful agents, even when the facts are hidden. In `HDL_mw32jhhu`, 12 of 12 blind solvers (Opus and Sonnet) scored 1.00 across three versions in 6–29 minutes:
+  - v1: a port to a new SRAM;
+  - v2: a latency budget that forces a bypass;
+  - v3: a retry mode, with the read-after-write rule only in a bus capture.
+
+  Each solver wrote its own model of the device from the documents, tested it with random traffic, and read every file, CSV included. Blind-test before building more versions. (HDL_mw32jhhu)
 
 - The 30-minute working time binds. One Qwen run spent 21 minutes reading PDFs and submitted untested code, while Opus finished in about 7 minutes. Large documents raise difficulty for weaker models. (driver_peripheral)
 - Score spread from 8 trace-based checks: Opus 1.00, Kimi 0.75 and 0.75, Qwen 0.00–0.375. Mean 0.43, 1 of 9 runs fully passed. (driver_peripheral)
@@ -53,4 +62,5 @@ Keep only lessons that change what is done next time. One or two lines each, wit
 | `driver_peripheral` | task-mvttqdbt | microSD bring-up on the EK-LM3S6965 | Driver and Peripheral Bring-up ($300) | Firmware on QEMU / lm3s6965evb | Accepted (reviewer's message, reported 2026-11-05) | First version sent back as too easy: Verify gold 1.00, naive 0.13; runs mean 0.43, 1 strict pass of 9, Opus 1.00 in its only run. Rework: Verify gold 1.00, naive 0.10. Strongest model, six runs: four failed on the 16 GB card, single runs on a block past the end or SPI clock change while enabled. Weaker models never handled either card case. Reviewer corrected one grader defect (`oled_cs_ok`) in their own scoring. Exact scores not seen |
 | `Zephyr build test` | task-mvr8934a | Repair UART batch processing | "your own" (no listed brief) | Pre-created "Zephyr GHCR test" environment, settings locked; bare-metal firmware on QEMU lm3s6965evb | In review (dashboard 2026-10-30) | Verify: gold 1.00, near miss 0.29, GRADER SOUND. Runs 1, 2, 7 and 8 scored 0 because of a setup defect (see `authoring/platform.json`). Current package `dist/locked-firmware-v7/`; whether it was uploaded and run is not recorded. Reviewer verdict: pending |
 | `plc_debugger` | task-mvr6hgkn | not set | Control Logic and PLC Debugger | not chosen | Draft, taken 2026-10-27 | — |
-| `realtime_budget` | task-mvr6ixva | ECP-300 coolant pump resets after software 3.2.0 | Real-Time Budget Planner | C harness with budgets (gcc box, harness.c grader) | Draft, sections 1–4 done 2026-10-31 | — |
+| `HDL_mw32jhhu` | task-mw32jhhu | not set | HDL feature development (Verilog) ($450) | RTL · terminal (Icarus + Verilator, rtl.json grader) | Draft, 1.1–2.1 read 2026-11-05 | — |
+| `realtime_budget` | task-mvr6ixva | ECP-300 coolant pump resets after software 3.2.0 | Real-Time Budget Planner | C harness with budgets (gcc box, harness.c grader) | Draft; third design uploaded, Verify GRADER SOUND 2026-11-05 (gold 1.00, naive 0.21/0.89/0.21/0.42). Not run | Blind tests (local): Opus 1.000 in 9 of 9 runs across three designs; on the third, Sonnet 1.000/0.842/1.000, Haiku 0.421/0.263/0.105. Not submitted |

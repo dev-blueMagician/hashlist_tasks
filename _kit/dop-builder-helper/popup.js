@@ -48,8 +48,9 @@ document.getElementById("save").onclick = async () => {
     if (!dir) {
       show(await saveToDownloads(page));
     } else if (await folderStore.allowed(dir, false)) {
-      await writeText(dir, page.name, page.text);
-      show(`Saved ${page.name} in ${dir.name}.`);
+      const to = await pageDir(dir);
+      await writeText(to, page.name, page.text);
+      show(`Saved ${page.name} in ${to === dir ? dir.name : `${dir.name}/author`}.`);
     } else {
       await chrome.storage.session.set({ page });
       await helper("allow");
@@ -60,6 +61,7 @@ document.getElementById("save").onclick = async () => {
 };
 
 document.getElementById("choose").onclick = () => helper("choose");
+document.getElementById("plan").onclick = () => chrome.windows.create({ url: "runner.html", type: "popup", width: 640, height: 740 });
 
 reset.onclick = async () => {
   await folderStore.clear();

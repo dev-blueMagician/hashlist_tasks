@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>DOP Builder Helper: run a plan</title>
+<style>
+  body { font: 13px/1.45 system-ui, sans-serif; margin: 14px; color: #1d1d1f; background: #fff; }
+  h1 { font-size: 15px; margin: 0 0 8px; }
+  input { font: 12px Consolas, monospace; width: 100%; box-sizing: border-box; padding: 3px 5px; }
+  button { font: inherit; padding: 4px 12px; margin: 8px 6px 0 0; }
+  .hint { color: #555; margin: 6px 0; }
+  pre { white-space: pre-wrap; word-break: break-word; background: #f4f4f5; padding: 8px; height: 470px; overflow: auto; margin: 10px 0 0; font: 12px/1.4 Consolas, monospace; }
+  #pause { background: #fff4ce; padding: 6px 8px; margin-top: 8px; }
+</style>
+</head>
+<body>
+<h1>Run a plan</h1>
+<p class="hint">Task folder: <b id="folder">(none chosen)</b>. Plan file inside it:</p>
+<input id="path" value="author/builder-plan.json" spellcheck="false">
+<div>
+  <button id="preview">Preview</button><button id="run" disabled>Run</button><button id="stop" disabled>Stop</button>
+</div>
+<div id="pause" hidden><span id="pausemsg"></span> <button id="cont">Continue</button></div>
+<pre id="log"></pre>
+<script src="store.js"></script>
+<script src="plan.js"></script>
+<script src="runner.js"></script>
+</body>
+</html>

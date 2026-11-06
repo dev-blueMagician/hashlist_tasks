@@ -34,6 +34,16 @@ const folderStore = (() => {
   };
 })();
 
+// Pages go to the task's author folder when the chosen folder is the task folder.
+async function pageDir(dir) {
+  if (dir.name === "author") return dir;
+  try {
+    return await dir.getDirectoryHandle("author");
+  } catch {
+    return dir;
+  }
+}
+
 async function writeText(dir, name, text) {
   const file = await dir.getFileHandle(name, { create: true });
   const w = await file.createWritable();

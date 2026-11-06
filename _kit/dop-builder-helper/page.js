@@ -305,5 +305,212 @@
     return { before, extra, after: report() };
   }
 
-  globalThis.dopHelper = { capture, fill };
+  // ------------------------------------------------------- plan actions
+  // Small, single-purpose actions that runner.js calls one at a time. Each
+  // returns { ok: true, ... } or { ok: false, error }. None of them presses Run.
+
+  // Never clicked, whatever a plan says: section 7, Run, submitting, replacing
+  // the environment, and regenerating the 5.4 checks.
+  const FORBIDDEN = /^(\(on\) )?(\(current\) )?(7\b|7\.\d|run\b|run the task|start (the )?run|submit|hand (it )?in|send (it )?(for|to) review|replace and copy|generate checks)/i;
+  const CLICKABLE = 'button, a, summary, [role="button"], [role="tab"], [role="treeitem"], [role="link"], [role="menuitem"], [tabindex]';
+
+  const target = (el) => el.closest(CLICKABLE) || el;
+  const visible = (el) => !!(el.offsetParent || el.getClientRects().length);
+
+  // Innermost visible elements whose text is exactly text (or starts with it).
+  function byText(text, opts = {}) {
+    const within = opts.within || document;
+    const found = [];
+    for (const el of within.querySelectorAll(`${CLICKABLE}, li, span, div, p, label`)) {
+      const raw = el.textContent;
+      if (!raw || raw.length > text.length + 80) continue;
+      const t = words(el);
+      if ((opts.prefix ? t.startsWith(text) : t === text) && visible(el)) found.push(el);
+    }
+    return found.filter((e) => !found.some((o) => o !== e && e.contains(o)));
+  }
+
+  function guardedClick(el) {
+    const t = words(target(el));
+    if (FORBIDDEN.test(t)) throw new Error(`refused to click ${q(t)}`);
+    target(el).click();
+  }
+
+  function info() {
+    const m = /\/app\/build\/([0-9a-f-]{36})(?:\/([^/?#]*))?/.exec(location.pathname);
+    return {
+      ok: true,
+      host: location.hostname,
+      builder: m ? m[1] : "",
+      slug: m ? m[2] || "" : "",
+      section: section(),
+      saved: saveState(),
+      text: document.body ? document.body.innerText.slice(0, 4000) : "",
+    };
+  }
+
+  // The save indicator next to the task title: "Saved", "Saving..." or "Unsaved".
+  function saveState() {
+    for (const el of document.querySelectorAll("span, div, p, small, b, strong")) {
+      const t = (el.textContent || "").trim();
+      if (t.length < 12 && /^(Saved|Unsaved|Saving\b.*|Not saved.*)$/.test(t) && !el.children.length) return t;
+    }
+    return "";
+  }
+
+  // Navigation entries: "5 Golden set" and "5.3 Common mistakes", in page order.
+  function navItems() {
+    const seen = new Map();
+    for (const el of document.querySelectorAll(CLICKABLE)) {
+      const t = words(el).replace(/^(\(on\) )?(\(current\) )?/, "");
+      const m = /^(\d(?:\.\d+)?) ([A-Z][A-Za-z ,]{1,40})$/.exec(t);
+      if (m && visible(el) && !seen.has(m[1])) seen.set(m[1], { id: m[1], label: m[2], el });
+    }
+    return [...seen.values()];
+  }
+
+  async function open(id) {
+    if (/^7(\.|$)/.test(id)) return { ok: false, error: "section 7 is never opened by a plan" };
+    const top = id.split(".")[0];
+    const find = (x) => navItems().find((n) => n.id === x);
+    if (id.includes(".") && !find(id)) {
+      const t = find(top);
+      if (!t) return { ok: false, error: `no navigation entry ${top}` };
+      guardedClick(t.el);
+      await sleep(PAUSE * 6);
+    }
+    const n = find(id);
+    if (!n) return { ok: false, error: `no navigation entry ${id}` };
+    guardedClick(n.el);
+    for (let i = 0; i < 50; i++) {
+      await sleep(PAUSE * 2);
+      const sec = section();
+      // A top-level entry opens its first sub-section (1 -> 1.1).
+      if (sec === id || sec.startsWith(id + " ") || (!id.includes(".") && sec.startsWith(id + "."))) return { ok: true, section: sec };
+    }
+    return { ok: false, error: `opened ${id}, but the page shows ${q(section())}` };
+  }
+
+  function sections() {
+    return { ok: true, items: navItems().map((n) => ({ id: n.id, label: n.label })) };
+  }
+
+  async function click(text, opts = {}) {
+    const hits = byText(text, opts).map(target).filter((el, i, a) => a.indexOf(el) === i);
+    if (!hits.length) return { ok: false, error: `no ${q(text)} on the page` };
+    if (hits.length > 1 && !opts.first) return { ok: false, error: `${hits.length} elements read ${q(text)}; the plan must be more exact` };
+    try {
+      guardedClick(hits[0]);
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+    await sleep(PAUSE * 3);
+    return { ok: true };
+  }
+
+  function box(label) {
+    const all = [...document.querySelectorAll("textarea, input:not([type]), input[type=text]")];
+    return all.filter((el) => nameOf(el) === label && visible(el));
+  }
+
+  async function fillBox(label, text) {
+    const hits = box(label);
+    if (hits.length !== 1) return { ok: false, error: `${hits.length} boxes labelled ${q(label)}` };
+    await setValue(hits[0], text);
+    await sleep(PAUSE * 2);
+    const now = box(label)[0];
+    if (!now || now.value !== text) return { ok: false, error: `${q(label)} does not hold the new text after filling` };
+    return { ok: true, chars: text.length };
+  }
+
+  function readBox(label) {
+    const hits = box(label);
+    return hits.length === 1 ? { ok: true, text: hits[0].value } : { ok: false, error: `${hits.length} boxes labelled ${q(label)}` };
+  }
+
+  // files: [{ rel: "docs/x.md", b64 }]. kind "folder" uses the folder input,
+  // as "Upload a folder" does; rel keeps the folder's own name first.
+  async function upload(files, kind) {
+    const inputs = [...document.querySelectorAll('input[type="file"]')];
+    const pick = kind === "folder" ? inputs.filter((i) => i.hasAttribute("webkitdirectory")) : inputs.filter((i) => !i.hasAttribute("webkitdirectory"));
+    if (!pick.length) return { ok: false, error: `no ${kind} upload input on this page` };
+    const dt = new DataTransfer();
+    for (const f of files) {
+      const bin = atob(f.b64);
+      const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const file = new File([bytes], f.rel.split("/").pop(), { type: f.type || "" });
+      if (kind === "folder") Object.defineProperty(file, "webkitRelativePath", { value: f.rel });
+      dt.items.add(file);
+    }
+    const input = pick[0];
+    input.files = dt.files;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+    await sleep(PAUSE * 10);
+    return { ok: true, count: files.length };
+  }
+
+  // The open file's header carries its full path in a title attribute.
+  const header = (path) => [...document.querySelectorAll(`[title="${CSS.escape(path)}"]`)].filter(visible);
+
+  async function openFile(path) {
+    if (header(path).length) {
+      const tab = header(path).find((el) => target(el).getAttribute("aria-selected") !== null) || header(path)[0];
+      target(tab).click();
+      await sleep(PAUSE * 3);
+      return { ok: true };
+    }
+    const name = path.split("/").pop();
+    const tree = document.querySelector('[role="tree"]') || document;
+    for (const cand of byText(name, { within: tree })) {
+      target(cand).click();
+      await sleep(PAUSE * 4);
+      if (header(path).length) return { ok: true };
+    }
+    return { ok: false, error: `could not open ${path} from the file tree` };
+  }
+
+  async function deleteFile(path) {
+    const o = await openFile(path);
+    if (!o.ok) return o;
+    // The Delete button sits in the open file's header, next to the path.
+    let del = null;
+    for (const h of header(path)) {
+      for (let a = h.parentElement, k = 0; a && k < 6 && !del; a = a.parentElement, k++) {
+        del = [...a.querySelectorAll("button")].find((b) => say(b) === "Delete" && visible(b)) || null;
+      }
+      if (del) break;
+    }
+    if (!del) return { ok: false, error: `no Delete button next to ${path}` };
+    const confirm0 = window.confirm;
+    window.confirm = () => true;
+    try {
+      del.click();
+      await sleep(PAUSE * 4);
+      const dialog = document.querySelector('[role="dialog"], [role="alertdialog"], dialog[open]');
+      if (dialog) {
+        const yes = [...dialog.querySelectorAll("button")].find((b) => /^(delete|yes|confirm|ok)$/i.test(say(b)));
+        if (yes) { yes.click(); await sleep(PAUSE * 4); }
+      }
+    } finally {
+      window.confirm = confirm0;
+    }
+    for (let i = 0; i < 25; i++) {
+      if (!header(path).length) return { ok: true };
+      await sleep(PAUSE * 2);
+    }
+    return { ok: false, error: `${path} is still open after Delete` };
+  }
+
+  // For waits: the first match of pattern in the page text, and whether busy matches.
+  function probe(pattern, busy) {
+    const text = document.body ? document.body.innerText : "";
+    const m = new RegExp(pattern).exec(text);
+    return { ok: true, match: m ? m[0] : null, busy: busy ? new RegExp(busy).test(text) : false, saved: saveState() };
+  }
+
+  globalThis.dopHelper = {
+    capture, fill, info, sections, open, click, fillBox, readBox, upload, openFile, deleteFile, probe,
+  };
 })();
